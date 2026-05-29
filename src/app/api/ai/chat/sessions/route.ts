@@ -28,7 +28,12 @@ export async function POST(request: NextRequest) {
     const { resumeId } = await request.json();
     if (!resumeId) return new Response('Missing resumeId', { status: 400 });
 
-    const session = await chatRepository.createSession({ resumeId });
+    const reqLanguage = request.headers.get('x-next-intl-locale') || 'de';
+    const { getTranslations } = await import('next-intl/server');
+    const t = await getTranslations({ locale: reqLanguage, namespace: 'common' });
+    const title = t('newChat');
+
+    const session = await chatRepository.createSession({ resumeId, title });
     return NextResponse.json({ session });
   } catch (error) {
     console.error('POST /api/ai/chat/sessions error:', error);

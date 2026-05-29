@@ -26,8 +26,8 @@ interface SettingsStore {
   hydrate: () => void;
 }
 
-const API_KEY_STORAGE_KEY = 'jade_api_key';
-const PROVIDER_CONFIGS_KEY = 'jade_provider_configs';
+const API_KEY_STORAGE_KEY = 'br_api_key';
+const PROVIDER_CONFIGS_KEY = 'br_provider_configs';
 
 interface ProviderConfig {
   baseURL: string;
@@ -56,7 +56,7 @@ function saveProviderConfigs(configs: Partial<Record<AIProvider, ProviderConfig>
 
 function getFingerprint(): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('jade_fingerprint');
+  return localStorage.getItem('br_fingerprint');
 }
 
 function getHeaders(): Record<string, string> {

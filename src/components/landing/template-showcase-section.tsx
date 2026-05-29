@@ -16,7 +16,7 @@ const FEATURED_TEMPLATES = [
 // Stable date to avoid SSR/client hydration mismatch
 const MOCK_DATE = new Date('2025-01-01T00:00:00Z');
 
-function buildMockResume(template: string): Resume {
+function buildMockResume(template: string, tm: (key: string) => string, ts: (key: string) => string): Resume {
   return ({
     id: 'mock',
     userId: 'mock',
@@ -35,39 +35,39 @@ function buildMockResume(template: string): Resume {
     language: 'en',
     sections: [
       {
-        id: 's1', resumeId: 'mock', type: 'personal_info', title: 'Personal Info', sortOrder: 0, visible: true,
+        id: 's1', resumeId: 'mock', type: 'personal_info', title: ts('personal_info'), sortOrder: 0, visible: true,
         content: {
-          fullName: 'Alex Chen', jobTitle: 'Senior Software Engineer',
-          email: 'alex@example.com', phone: '+1 (555) 123-4567',
-          location: 'San Francisco, CA', website: 'https://alexchen.dev',
-          linkedin: 'linkedin.com/in/alexchen', github: 'github.com/alexchen',
+          fullName: 'Max Mustermann', jobTitle: tm('jobTitle'),
+          email: 'max@example.com', phone: '+49 170 1234567',
+          location: tm('location'), website: 'https://maxmustermann.dev',
+          linkedin: 'linkedin.com/in/maxmustermann', github: 'github.com/maxmustermann',
         },
         createdAt: MOCK_DATE, updatedAt: MOCK_DATE,
       },
       {
-        id: 's2', resumeId: 'mock', type: 'summary', title: 'Summary', sortOrder: 1, visible: true,
-        content: { text: 'Full-stack engineer with 8+ years of experience building scalable web applications. Passionate about clean architecture, developer experience, and mentoring teams.' },
+        id: 's2', resumeId: 'mock', type: 'summary', title: ts('summary'), sortOrder: 1, visible: true,
+        content: { text: tm('summary') },
         createdAt: MOCK_DATE, updatedAt: MOCK_DATE,
       },
       {
-        id: 's3', resumeId: 'mock', type: 'work_experience', title: 'Work Experience', sortOrder: 2, visible: true,
+        id: 's3', resumeId: 'mock', type: 'work_experience', title: ts('work_experience'), sortOrder: 2, visible: true,
         content: {
           items: [
-            { id: 'w1', company: 'TechCorp Inc.', position: 'Senior Software Engineer', location: 'San Francisco, CA', startDate: '2021-03', endDate: null, current: true, description: 'Led a team of 6 engineers building the next-gen analytics platform.', highlights: ['Reduced page load time by 40% through code splitting and lazy loading', 'Designed microservices architecture serving 2M+ daily active users'] },
-            { id: 'w2', company: 'StartupXYZ', position: 'Software Engineer', location: 'Remote', startDate: '2018-06', endDate: '2021-02', current: false, description: 'Built core product features from 0 to 1.', highlights: ['Implemented real-time collaboration features using WebSockets', 'Improved CI/CD pipeline reducing deployment time by 60%'] },
+            { id: 'w1', company: tm('experience.company1'), position: tm('jobTitle'), location: tm('location'), startDate: '2021-03', endDate: null, current: true, description: tm('experience.description1'), highlights: [tm('experience.highlight1_1'), tm('experience.highlight1_2')] },
+            { id: 'w2', company: tm('experience.company2'), position: 'Software Engineer', location: 'Remote', startDate: '2018-06', endDate: '2021-02', current: false, description: tm('experience.description2'), highlights: [tm('experience.highlight2_1'), tm('experience.highlight2_2')] },
           ],
         },
         createdAt: MOCK_DATE, updatedAt: MOCK_DATE,
       },
       {
-        id: 's4', resumeId: 'mock', type: 'education', title: 'Education', sortOrder: 3, visible: true,
+        id: 's4', resumeId: 'mock', type: 'education', title: ts('education'), sortOrder: 3, visible: true,
         content: {
-          items: [{ id: 'e1', institution: 'University of California, Berkeley', degree: 'Bachelor of Science', field: 'Computer Science', location: 'Berkeley, CA', startDate: '2014-09', endDate: '2018-05', gpa: '3.8', highlights: ["Dean's List", 'ACM Programming Contest Finalist'] }],
+          items: [{ id: 'e1', institution: tm('education.institution'), degree: tm('education.degree'), field: tm('education.field'), location: tm('education.location'), startDate: '2014-09', endDate: '2018-05', gpa: '3.8', highlights: [tm('education.highlight1'), tm('education.highlight2')] }],
         },
         createdAt: MOCK_DATE, updatedAt: MOCK_DATE,
       },
       {
-        id: 's5', resumeId: 'mock', type: 'skills', title: 'Skills', sortOrder: 4, visible: true,
+        id: 's5', resumeId: 'mock', type: 'skills', title: ts('skills'), sortOrder: 4, visible: true,
         content: {
           categories: [
             { id: 'sk1', name: 'Frontend', skills: ['React', 'TypeScript', 'Next.js', 'Tailwind CSS'] },
@@ -78,9 +78,9 @@ function buildMockResume(template: string): Resume {
         createdAt: MOCK_DATE, updatedAt: MOCK_DATE,
       },
       {
-        id: 's6', resumeId: 'mock', type: 'projects', title: 'Projects', sortOrder: 5, visible: true,
+        id: 's6', resumeId: 'mock', type: 'projects', title: ts('projects'), sortOrder: 5, visible: true,
         content: {
-          items: [{ id: 'p1', name: 'OpenSource CMS', url: 'https://github.com/alexchen/cms', description: 'A headless CMS built with Next.js and GraphQL.', technologies: ['Next.js', 'GraphQL', 'PostgreSQL'], highlights: ['1.2k+ GitHub stars', 'Used by 50+ companies'] }],
+          items: [{ id: 'p1', name: 'OpenSource CMS', url: 'https://github.com/maxmustermann/cms', description: tm('projects.description'), technologies: ['Next.js', 'GraphQL', 'PostgreSQL'], highlights: [tm('projects.highlight1'), tm('projects.highlight2')] }],
         },
         createdAt: MOCK_DATE, updatedAt: MOCK_DATE,
       },
@@ -90,8 +90,8 @@ function buildMockResume(template: string): Resume {
   }) as Resume;
 }
 
-function TemplateCard({ template, label }: { template: string; label: string }) {
-  const mockResume = buildMockResume(template);
+function TemplateCard({ template, label, tm, ts }: { template: string; label: string; tm: (key: string) => string; ts: (key: string) => string }) {
+  const mockResume = buildMockResume(template, tm, ts);
 
   return (
     <div className="group overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-zinc-200/50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:shadow-zinc-900/50">
@@ -115,6 +115,8 @@ function TemplateCard({ template, label }: { template: string; label: string }) 
 export function TemplateShowcaseSection() {
   const t = useTranslations('landing.templates');
   const tGlobal = useTranslations();
+  const tm = useTranslations('mockResume');
+  const ts = useTranslations('sections');
 
   return (
     <section
@@ -138,7 +140,7 @@ export function TemplateShowcaseSection() {
         >
           {FEATURED_TEMPLATES.map(({ id, labelKey }) => (
             <div key={id} className="w-[280px] flex-shrink-0 snap-center">
-              <TemplateCard template={id} label={tGlobal(labelKey)} />
+              <TemplateCard template={id} label={tGlobal(labelKey)} tm={tm} ts={ts} />
             </div>
           ))}
         </div>
@@ -146,7 +148,7 @@ export function TemplateShowcaseSection() {
         {/* Desktop grid */}
         <div className="hidden gap-6 sm:grid sm:grid-cols-2 lg:grid-cols-4">
           {FEATURED_TEMPLATES.map(({ id, labelKey }) => (
-            <TemplateCard key={id} template={id} label={tGlobal(labelKey)} />
+            <TemplateCard key={id} template={id} label={tGlobal(labelKey)} tm={tm} ts={ts} />
           ))}
         </div>
 

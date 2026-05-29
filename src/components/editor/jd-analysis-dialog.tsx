@@ -30,6 +30,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useEditorStore } from '@/stores/editor-store';
 import { getAIHeaders } from '@/stores/settings-store';
+import { usePaywall } from '@/hooks/use-paywall';
+import { PricingModal } from '@/components/billing/pricing-modal';
 
 interface JdAnalysisResult {
   overallScore: number;
@@ -282,7 +284,7 @@ export function JdAnalysisDialog({ open, onOpenChange, resumeId }: JdAnalysisDia
   const [deleteToConfirm, setDeleteToConfirm] = useState<string | null>(null);
 
   const getAuthHeaders = () => {
-    const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('jade_fingerprint') : null;
+    const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
     return {
       'Content-Type': 'application/json',
       ...(fingerprint ? { 'x-fingerprint': fingerprint } : {}),
@@ -311,10 +313,13 @@ export function JdAnalysisDialog({ open, onOpenChange, resumeId }: JdAnalysisDia
     }
   }, [open, activeTab, fetchHistory]);
 
-  const handleAnalyze = async () => {
-    if (!jobDescription.trim()) return;
-    setIsAnalyzing(true);
-    setError('');
+  const { checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
+
+  const handleAnalyze = () => {
+    checkPaywall('premium', async () => {
+      if (!jobDescription.trim()) return;
+      setIsAnalyzing(true);
+      setError('');
 
     try {
       const res = await fetch('/api/ai/jd-analysis', {
@@ -332,11 +337,12 @@ export function JdAnalysisDialog({ open, onOpenChange, resumeId }: JdAnalysisDia
       setResult(data);
       // Refresh history count
       fetchHistory();
-    } catch (err: any) {
-      setError(err.message || 'Failed to analyze');
-    } finally {
-      setIsAnalyzing(false);
-    }
+      } catch (err: any) {
+        setError(err.message || 'Failed to analyze');
+      } finally {
+        setIsAnalyzing(false);
+      }
+    });
   };
 
   const handleAnalyzeAgain = () => {
@@ -619,6 +625,8 @@ export function JdAnalysisDialog({ open, onOpenChange, resumeId }: JdAnalysisDia
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+    
+    <PricingModal open={showPaywall} onOpenChange={setShowPaywall} requiredTier={requiredTier} />
     </>
   );
 }

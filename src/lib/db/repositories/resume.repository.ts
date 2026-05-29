@@ -19,9 +19,9 @@ export const resumeRepository = {
     await db.insert(resumes).values({
       id,
       userId: data.userId,
-      title: data.title || '未命名简历',
+      title: data.title || 'Untitled Resume',
       template: data.template || 'classic',
-      language: data.language || 'zh',
+      language: data.language || 'en',
     });
     return this.findById(id);
   },
@@ -43,7 +43,7 @@ export const resumeRepository = {
     await db.insert(resumes).values({
       id: newId,
       userId,
-      title: titleOverride ?? `${original.title} (副本)`,
+      title: titleOverride ?? `${original.title} (Copy)`,
       template: original.template,
       themeConfig: original.themeConfig,
       language: original.language,

@@ -145,9 +145,24 @@ export function buildExportThemeCSS(theme: typeof DEFAULT_THEME, template: strin
   const sel = '.resume-export';
   const needsPadding = !BACKGROUND_TEMPLATES.has(template);
   const primaryIsDark = isDark(theme.primaryColor);
+
+  const getFontStack = (font: string) => {
+    switch (font) {
+      case 'Georgia':
+      case 'Palatino':
+      case 'Times New Roman':
+      case 'Garamond':
+        return `"${font}", serif, 'Noto Sans SC'`;
+      case 'Courier New':
+        return `"${font}", monospace, 'Noto Sans SC'`;
+      default:
+        return `"${font}", sans-serif, 'Noto Sans SC'`;
+    }
+  };
+
   return `
     ${sel} > div {
-      font-family: ${theme.fontFamily}, 'Noto Sans SC', sans-serif !important;
+      font-family: ${getFontStack(theme.fontFamily)} !important;
       line-height: ${theme.lineSpacing} !important;
       ${needsPadding ? `padding-top: ${m.top}px !important; padding-right: ${m.right}px !important; padding-bottom: ${m.bottom}px !important; padding-left: ${m.left}px !important;` : ''}
       --base-body-size: ${fs.body};

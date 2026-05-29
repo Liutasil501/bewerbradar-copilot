@@ -12,8 +12,8 @@ const PUBLIC_PATHS = [
 ];
 
 function isPublicPath(pathname: string): boolean {
-  // Strip locale prefix: /zh/dashboard -> /dashboard, /en/ -> /
-  const withoutLocale = pathname.replace(/^\/(zh|en)/, '') || '/';
+  // Strip locale prefix: /zh/dashboard -> /dashboard, /en/ -> /, /de/ -> /
+  const withoutLocale = pathname.replace(/^\/(zh|en|de)/, '') || '/';
   return PUBLIC_PATHS.some((p) =>
     p === '/' ? withoutLocale === '/' : withoutLocale.startsWith(p)
   );
@@ -39,8 +39,8 @@ export default async function middleware(request: NextRequest) {
 
   if (!token) {
     // Determine locale from the path or default
-    const localeMatch = pathname.match(/^\/(zh|en)/);
-    const locale = localeMatch ? localeMatch[1] : 'zh';
+    const localeMatch = pathname.match(/^\/(zh|en|de)/);
+    const locale = localeMatch ? localeMatch[1] : 'de';
     const loginUrl = new URL(`/${locale}/login`, request.url);
     loginUrl.searchParams.set('callbackUrl', request.nextUrl.pathname + request.nextUrl.search);
     return NextResponse.redirect(loginUrl);
@@ -50,5 +50,5 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/(zh|en)/:path*', '/share/:path*'],
+  matcher: ['/', '/(zh|en|de)/:path*', '/share/:path*'],
 };

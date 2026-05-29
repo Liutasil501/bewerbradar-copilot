@@ -9,7 +9,7 @@ import { extractJson } from '@/lib/ai/extract-json';
 
 const GRAMMAR_CHECK_PROMPT = `You are an expert resume reviewer and writing coach. Analyze the provided resume sections for writing quality issues.
 
-IMPORTANT: Detect the primary language of the resume content. You MUST respond entirely in the same language as the resume. If the resume is written in Chinese, all your output (summary, suggestions, sectionTitle) must be in Chinese. If in English, respond in English. Match the resume's language exactly.
+IMPORTANT: Detect the primary language of the resume content. You MUST respond entirely in the same language as the resume. If the resume is written in Chinese, all your output (summary, suggestions, sectionTitle) must be in Chinese. If in English, respond in English. If in German, respond in German. Match the resume's language exactly.
 
 You must detect and report these types of issues:
 - grammar: Grammatical errors, incorrect tense, subject-verb disagreement, article misuse

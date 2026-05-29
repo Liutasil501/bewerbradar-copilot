@@ -13,6 +13,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useResumeStore } from '@/stores/resume-store';
+import { usePaywall } from '@/hooks/use-paywall';
+import { PricingModal } from '@/components/billing/pricing-modal';
 import {
   FileDown,
   FileText,
@@ -65,15 +67,18 @@ export function ExportDialog({ open, onOpenChange, resumeId }: ExportDialogProps
     }
   }, [open]);
 
-  const handleExport = useCallback(async () => {
-    setState('exporting');
-    setErrorMessage('');
+  const { checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
 
-    try {
-      // Save first if dirty
+  const handleExport = useCallback(() => {
+    checkPaywall('pro', async () => {
+      setState('exporting');
+      setErrorMessage('');
+
+      try {
+        // Save first if dirty
       if (isDirty) await save();
 
-      const fingerprint = localStorage.getItem('jade_fingerprint');
+      const fingerprint = localStorage.getItem('br_fingerprint');
       const queryFormat = selectedFormat === 'pdf-one-page' ? 'pdf' : selectedFormat;
       const fitParam = selectedFormat === 'pdf-one-page' ? '&fitOnePage=true' : '';
       const res = await fetch(`/api/resume/${resumeId}/export?format=${queryFormat}${fitParam}`, {
@@ -111,16 +116,18 @@ export function ExportDialog({ open, onOpenChange, resumeId }: ExportDialogProps
 
       setState('success');
       setTimeout(() => onOpenChange(false), 1500);
-    } catch (err: any) {
-      setState('error');
-      setErrorMessage(err.message || t('error'));
-    }
-  }, [resumeId, selectedFormat, currentResume, isDirty, save, onOpenChange, t]);
+      } catch (err: any) {
+        setState('error');
+        setErrorMessage(err.message || t('error'));
+      }
+    });
+  }, [resumeId, selectedFormat, currentResume, isDirty, save, onOpenChange, t, checkPaywall]);
 
   const isLoading = state === 'exporting';
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o && !isLoading) onOpenChange(false); }}>
+    <>
+    <Dialog open={open} onOpenChange={(o) => { if (!o && state !== 'exporting') onOpenChange(false); }}>
       <DialogContent className="sm:max-w-lg p-0 gap-0 overflow-hidden">
         <DialogHeader className="px-6 pt-6 pb-0">
           <DialogTitle className="flex items-center gap-2">
@@ -222,5 +229,7 @@ export function ExportDialog({ open, onOpenChange, resumeId }: ExportDialogProps
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    <PricingModal open={showPaywall} onOpenChange={setShowPaywall} requiredTier={requiredTier} />
+    </>
   );
 }

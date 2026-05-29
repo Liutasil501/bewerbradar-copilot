@@ -16,8 +16,10 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { InterviewCard } from './interview-card';
-import { Link } from '@/i18n/routing';
+import { useRouter } from '@/i18n/routing';
 import type { InterviewSession } from '@/types/interview';
+import { usePaywall } from '@/hooks/use-paywall';
+import { PricingModal } from '@/components/billing/pricing-modal';
 
 export function InterviewLobby() {
   const t = useTranslations('interview.lobby');
@@ -25,9 +27,11 @@ export function InterviewLobby() {
   const [sessions, setSessions] = useState<InterviewSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const router = useRouter();
+  const { checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
 
   useEffect(() => {
-    const fp = localStorage.getItem('jade_fingerprint');
+    const fp = localStorage.getItem('br_fingerprint');
     fetch('/api/interview', {
       headers: fp ? { 'x-fingerprint': fp } : {},
     })
@@ -39,7 +43,7 @@ export function InterviewLobby() {
 
   const handleDelete = async () => {
     if (!deleteId) return;
-    const fp = localStorage.getItem('jade_fingerprint');
+    const fp = localStorage.getItem('br_fingerprint');
     await fetch(`/api/interview/${deleteId}`, {
       method: 'DELETE',
       headers: fp ? { 'x-fingerprint': fp } : {},
@@ -52,12 +56,17 @@ export function InterviewLobby() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('title')}</h1>
-        <Link href="/interview/new">
-          <Button className="bg-brand hover:bg-brand-hover">
-            <Plus className="mr-2 h-4 w-4" />
-            {t('newInterview')}
-          </Button>
-        </Link>
+        <Button 
+          className="bg-brand hover:bg-brand-hover"
+          onClick={() => {
+            checkPaywall('premium', () => {
+              router.push('/interview/new');
+            });
+          }}
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          {t('newInterview')}
+        </Button>
       </div>
 
       {loading ? (
@@ -92,6 +101,8 @@ export function InterviewLobby() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      <PricingModal open={showPaywall} onOpenChange={setShowPaywall} requiredTier={requiredTier} />
     </div>
   );
 }

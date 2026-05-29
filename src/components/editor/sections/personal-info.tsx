@@ -153,11 +153,10 @@ export function PersonalInfoSection({ section, onUpdate }: Props) {
           onChange={(v) => onUpdate({ politicalStatus: v })}
           options={t('politicalStatusOptions').split(',').map((s) => ({ label: s, value: s }))}
         />
-        <EditableSelect
+        <EditableText
           label={t('ethnicity')}
           value={content.ethnicity || ''}
           onChange={(v) => onUpdate({ ethnicity: v })}
-          options={t('ethnicityOptions').split(',').map((s) => ({ label: s, value: s }))}
         />
       </FieldWrapper>
       <FieldWrapper>

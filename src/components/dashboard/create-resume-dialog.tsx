@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import {
   Dialog,
@@ -31,6 +31,7 @@ const ACCEPTED_EXTENSIONS = '.pdf,.png,.jpg,.jpeg,.webp';
 
 export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDialogProps) {
   const t = useTranslations();
+  const locale = useLocale();
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('template');
   const [title, setTitle] = useState('');
@@ -47,7 +48,7 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
   const handleCreate = async () => {
     setIsCreating(true);
     try {
-      const resume = await onCreate({ title: title || undefined, template });
+      const resume = await onCreate({ title: title || undefined, template, language: locale });
       if (resume) {
         resetAndClose();
         router.push(`/editor/${resume.id}`);
@@ -77,7 +78,7 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
     setParseError('');
 
     try {
-      const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('jade_fingerprint') : null;
+      const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
       const formData = new FormData();
       formData.append('file', file);
       formData.append('template', template);

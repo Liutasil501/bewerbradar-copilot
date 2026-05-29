@@ -2,7 +2,7 @@
 
 import { Bookmark, Lightbulb, SkipForward } from 'lucide-react';
 import { useInterviewStore } from '@/stores/interview-store';
-import { HINT_MESSAGE, SKIP_MESSAGE } from '@/lib/interview/constants';
+import { useTranslations } from 'next-intl';
 
 interface CandidateMessageProps {
   content: string;
@@ -10,13 +10,15 @@ interface CandidateMessageProps {
 }
 
 export function CandidateMessage({ content, messageId }: CandidateMessageProps) {
+  const tRoom = useTranslations('interview.room');
+  const tReport = useTranslations('interview.report');
   const { markedMessages, hintedQuestions, skippedQuestions } = useInterviewStore();
   const isMarked = markedMessages.has(messageId);
   const isHinted = hintedQuestions.has(messageId);
   const isSkipped = skippedQuestions.has(messageId);
 
-  const isHintTrigger = content.trim() === HINT_MESSAGE;
-  const isSkipTrigger = content.trim() === SKIP_MESSAGE;
+  const isHintTrigger = content.trim() === tRoom('hintMessage');
+  const isSkipTrigger = content.trim() === tRoom('skipMessage');
   const isSystemAction = isHintTrigger || isSkipTrigger;
 
   // System action messages get a distinct style
@@ -26,7 +28,7 @@ export function CandidateMessage({ content, messageId }: CandidateMessageProps) 
         <div className="flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">
           {isHintTrigger && <Lightbulb className="h-3 w-3 text-amber-500" />}
           {isSkipTrigger && <SkipForward className="h-3 w-3 text-zinc-400" />}
-          <span>{isHintTrigger ? '请求了提示' : '跳过了此题'}</span>
+          <span>{isHintTrigger ? tReport('usedHint') : tReport('skippedQuestion')}</span>
         </div>
       </div>
     );

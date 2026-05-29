@@ -52,7 +52,7 @@ export function GenerateResumeDialog({ open, onOpenChange, onCreated }: Generate
     setError('');
 
     try {
-      const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('jade_fingerprint') : null;
+      const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
       const res = await fetch('/api/ai/generate-resume', {
         method: 'POST',
         headers: {

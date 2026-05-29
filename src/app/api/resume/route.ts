@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getTranslations } from 'next-intl/server';
 import { resumeRepository } from '@/lib/db/repositories/resume.repository';
 import { resolveUser, getUserIdFromRequest } from '@/lib/auth/helpers';
 import { DEFAULT_SECTIONS } from '@/lib/constants';
@@ -30,11 +31,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { title, template, language, sections, themeConfig } = body;
 
+    const reqLanguage = language || 'de';
+    const defaultTitle = reqLanguage === 'en' ? 'Untitled Resume' : reqLanguage === 'zh' ? '未命名简历' : 'Unbenannter Lebenslauf';
+
     const resume = await resumeRepository.create({
       userId: user.id,
-      title: title || '未命名简历',
+      title: title || defaultTitle,
       template: template || 'classic',
-      language: language || 'zh',
+      language: reqLanguage,
       ...(themeConfig ? { themeConfig } : {}),
     });
 
@@ -54,10 +58,10 @@ export async function POST(request: NextRequest) {
         }
       } else {
         // Default mode: create empty sections
-        const lang = resume.language || 'zh';
+        const tSections = await getTranslations({ locale: reqLanguage, namespace: 'sections' });
         for (let i = 0; i < DEFAULT_SECTIONS.length; i++) {
           const s = DEFAULT_SECTIONS[i];
-          const sectionTitle = lang === 'en' ? s.titleEn : s.titleZh;
+          const sectionTitle = tSections(s.type);
           let content: unknown = {};
 
           if (s.type === 'personal_info') {

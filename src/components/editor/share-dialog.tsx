@@ -36,6 +36,8 @@ import {
   Lock,
   Pencil,
 } from 'lucide-react';
+import { usePaywall } from '@/hooks/use-paywall';
+import { PricingModal } from '@/components/billing/pricing-modal';
 
 interface ShareDialogProps {
   open: boolean;
@@ -90,7 +92,7 @@ export function ShareDialog({ open, onOpenChange, resumeId }: ShareDialogProps) 
   const [editLabelValue, setEditLabelValue] = useState('');
 
   const getHeaders = () => {
-    const fingerprint = localStorage.getItem('jade_fingerprint');
+    const fingerprint = localStorage.getItem('br_fingerprint');
     return {
       'Content-Type': 'application/json',
       ...(fingerprint ? { 'x-fingerprint': fingerprint } : {}),
@@ -120,8 +122,11 @@ export function ShareDialog({ open, onOpenChange, resumeId }: ShareDialogProps) 
     fetchShares();
   }, [open, fetchShares]);
 
-  const handleCreate = async () => {
-    setCreating(true);
+  const { checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
+
+  const handleCreate = () => {
+    checkPaywall('pro', async () => {
+      setCreating(true);
     try {
       const res = await fetch(`/api/resume/${resumeId}/shares`, {
         method: 'POST',
@@ -139,9 +144,10 @@ export function ShareDialog({ open, onOpenChange, resumeId }: ShareDialogProps) 
       }
     } catch {
       // silent
-    } finally {
-      setCreating(false);
-    }
+      } finally {
+        setCreating(false);
+      }
+    });
   };
 
   const handleToggleActive = async (share: ShareItem) => {
@@ -454,6 +460,8 @@ export function ShareDialog({ open, onOpenChange, resumeId }: ShareDialogProps) 
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      <PricingModal open={showPaywall} onOpenChange={setShowPaywall} requiredTier={requiredTier} />
     </>
   );
 }

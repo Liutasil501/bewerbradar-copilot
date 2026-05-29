@@ -320,3 +320,20 @@
   0%, 100% { transform: scaleY(0.4); }
   50% { transform: scaleY(1.2); }
 }
+
+@media print {
+  body::after {
+    content: "Upgrade to Pro to export PDFs!";
+    display: block !important;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    color: rgba(0,0,0,0.2);
+    font-weight: bold;
+    z-index: 9999;
+    text-align: center;
+    pointer-events: none;
+  }
+}

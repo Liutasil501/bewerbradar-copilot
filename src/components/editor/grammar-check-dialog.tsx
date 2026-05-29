@@ -28,6 +28,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useEditorStore } from '@/stores/editor-store';
 import { getAIHeaders } from '@/stores/settings-store';
+import { usePaywall } from '@/hooks/use-paywall';
+import { PricingModal } from '@/components/billing/pricing-modal';
 
 interface GrammarIssue {
   sectionId: string;
@@ -243,7 +245,7 @@ export function GrammarCheckDialog({ open, onOpenChange, resumeId }: GrammarChec
   const [deleteToConfirm, setDeleteToConfirm] = useState<string | null>(null);
 
   const getAuthHeaders = () => {
-    const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('jade_fingerprint') : null;
+    const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
     return {
       'Content-Type': 'application/json',
       ...(fingerprint ? { 'x-fingerprint': fingerprint } : {}),
@@ -271,9 +273,12 @@ export function GrammarCheckDialog({ open, onOpenChange, resumeId }: GrammarChec
     }
   }, [open, activeTab, fetchHistory]);
 
-  const handleCheck = async () => {
-    setIsChecking(true);
-    setError('');
+  const { checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
+
+  const handleCheck = () => {
+    checkPaywall('premium', async () => {
+      setIsChecking(true);
+      setError('');
 
     try {
       const res = await fetch('/api/ai/grammar-check', {
@@ -290,11 +295,12 @@ export function GrammarCheckDialog({ open, onOpenChange, resumeId }: GrammarChec
       const data: GrammarCheckResult = await res.json();
       setResult(data);
       fetchHistory();
-    } catch (err: any) {
-      setError(err.message || 'Failed to check grammar');
-    } finally {
-      setIsChecking(false);
-    }
+      } catch (err: any) {
+        setError(err.message || 'Failed to check grammar');
+      } finally {
+        setIsChecking(false);
+      }
+    });
   };
 
   const handleCheckAgain = () => {
@@ -569,6 +575,8 @@ export function GrammarCheckDialog({ open, onOpenChange, resumeId }: GrammarChec
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+    
+    <PricingModal open={showPaywall} onOpenChange={setShowPaywall} requiredTier={requiredTier} />
     </>
   );
 }

@@ -17,6 +17,8 @@ import { LanguageSelect } from '@/components/ui/language-select';
 import { Languages, Loader2, CheckCircle2, AlertCircle, FileEdit, FilePlus2 } from 'lucide-react';
 import { getAIHeaders } from '@/stores/settings-store';
 import { cn } from '@/lib/utils';
+import { usePaywall } from '@/hooks/use-paywall';
+import { PricingModal } from '@/components/billing/pricing-modal';
 
 interface TranslateDialogProps {
   open: boolean;
@@ -67,7 +69,7 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
   const currentResume = useResumeStore((s) => s.currentResume);
 
   const currentLanguage = currentResume?.language || 'en';
-  const defaultTarget = currentLanguage === 'zh' ? 'en' : 'zh';
+  const defaultTarget = currentLanguage === 'en' ? 'de' : 'en';
 
   const [targetLanguage, setTargetLanguage] = useState(defaultTarget);
   const [mode, setMode] = useState<TranslateMode>('overwrite');
@@ -86,24 +88,27 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
       setFailedCount(0);
       setMode('overwrite');
       const lang = useResumeStore.getState().currentResume?.language || 'en';
-      setTargetLanguage(lang === 'zh' ? 'en' : 'zh');
+      setTargetLanguage(lang === 'en' ? 'de' : 'en');
     } else {
       abortRef.current?.abort();
       abortRef.current = null;
     }
   }, [open]);
 
-  const handleTranslate = useCallback(async () => {
-    setState('translating');
-    setErrorMessage('');
-    setProgress({ completed: 0, total: 0 });
+  const { checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
+
+  const handleTranslate = useCallback(() => {
+    checkPaywall('premium', async () => {
+      setState('translating');
+      setErrorMessage('');
+      setProgress({ completed: 0, total: 0 });
     setFailedCount(0);
 
     const controller = new AbortController();
     abortRef.current = controller;
 
     try {
-      const fingerprint = localStorage.getItem('jade_fingerprint');
+      const fingerprint = localStorage.getItem('br_fingerprint');
       const res = await fetch('/api/ai/translate', {
         method: 'POST',
         headers: {
@@ -166,18 +171,20 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
               });
             }
 
-            setTimeout(() => {
-              onOpenChange(false);
-            }, 1500);
+              setTimeout(() => {
+                onOpenChange(false);
+              }, 1500);
+            }
           }
+        });
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          setState('error');
+          setErrorMessage(err.message || 'Translation failed');
         }
-      });
-    } catch (err: any) {
-      if (err.name === 'AbortError') return;
-      setState('error');
-      setErrorMessage(err.message || t('error'));
-    }
-  }, [resumeId, targetLanguage, mode, onOpenChange, t, router]);
+      }
+    });
+  }, [resumeId, targetLanguage, mode, checkPaywall, onOpenChange, t, router]);
 
   const progressPercent = progress.total > 0
     ? Math.round((progress.completed / progress.total) * 100)
@@ -189,6 +196,7 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
   ];
 
   return (
+    <>
     <Dialog open={open} onOpenChange={(o) => { if (!o && state !== 'translating') onOpenChange(false); }}>
       <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
         <DialogHeader className="px-6 pt-6 pb-0">
@@ -334,5 +342,8 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    
+    <PricingModal open={showPaywall} onOpenChange={setShowPaywall} requiredTier={requiredTier} />
+    </>
   );
 }

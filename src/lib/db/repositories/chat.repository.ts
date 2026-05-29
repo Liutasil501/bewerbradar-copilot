@@ -59,7 +59,7 @@ export const chatRepository = {
     await db.insert(chatSessions).values({
       id,
       resumeId: data.resumeId,
-      title: data.title || '新对话',
+      title: data.title || 'New Chat',
     });
     return this.findSessionWithMessages(id);
   },

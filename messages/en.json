@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "JadeAI",
+    "appName": "BewerbRadar",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -13,7 +13,51 @@
     "back": "Back",
     "search": "Search",
     "noData": "No data",
-    "rename": "Rename"
+    "rename": "Rename",
+    "copySuffix": " (Copy)",
+    "untitledResume": "Untitled Resume",
+    "newChat": "New Chat"
+  },
+  "mockResume": {
+    "jobTitle": "Senior Software Engineer",
+    "location": "Berlin, Germany",
+    "summary": "Full-stack engineer with 8+ years of experience building scalable web applications. Passionate about clean architecture, developer experience, and mentoring teams.",
+    "experience": {
+      "company1": "TechCorp Inc.",
+      "description1": "Led a team of 6 engineers building the next-gen analytics platform.",
+      "highlight1_1": "Reduced page load time by 40% through code splitting and lazy loading",
+      "highlight1_2": "Designed microservices architecture serving 2M+ daily active users",
+      "company2": "StartupXYZ",
+      "description2": "Built core product features from 0 to 1.",
+      "highlight2_1": "Implemented real-time collaboration features using WebSockets",
+      "highlight2_2": "Improved CI/CD pipeline reducing deployment time by 60%"
+    },
+    "education": {
+      "institution": "Technical University of Munich",
+      "degree": "Master of Science",
+      "field": "Computer Science",
+      "location": "Munich, Germany",
+      "highlight1": "Dean's List",
+      "highlight2": "ACM Programming Contest Finalist"
+    },
+    "projects": {
+      "description": "A headless CMS built with Next.js and GraphQL.",
+      "highlight1": "1.2k+ GitHub stars",
+      "highlight2": "Used by 50+ companies"
+    }
+  },
+  "sections": {
+    "personal_info": "Personal Info",
+    "summary": "Summary",
+    "work_experience": "Work Experience",
+    "education": "Education",
+    "skills": "Skills",
+    "projects": "Projects",
+    "certifications": "Certifications",
+    "languages": "Languages",
+    "github": "GitHub",
+    "qr_codes": "QR Codes",
+    "custom": "Custom Section"
   },
   "auth": {
     "login": "Log in",
@@ -157,21 +201,21 @@
       "jobTitle": "Job Title",
       "age": "Age",
       "gender": "Gender",
-      "politicalStatus": "Political Status",
-      "ethnicity": "Ethnicity",
-      "hometown": "Hometown",
+      "politicalStatus": "Pronouns",
+      "ethnicity": "Nationality",
+      "hometown": "Place of Birth",
       "maritalStatus": "Marital Status",
       "yearsOfExperience": "Experience",
       "educationLevel": "Education Level",
       "genderOptions": "Male,Female",
-      "politicalStatusOptions": "Citizen,CYL Member,CPC Probationary Member,CPC Member,Democratic Party",
-      "ethnicityOptions": "Han,Mongolian,Hui,Tibetan,Uyghur,Miao,Yi,Zhuang,Buyei,Korean,Manchu,Dong,Yao,Bai,Tujia,Hani,Kazakh,Dai,Li,Lisu,Va,She,Gaoshan,Lahu,Sui,Dongxiang,Naxi,Jingpo,Kirgiz,Tu,Daur,Mulao,Qiang,Blang,Salar,Maonan,Gelao,Xibe,Achang,Pumi,Tajik,Nu,Uzbek,Russian,Ewenki,De'ang,Bonan,Yugur,Jing,Tatar,Derung,Oroqen,Hezhen,Monba,Lhoba,Jino",
+      "politicalStatusOptions": "He/Him,She/Her,They/Them,Prefer not to say",
+      "ethnicityOptions": "American,British,Canadian,Australian,European,Other",
       "maritalStatusOptions": "Single,Married,Divorced",
       "educationLevelOptions": "Middle School,High School,Vocational,Associate,Bachelor,Master,PhD,Postdoc",
       "email": "Email",
       "phone": "Phone",
-      "wechat": "WeChat",
-      "location": "Location",
+      "wechat": "WhatsApp",
+      "location": "Address",
       "website": "Website",
       "company": "Company",
       "position": "Position",
@@ -209,9 +253,18 @@
       "clear": "Clear",
       "dateDisplay": "{month} {year}",
       "months": {
-        "01": "Jan", "02": "Feb", "03": "Mar", "04": "Apr",
-        "05": "May", "06": "Jun", "07": "Jul", "08": "Aug",
-        "09": "Sep", "10": "Oct", "11": "Nov", "12": "Dec"
+        "10": "Oct",
+        "11": "Nov",
+        "12": "Dec",
+        "01": "Jan",
+        "02": "Feb",
+        "03": "Mar",
+        "04": "Apr",
+        "05": "May",
+        "06": "Jun",
+        "07": "Jul",
+        "08": "Aug",
+        "09": "Sep"
       }
     }
   },
@@ -487,7 +540,7 @@
     "description": "Import a previously exported JSON file to replace current content",
     "dashboardDescription": "Import a previously exported JSON file to create a new resume",
     "selectFile": "Click to select or drag a .json file here",
-    "dragHint": "Supports .json files exported from JadeAI",
+    "dragHint": "Supports .json files exported from BewerbRadar",
     "importing": "Importing...",
     "success": "Import successful!",
     "error": "Import failed. Please try again.",
@@ -684,7 +737,7 @@
     },
     "cta": {
       "title": "Ready to Build Your Best Resume?",
-      "subtitle": "Join thousands of job seekers who have landed interviews with JadeAI. No sign-up required.",
+      "subtitle": "Join thousands of job seekers who have landed interviews with BewerbRadar. No sign-up required.",
       "button": "Create Your Resume Now"
     },
     "footer": {
@@ -708,7 +761,7 @@
         "terms": "Terms of Service",
         "cookies": "Cookie Policy"
       },
-      "copyright": "© {year} JadeAI. All rights reserved."
+      "copyright": "© {year} BewerbRadar. All rights reserved."
     }
   },
   "linkedinPhoto": {
@@ -765,7 +818,7 @@
     "submit": "View Resume",
     "invalidPassword": "Invalid password. Please try again.",
     "notFound": "This resume is not available or has been removed.",
-    "viewOnJadeAI": "View on JadeAI"
+    "viewOnBewerbRadar": "View on BewerbRadar"
   },
   "interview": {
     "nav": "Mock Interview",
@@ -835,7 +888,10 @@
       "roundComplete": "This round is complete",
       "allComplete": "All interview rounds completed",
       "generateReport": "Generate Report",
-      "generatingReport": "Generating report..."
+      "generatingReport": "Generating report...",
+      "initTrigger": "Hello, I am ready, let's start the interview.",
+      "hintMessage": "I'm not completely sure about the direction of this question, could you give me some guidance or hints?",
+      "skipMessage": "I don't have a good answer for this right now, can we move to another question?"
     },
     "report": {
       "title": "Interview Report",
@@ -885,5 +941,30 @@
       "leader": "Leader",
       "custom": "Custom"
     }
+  },
+  "billing": {
+    "titlePremium": "Unlock AI Power",
+    "titlePro": "Upgrade your Resume",
+    "descPremium": "You need a Premium subscription to use AI features like Mock Interviews and Cover Letters.",
+    "descPro": "You need a Pro subscription to export PDFs and share your resume publicly.",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "save20": "Save 20%",
+    "proTitle": "Pro",
+    "proDesc": "Perfect for job seekers who need a professional PDF.",
+    "premiumTitle": "Premium",
+    "premiumDesc": "The ultimate AI career toolkit.",
+    "proFeat1": "Unlimited Resumes",
+    "proFeat2": "All Premium Templates",
+    "proFeat3": "PDF & DOCX Exports",
+    "proFeat4": "Public Sharing",
+    "premiumFeat1": "Everything in Pro",
+    "premiumFeat2": "AI Cover Letter Generator",
+    "premiumFeat3": "AI Mock Interviews",
+    "premiumFeat4": "AI Job Match Analysis",
+    "currentPlan": "Current Plan",
+    "upgrade": "Upgrade to",
+    "loading": "Processing...",
+    "popular": "Most Popular"
   }
 }

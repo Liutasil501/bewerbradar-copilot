@@ -4,7 +4,7 @@ import './globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
-const appName = process.env.APP_NAME || 'JadeAI';
+const appName = process.env.APP_NAME || 'BewerbRadar';
 
 export const metadata: Metadata = {
   title: `${appName} - AI Resume Builder`,
@@ -24,7 +24,7 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var b=localStorage.getItem('jadeai-brand');if(b==='boss'){b='mint';localStorage.setItem('jadeai-brand','mint');}else if(b==='jade'){b='blue';localStorage.setItem('jadeai-brand','blue');}if(b==='blue'||b==='pink'){document.documentElement.setAttribute('data-brand',b);}}catch(e){}})();`,
+            __html: `(function(){try{var b=localStorage.getItem('bewerbradar-brand');if(b==='boss'){b='mint';localStorage.setItem('bewerbradar-brand','mint');}else if(b==='jade'){b='blue';localStorage.setItem('bewerbradar-brand','blue');}if(b==='blue'||b==='pink'){document.documentElement.setAttribute('data-brand',b);}}catch(e){}})();`,
           }}
         />
         {children}

@@ -22,7 +22,14 @@ export async function POST(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const duplicated = await resumeRepository.duplicate(id, user.id);
+    // Get translation for " (Copy)" suffix based on user locale
+    const reqLanguage = request.headers.get('x-next-intl-locale') || 'de';
+    const { getTranslations } = await import('next-intl/server');
+    const t = await getTranslations({ locale: reqLanguage, namespace: 'common' });
+    const copySuffix = t('copySuffix');
+    const titleOverride = `${resume.title}${copySuffix}`;
+
+    const duplicated = await resumeRepository.duplicate(id, user.id, titleOverride);
     return NextResponse.json(duplicated, { status: 201 });
   } catch (error) {
     console.error('POST /api/resume/[id]/duplicate error:', error);

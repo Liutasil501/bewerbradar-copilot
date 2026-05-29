@@ -16,6 +16,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { LanguageSelect } from '@/components/ui/language-select';
 import { cn } from '@/lib/utils';
 import { getAIHeaders } from '@/stores/settings-store';
+import { usePaywall } from '@/hooks/use-paywall';
+import { PricingModal } from '@/components/billing/pricing-modal';
 
 interface CoverLetterDialogProps {
   open: boolean;
@@ -41,13 +43,16 @@ export function CoverLetterDialog({ open, onOpenChange, resumeId }: CoverLetterD
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
 
-  const handleGenerate = async () => {
-    if (!jobDescription.trim()) return;
-    setIsGenerating(true);
-    setError('');
+  const { checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
 
-    try {
-      const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('jade_fingerprint') : null;
+  const handleGenerate = () => {
+    checkPaywall('premium', async () => {
+      if (!jobDescription.trim()) return;
+      setIsGenerating(true);
+      setError('');
+
+      try {
+      const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
       const res = await fetch('/api/ai/cover-letter', {
         method: 'POST',
         headers: {
@@ -63,13 +68,14 @@ export function CoverLetterDialog({ open, onOpenChange, resumeId }: CoverLetterD
         throw new Error(data.error || 'Generation failed');
       }
 
-      const data: CoverLetterResult = await res.json();
-      setResult(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to generate cover letter');
-    } finally {
-      setIsGenerating(false);
-    }
+        const data: CoverLetterResult = await res.json();
+        setResult(data);
+      } catch (err: any) {
+        setError(err.message || t('error'));
+      } finally {
+        setIsGenerating(false);
+      }
+    });
   };
 
   const handleCopy = async () => {
@@ -115,6 +121,7 @@ export function CoverLetterDialog({ open, onOpenChange, resumeId }: CoverLetterD
   };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose(); }}>
       <DialogContent className="sm:max-w-2xl p-0 gap-0 overflow-hidden">
         <DialogHeader className="px-6 pt-6 pb-0">
@@ -269,5 +276,8 @@ export function CoverLetterDialog({ open, onOpenChange, resumeId }: CoverLetterD
         )}
       </DialogContent>
     </Dialog>
+    
+    <PricingModal open={showPaywall} onOpenChange={setShowPaywall} requiredTier={requiredTier} />
+    </>
   );
 }

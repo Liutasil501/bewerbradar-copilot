@@ -7,7 +7,6 @@ import { useRouter } from '@/i18n/routing';
 import { useInterviewStore } from '@/stores/interview-store';
 import { useInterviewChat } from '@/hooks/use-interview-chat';
 import { useSettingsStore } from '@/stores/settings-store';
-import { INIT_TRIGGER } from '@/lib/interview/constants';
 import { ProgressBar } from './progress-bar';
 import { InterviewerBanner } from './interviewer-banner';
 import { MessageList } from './message-list';
@@ -74,7 +73,7 @@ export function InterviewRoom({ sessionId, initialMessages }: InterviewRoomProps
       sentInitRef.current !== currentRound.id
     ) {
       sentInitRef.current = currentRound.id;
-      sendMessage({ text: INIT_TRIGGER });
+      sendMessage({ text: t('initTrigger') });
     }
   }, [currentRound?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -98,7 +97,7 @@ export function InterviewRoom({ sessionId, initialMessages }: InterviewRoomProps
     setCurrentRoundIndex(index);
 
     // Fetch messages for this round
-    const fp = localStorage.getItem('jade_fingerprint');
+    const fp = localStorage.getItem('br_fingerprint');
     try {
       const res = await fetch(`/api/interview/${sessionId}`, {
         headers: fp ? { 'x-fingerprint': fp } : {},

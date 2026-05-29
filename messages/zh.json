@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "JadeAI",
+    "appName": "BewerbRadar",
     "save": "保存",
     "cancel": "取消",
     "delete": "删除",
@@ -13,7 +13,23 @@
     "back": "返回",
     "search": "搜索",
     "noData": "暂无数据",
-    "rename": "重命名"
+    "rename": "重命名",
+    "copySuffix": " (副本)",
+    "untitledResume": "未命名简历",
+    "newChat": "新对话"
+  },
+  "sections": {
+    "personal_info": "个人信息",
+    "summary": "个人简介",
+    "work_experience": "工作经历",
+    "education": "教育背景",
+    "skills": "技能特长",
+    "projects": "项目经历",
+    "certifications": "资格证书",
+    "languages": "语言能力",
+    "github": "GitHub 项目",
+    "qr_codes": "二维码",
+    "custom": "自定义模块"
   },
   "auth": {
     "login": "登录",
@@ -209,9 +225,18 @@
       "clear": "清除",
       "dateDisplay": "{year}年{month}",
       "months": {
-        "01": "1月", "02": "2月", "03": "3月", "04": "4月",
-        "05": "5月", "06": "6月", "07": "7月", "08": "8月",
-        "09": "9月", "10": "10月", "11": "11月", "12": "12月"
+        "10": "10月",
+        "11": "11月",
+        "12": "12月",
+        "01": "1月",
+        "02": "2月",
+        "03": "3月",
+        "04": "4月",
+        "05": "5月",
+        "06": "6月",
+        "07": "7月",
+        "08": "8月",
+        "09": "9月"
       }
     }
   },
@@ -487,7 +512,7 @@
     "description": "导入之前导出的 JSON 文件，替换当前简历内容",
     "dashboardDescription": "导入之前导出的 JSON 文件，创建新简历",
     "selectFile": "点击选择或拖拽 .json 文件到此处",
-    "dragHint": "支持从 JadeAI 导出的 .json 文件",
+    "dragHint": "支持从 BewerbRadar 导出的 .json 文件",
     "importing": "导入中...",
     "success": "导入成功！",
     "error": "导入失败，请重试。",
@@ -684,7 +709,7 @@
     },
     "cta": {
       "title": "准备好打造你的最佳简历了吗？",
-      "subtitle": "已有数千名求职者通过 JadeAI 收获面试机会。无需注册，即刻开始。",
+      "subtitle": "已有数千名求职者通过 BewerbRadar 收获面试机会。无需注册，即刻开始。",
       "button": "立即创建简历"
     },
     "footer": {
@@ -708,7 +733,7 @@
         "terms": "服务条款",
         "cookies": "Cookie 政策"
       },
-      "copyright": "© {year} JadeAI. 保留所有权利。"
+      "copyright": "© {year} BewerbRadar. 保留所有权利。"
     }
   },
   "linkedinPhoto": {
@@ -765,7 +790,7 @@
     "submit": "查看简历",
     "invalidPassword": "密码错误，请重试。",
     "notFound": "此简历不存在或已被删除。",
-    "viewOnJadeAI": "前往 JadeAI"
+    "viewOnBewerbRadar": "前往 BewerbRadar"
   },
   "interview": {
     "nav": "面试模拟",
@@ -835,7 +860,10 @@
       "roundComplete": "本轮面试结束",
       "allComplete": "所有面试轮次已完成",
       "generateReport": "生成面试报告",
-      "generatingReport": "正在生成报告..."
+      "generatingReport": "正在生成报告...",
+      "initTrigger": "你好，我准备好了，请开始面试。",
+      "hintMessage": "这个问题我不太确定方向，能给我一些思路上的引导吗？",
+      "skipMessage": "这个问题我暂时没有太好的思路，能换一个问题吗？"
     },
     "report": {
       "title": "面试报告",
@@ -885,5 +913,30 @@
       "leader": "Leader面",
       "custom": "自定义"
     }
+  },
+  "billing": {
+    "titlePremium": "解锁AI功能",
+    "titlePro": "升级您的简历",
+    "descPremium": "您需要高级订阅才能使用AI面试和求职信等功能。",
+    "descPro": "您需要专业订阅才能导出PDF并公开分享您的简历。",
+    "monthly": "每月",
+    "yearly": "每年",
+    "save20": "节省20%",
+    "proTitle": "专业版",
+    "proDesc": "非常适合需要专业PDF的求职者。",
+    "premiumTitle": "高级版",
+    "premiumDesc": "终极AI职业工具包。",
+    "proFeat1": "无限简历",
+    "proFeat2": "所有高级模板",
+    "proFeat3": "PDF和DOCX导出",
+    "proFeat4": "公开分享",
+    "premiumFeat1": "专业版的所有功能",
+    "premiumFeat2": "AI求职信生成器",
+    "premiumFeat3": "AI模拟面试",
+    "premiumFeat4": "AI职位匹配分析",
+    "currentPlan": "当前计划",
+    "upgrade": "升级到",
+    "loading": "处理中...",
+    "popular": "最受欢迎"
   }
 }

@@ -9,7 +9,7 @@ import { extractJson } from '@/lib/ai/extract-json';
 
 const JD_ANALYSIS_PROMPT = `You are an expert resume analyst and career coach. Analyze the match between the provided resume and job description.
 
-IMPORTANT: Detect the primary language of the resume content. You MUST respond entirely in the same language as the resume. If the resume is written in Chinese, all your output (summary, suggestions, keywords) must be in Chinese. If in English, respond in English. Match the resume's language exactly.
+IMPORTANT: Detect the primary language of the resume content. You MUST respond entirely in the same language as the resume. If the resume is written in Chinese, all your output (summary, suggestions, keywords) must be in Chinese. If in English, respond in English. If in German, respond in German. Match the resume's language exactly.
 
 Your analysis should be thorough and actionable. You MUST return a JSON object with these exact fields:
 - overallScore (number 0-100): Overall match rating

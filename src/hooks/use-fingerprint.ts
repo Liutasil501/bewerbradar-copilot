@@ -19,7 +19,7 @@ export function useFingerprint() {
     async function getFingerprint() {
       try {
         // Check localStorage first
-        const stored = localStorage.getItem('jade_fingerprint');
+        const stored = localStorage.getItem('br_fingerprint');
         if (stored) {
           setFingerprint(stored);
           setIsLoading(false);
@@ -30,12 +30,12 @@ export function useFingerprint() {
         const result = await fp.get();
         const visitorId = result.visitorId;
 
-        localStorage.setItem('jade_fingerprint', visitorId);
+        localStorage.setItem('br_fingerprint', visitorId);
         setFingerprint(visitorId);
       } catch {
         // Fallback: generate a random ID
         const fallbackId = generateId();
-        localStorage.setItem('jade_fingerprint', fallbackId);
+        localStorage.setItem('br_fingerprint', fallbackId);
         setFingerprint(fallbackId);
       } finally {
         setIsLoading(false);

@@ -9,6 +9,14 @@ export const users = sqliteTable('users', {
   fingerprint: text('fingerprint').unique(),
   authType: text('auth_type', { enum: ['oauth', 'fingerprint'] }).notNull(),
   settings: text('settings', { mode: 'json' }).default('{}'),
+  // Stripe integration
+  stripeCustomerId: text('stripe_customer_id').unique(),
+  stripeSubscriptionId: text('stripe_subscription_id').unique(),
+  stripePriceId: text('stripe_price_id'),
+  stripeCurrentPeriodEnd: integer('stripe_current_period_end', { mode: 'timestamp' }),
+  subscriptionStatus: text('subscription_status'),
+  subscriptionPlan: text('subscription_plan', { enum: ['free', 'pro', 'premium'] }).notNull().default('free'),
+  
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 });
@@ -29,11 +37,11 @@ export const authAccounts = sqliteTable('auth_accounts', {
 export const resumes = sqliteTable('resumes', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   userId: text('user_id').notNull().references(() => users.id),
-  title: text('title').notNull().default('未命名简历'),
+  title: text('title').notNull().default('Unbenannter Lebenslauf'),
   template: text('template').notNull().default('classic'),
   themeConfig: text('theme_config', { mode: 'json' }).default('{}'),
   isDefault: integer('is_default', { mode: 'boolean' }).notNull().default(false),
-  language: text('language').notNull().default('zh'),
+  language: text('language').notNull().default('en'),
   shareToken: text('share_token'),
   isPublic: integer('is_public', { mode: 'boolean' }).notNull().default(false),
   sharePassword: text('share_password'),
@@ -57,7 +65,7 @@ export const resumeSections = sqliteTable('resume_sections', {
 export const chatSessions = sqliteTable('chat_sessions', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   resumeId: text('resume_id').notNull().references(() => resumes.id, { onDelete: 'cascade' }),
-  title: text('title').notNull().default('新对话'),
+  title: text('title').notNull().default('New Chat'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 });

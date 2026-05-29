@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `subscription_plan` text DEFAULT 'free' NOT NULL;

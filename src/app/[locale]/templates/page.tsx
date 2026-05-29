@@ -28,7 +28,7 @@ const TEMPLATES_TOUR_STEPS: TourStepConfig[] = [
 // Stable date to avoid SSR/client hydration mismatch
 const MOCK_DATE = new Date('2025-01-01T00:00:00Z');
 
-function buildMockResume(template: string): Resume {
+function buildMockResume(template: string, tm: (key: string) => string, ts: (key: string) => string): Resume {
   return ({
     id: 'mock',
     userId: 'mock',
@@ -50,18 +50,18 @@ function buildMockResume(template: string): Resume {
         id: 's1',
         resumeId: 'mock',
         type: 'personal_info',
-        title: 'Personal Info',
+        title: ts('personal_info'),
         sortOrder: 0,
         visible: true,
         content: {
-          fullName: 'Alex Chen',
-          jobTitle: 'Senior Software Engineer',
-          email: 'alex@example.com',
-          phone: '+1 (555) 123-4567',
-          location: 'San Francisco, CA',
-          website: 'https://alexchen.dev',
-          linkedin: 'linkedin.com/in/alexchen',
-          github: 'github.com/alexchen',
+          fullName: 'Max Mustermann',
+          jobTitle: tm('jobTitle'),
+          email: 'max@example.com',
+          phone: '+49 170 1234567',
+          location: tm('location'),
+          website: 'https://maxmustermann.dev',
+          linkedin: 'linkedin.com/in/maxmustermann',
+          github: 'github.com/maxmustermann',
         },
         createdAt: MOCK_DATE,
         updatedAt: MOCK_DATE,
@@ -70,11 +70,11 @@ function buildMockResume(template: string): Resume {
         id: 's2',
         resumeId: 'mock',
         type: 'summary',
-        title: 'Summary',
+        title: ts('summary'),
         sortOrder: 1,
         visible: true,
         content: {
-          text: 'Full-stack engineer with 8+ years of experience building scalable web applications. Passionate about clean architecture, developer experience, and mentoring teams.',
+          text: tm('summary'),
         },
         createdAt: MOCK_DATE,
         updatedAt: MOCK_DATE,
@@ -83,37 +83,37 @@ function buildMockResume(template: string): Resume {
         id: 's3',
         resumeId: 'mock',
         type: 'work_experience',
-        title: 'Work Experience',
+        title: ts('work_experience'),
         sortOrder: 2,
         visible: true,
         content: {
           items: [
             {
               id: 'w1',
-              company: 'TechCorp Inc.',
-              position: 'Senior Software Engineer',
-              location: 'San Francisco, CA',
+              company: tm('experience.company1'),
+              position: tm('jobTitle'),
+              location: tm('location'),
               startDate: '2021-03',
               endDate: null,
               current: true,
-              description: 'Led a team of 6 engineers building the next-gen analytics platform.',
+              description: tm('experience.description1'),
               highlights: [
-                'Reduced page load time by 40% through code splitting and lazy loading',
-                'Designed microservices architecture serving 2M+ daily active users',
+                tm('experience.highlight1_1'),
+                tm('experience.highlight1_2'),
               ],
             },
             {
               id: 'w2',
-              company: 'StartupXYZ',
+              company: tm('experience.company2'),
               position: 'Software Engineer',
               location: 'Remote',
               startDate: '2018-06',
               endDate: '2021-02',
               current: false,
-              description: 'Built core product features from 0 to 1.',
+              description: tm('experience.description2'),
               highlights: [
-                'Implemented real-time collaboration features using WebSockets',
-                'Improved CI/CD pipeline reducing deployment time by 60%',
+                tm('experience.highlight2_1'),
+                tm('experience.highlight2_2'),
               ],
             },
           ],
@@ -125,21 +125,21 @@ function buildMockResume(template: string): Resume {
         id: 's4',
         resumeId: 'mock',
         type: 'education',
-        title: 'Education',
+        title: ts('education'),
         sortOrder: 3,
         visible: true,
         content: {
           items: [
             {
               id: 'e1',
-              institution: 'University of California, Berkeley',
-              degree: 'Bachelor of Science',
-              field: 'Computer Science',
-              location: 'Berkeley, CA',
+              institution: tm('education.institution'),
+              degree: tm('education.degree'),
+              field: tm('education.field'),
+              location: tm('education.location'),
               startDate: '2014-09',
               endDate: '2018-05',
               gpa: '3.8',
-              highlights: ['Dean\'s List', 'ACM Programming Contest Finalist'],
+              highlights: [tm('education.highlight1'), tm('education.highlight2')],
             },
           ],
         },
@@ -150,7 +150,7 @@ function buildMockResume(template: string): Resume {
         id: 's5',
         resumeId: 'mock',
         type: 'skills',
-        title: 'Skills',
+        title: ts('skills'),
         sortOrder: 4,
         visible: true,
         content: {
@@ -167,7 +167,7 @@ function buildMockResume(template: string): Resume {
         id: 's6',
         resumeId: 'mock',
         type: 'projects',
-        title: 'Projects',
+        title: ts('projects'),
         sortOrder: 5,
         visible: true,
         content: {
@@ -175,10 +175,10 @@ function buildMockResume(template: string): Resume {
             {
               id: 'p1',
               name: 'OpenSource CMS',
-              url: 'https://github.com/alexchen/cms',
-              description: 'A headless CMS built with Next.js and GraphQL.',
+              url: 'https://github.com/maxmustermann/cms',
+              description: tm('projects.description'),
               technologies: ['Next.js', 'GraphQL', 'PostgreSQL'],
-              highlights: ['1.2k+ GitHub stars', 'Used by 50+ companies'],
+              highlights: [tm('projects.highlight1'), tm('projects.highlight2')],
             },
           ],
         },
@@ -189,7 +189,7 @@ function buildMockResume(template: string): Resume {
         id: 's7',
         resumeId: 'mock',
         type: 'certifications',
-        title: 'Certifications',
+        title: ts('certifications'),
         sortOrder: 6,
         visible: true,
         content: {
@@ -204,13 +204,13 @@ function buildMockResume(template: string): Resume {
         id: 's8',
         resumeId: 'mock',
         type: 'languages',
-        title: 'Languages',
+        title: ts('languages'),
         sortOrder: 7,
         visible: true,
         content: {
           items: [
-            { id: 'l1', language: 'English', proficiency: 'Native' },
-            { id: 'l2', language: 'Mandarin', proficiency: 'Native' },
+            { id: 'l1', language: 'German', proficiency: 'Native' },
+            { id: 'l2', language: 'English', proficiency: 'Fluent' },
           ],
         },
         createdAt: MOCK_DATE,
@@ -224,6 +224,8 @@ function buildMockResume(template: string): Resume {
 
 export default function TemplatesPage() {
   const t = useTranslations();
+  const tm = useTranslations('mockResume');
+  const ts = useTranslations('sections');
   const router = useRouter();
   const { createResume } = useResume();
   const { fingerprint } = useFingerprint();
@@ -241,7 +243,15 @@ export default function TemplatesPage() {
   const handleUseTemplate = async (template: string) => {
     setCreatingTemplate(template);
     try {
-      const resume = await createResume({ template });
+      const mockResume = buildMockResume(template, tm, ts);
+      const sections = mockResume.sections.map((s, i) => ({
+        type: s.type,
+        title: s.title,
+        sortOrder: i,
+        visible: s.visible,
+        content: s.content,
+      }));
+      const resume = await createResume({ template, sections });
       if (resume) {
         router.push(`/editor/${resume.id}`);
       }
@@ -270,7 +280,7 @@ export default function TemplatesPage() {
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {TEMPLATES.map((template, idx) => {
-          const mockResume = buildMockResume(template);
+          const mockResume = buildMockResume(template, tm, ts);
           const label = t(templateLabelKeys[template]);
           const isCreating = creatingTemplate === template;
           const isFirst = idx === 0;
@@ -350,7 +360,7 @@ export default function TemplatesPage() {
           <div className="flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {previewTemplate && (
               <div className="mx-auto w-full max-w-[794px] p-6">
-                <ResumePreview resume={buildMockResume(previewTemplate)} />
+                <ResumePreview resume={buildMockResume(previewTemplate, tm, ts)} />
               </div>
             )}
           </div>

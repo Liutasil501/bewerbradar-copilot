@@ -36,7 +36,7 @@ export const authAccounts = pgTable('auth_accounts', {
 export const resumes = pgTable('resumes', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   userId: text('user_id').notNull(),
-  title: text('title').notNull().default('未命名简历'),
+  title: text('title').notNull().default('Unbenannter Lebenslauf'),
   template: text('template').notNull().default('classic'),
   themeConfig: text('theme_config').default('{}'),
   isDefault: integer('is_default').notNull().default(0),

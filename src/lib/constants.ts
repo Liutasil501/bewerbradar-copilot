@@ -1,4 +1,4 @@
-export const APP_NAME = 'JadeAI';
+export const APP_NAME = 'BewerbRadar';
 
 export const SECTION_TYPES = [
   'personal_info',
@@ -16,13 +16,13 @@ export const SECTION_TYPES = [
 
 export type SectionType = (typeof SECTION_TYPES)[number];
 
-export const DEFAULT_SECTIONS: { type: SectionType; titleZh: string; titleEn: string }[] = [
-  { type: 'personal_info', titleZh: '个人信息', titleEn: 'Personal Info' },
-  { type: 'summary', titleZh: '个人简介', titleEn: 'Summary' },
-  { type: 'work_experience', titleZh: '工作经历', titleEn: 'Work Experience' },
-  { type: 'education', titleZh: '教育背景', titleEn: 'Education' },
-  { type: 'skills', titleZh: '技能特长', titleEn: 'Skills' },
-  { type: 'qr_codes', titleZh: '二维码', titleEn: 'QR Codes' },
+export const DEFAULT_SECTIONS: { type: SectionType }[] = [
+  { type: 'personal_info' },
+  { type: 'summary' },
+  { type: 'work_experience' },
+  { type: 'education' },
+  { type: 'skills' },
+  { type: 'qr_codes' },
 ];
 
 export const TEMPLATES = [

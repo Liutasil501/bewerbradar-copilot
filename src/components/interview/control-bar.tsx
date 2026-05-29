@@ -22,7 +22,7 @@ export function useInterviewControls({ sessionId, roundId, lastAssistantMessageI
   const isMarked = lastAssistantMessageId ? markedMessages.has(lastAssistantMessageId) : false;
 
   const sendControl = async (action: string) => {
-    const fp = localStorage.getItem('jade_fingerprint');
+    const fp = localStorage.getItem('br_fingerprint');
     await fetch(`/api/interview/${sessionId}/control`, {
       method: 'POST',
       headers: {
@@ -37,13 +37,13 @@ export function useInterviewControls({ sessionId, roundId, lastAssistantMessageI
   const handleSkip = async () => {
     if (lastAssistantMessageId) addSkipped(lastAssistantMessageId);
     await sendControl('skip');
-    onTriggerAI('这个问题我暂时没有太好的思路，能换一个问题吗？');
+    onTriggerAI(t('skipMessage'));
   };
 
   const handleHint = async () => {
     if (lastAssistantMessageId) addHinted(lastAssistantMessageId);
     await sendControl('hint');
-    onTriggerAI('这个问题我不太确定方向，能给我一些思路上的引导吗？');
+    onTriggerAI(t('hintMessage'));
   };
 
   const handleEndRound = async () => {
@@ -58,7 +58,7 @@ export function useInterviewControls({ sessionId, roundId, lastAssistantMessageI
   const handleMark = () => {
     if (!lastAssistantMessageId) return;
     toggleMark(lastAssistantMessageId);
-    const fp = localStorage.getItem('jade_fingerprint');
+    const fp = localStorage.getItem('br_fingerprint');
     fetch(`/api/interview/${sessionId}/mark`, {
       method: 'POST',
       headers: {

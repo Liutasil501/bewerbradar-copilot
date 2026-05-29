@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
     // Create resume with parsed data
     const resume = await resumeRepository.create({
       userId: user.id,
-      title: resumeData.personalInfo?.fullName || '未命名简历',
+      title: resumeData.personalInfo?.fullName || 'Unbenannter Lebenslauf',
       template,
       language,
     });
@@ -435,13 +435,15 @@ function mapSkills(raw: unknown): { name: string; skills: string[] }[] {
 
 // ─── Build Sections ──────────────────────────────────────────────────────────
 
-function buildSections(parsed: ParsedResume, language: string) {
-  const isEn = language === 'en';
+function buildSections(parsed: ParsedResume, lang: string) {
+  const isEn = lang === 'en';
+  const isDe = lang === 'de';
+
   const sections: { type: string; title: string; content: unknown }[] = [];
 
   sections.push({
     type: 'personal_info',
-    title: isEn ? 'Personal Info' : '个人信息',
+    title: isEn ? 'Personal Info' : isDe ? 'Persönliche Daten' : '个人信息',
     content: {
       fullName: parsed.personalInfo?.fullName || '',
       jobTitle: parsed.personalInfo?.jobTitle || '',
@@ -466,7 +468,7 @@ function buildSections(parsed: ParsedResume, language: string) {
   if (parsed.summary) {
     sections.push({
       type: 'summary',
-      title: isEn ? 'Summary' : '个人简介',
+      title: isEn ? 'Summary' : isDe ? 'Profil' : '个人简介',
       content: { text: parsed.summary },
     });
   }
@@ -474,7 +476,7 @@ function buildSections(parsed: ParsedResume, language: string) {
   if (parsed.workExperience?.length) {
     sections.push({
       type: 'work_experience',
-      title: isEn ? 'Work Experience' : '工作经历',
+      title: isEn ? 'Work Experience' : isDe ? 'Berufserfahrung' : '工作经历',
       content: {
         items: parsed.workExperience.map((w) => ({
           id: crypto.randomUUID(),
@@ -494,7 +496,7 @@ function buildSections(parsed: ParsedResume, language: string) {
   if (parsed.education?.length) {
     sections.push({
       type: 'education',
-      title: isEn ? 'Education' : '教育背景',
+      title: isEn ? 'Education' : isDe ? 'Bildungsweg' : '教育背景',
       content: {
         items: parsed.education.map((e) => ({
           id: crypto.randomUUID(),
@@ -514,7 +516,7 @@ function buildSections(parsed: ParsedResume, language: string) {
   if (parsed.skills?.length) {
     sections.push({
       type: 'skills',
-      title: isEn ? 'Skills' : '技能特长',
+      title: isEn ? 'Skills' : isDe ? 'Fähigkeiten' : '技能特长',
       content: {
         categories: parsed.skills.map((s) => ({
           id: crypto.randomUUID(),
@@ -528,7 +530,7 @@ function buildSections(parsed: ParsedResume, language: string) {
   if (parsed.projects?.length) {
     sections.push({
       type: 'projects',
-      title: isEn ? 'Projects' : '项目经历',
+      title: isEn ? 'Projects' : isDe ? 'Projekte' : '项目经历',
       content: {
         items: parsed.projects.map((p) => ({
           id: crypto.randomUUID(),

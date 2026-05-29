@@ -49,7 +49,7 @@ const ASPECT_RATIOS = [
 function getHeaders() {
   const fingerprint =
     typeof window !== 'undefined'
-      ? localStorage.getItem('jade_fingerprint')
+      ? localStorage.getItem('br_fingerprint')
       : null;
   return {
     'Content-Type': 'application/json',
