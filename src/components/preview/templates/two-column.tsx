@@ -16,6 +16,7 @@ import type {
 import { AvatarImage } from '../avatar-image';
 import { degreeField, isSectionEmpty, md } from '../utils';
 import { QrCodesPreview } from '../qr-codes-preview';
+import { getLabel } from '@/lib/pdf/i18n-labels';
 
 // Left sidebar section types
 const LEFT_TYPES = new Set(['skills', 'languages', 'certifications', 'custom']);
@@ -53,91 +54,91 @@ export function TwoColumnTemplate({ resume }: { resume: Resume }) {
         <div className="mb-6 space-y-1.5 text-xs">
           {pi.age && (
             <div className="flex items-start gap-2 text-zinc-300">
-              <span className="shrink-0 text-zinc-400">Age:</span>
+              <span className="shrink-0 text-zinc-400">{getLabel('age', resume.language)}:</span>
               <span>{pi.age}</span>
             </div>
           )}
           {pi.politicalStatus && (
             <div className="flex items-start gap-2 text-zinc-300">
-              <span className="shrink-0 text-zinc-400">Political:</span>
+              <span className="shrink-0 text-zinc-400">{getLabel('politicalStatus', resume.language)}:</span>
               <span>{pi.politicalStatus}</span>
             </div>
           )}
           {pi.gender && (
             <div className="flex items-start gap-2 text-zinc-300">
-              <span className="shrink-0 text-zinc-400">Gender:</span>
+              <span className="shrink-0 text-zinc-400">{getLabel('gender', resume.language)}:</span>
               <span>{pi.gender}</span>
             </div>
           )}
           {pi.ethnicity && (
             <div className="flex items-start gap-2 text-zinc-300">
-              <span className="shrink-0 text-zinc-400">Ethnicity:</span>
+              <span className="shrink-0 text-zinc-400">{getLabel('ethnicity', resume.language)}:</span>
               <span>{pi.ethnicity}</span>
             </div>
           )}
           {pi.hometown && (
             <div className="flex items-start gap-2 text-zinc-300">
-              <span className="shrink-0 text-zinc-400">Hometown:</span>
+              <span className="shrink-0 text-zinc-400">{getLabel('hometown', resume.language)}:</span>
               <span>{pi.hometown}</span>
             </div>
           )}
           {pi.maritalStatus && (
             <div className="flex items-start gap-2 text-zinc-300">
-              <span className="shrink-0 text-zinc-400">Marital:</span>
+              <span className="shrink-0 text-zinc-400">{getLabel('maritalStatus', resume.language)}:</span>
               <span>{pi.maritalStatus}</span>
             </div>
           )}
           {pi.yearsOfExperience && (
             <div className="flex items-start gap-2 text-zinc-300">
-              <span className="shrink-0 text-zinc-400">Experience:</span>
+              <span className="shrink-0 text-zinc-400">{getLabel('yearsOfExperience', resume.language)}:</span>
               <span>{pi.yearsOfExperience}</span>
             </div>
           )}
           {pi.educationLevel && (
             <div className="flex items-start gap-2 text-zinc-300">
-              <span className="shrink-0 text-zinc-400">Education:</span>
+              <span className="shrink-0 text-zinc-400">{getLabel('educationLevel', resume.language)}:</span>
               <span>{pi.educationLevel}</span>
             </div>
           )}
           {pi.email && (
             <div className="flex items-start gap-2 text-zinc-300">
-              <span className="shrink-0 text-zinc-400">Email:</span>
+              <span className="shrink-0 text-zinc-400">{getLabel('email', resume.language)}:</span>
               <span className="break-all">{pi.email}</span>
             </div>
           )}
           {pi.phone && (
             <div className="flex items-start gap-2 text-zinc-300">
-              <span className="shrink-0 text-zinc-400">Phone:</span>
+              <span className="shrink-0 text-zinc-400">{getLabel('phone', resume.language)}:</span>
               <span>{pi.phone}</span>
             </div>
           )}
           {pi.wechat && (
             <div className="flex items-start gap-2 text-zinc-300">
-              <span className="shrink-0 text-zinc-400">WeChat:</span>
+              <span className="shrink-0 text-zinc-400">{getLabel('wechat', resume.language)}:</span>
               <span>{pi.wechat}</span>
             </div>
           )}
           {pi.location && (
             <div className="flex items-start gap-2 text-zinc-300">
-              <span className="shrink-0 text-zinc-400">Location:</span>
+              <span className="shrink-0 text-zinc-400">{getLabel('location', resume.language)}:</span>
               <span>{pi.location}</span>
             </div>
           )}
           {pi.website && (
             <div className="flex items-start gap-2 text-zinc-300">
-              <span className="shrink-0 text-zinc-400">Web:</span>
+              <span className="shrink-0 text-zinc-400">{getLabel('website', resume.language)}:</span>
               <span className="break-all">{pi.website}</span>
             </div>
           )}
           {pi.linkedin && (
             <div className="flex items-start gap-2 text-zinc-300">
-              <span className="shrink-0 text-zinc-400">LinkedIn:</span>
+              <span className="shrink-0 text-zinc-400">{getLabel('linkedin', resume.language)}:</span>
               <span className="break-all">{pi.linkedin}</span>
             </div>
           )}
           {pi.github && (
             <div className="flex items-start gap-2 text-zinc-300">
-              <span className="shrink-0 text-zinc-400">GitHub:</span>
+              <span className="shrink-0 text-zinc-400">{getLabel('github', resume.language)}:</span>
               <span className="break-all">{pi.github}</span>
             </div>
           )}

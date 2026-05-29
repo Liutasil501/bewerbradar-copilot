@@ -10,6 +10,7 @@ import type {
   GitHubContent,
 } from '@/types/resume';
 import { esc, md, degreeField, getPersonalInfo, visibleSections, buildHighlights, buildQrCodesHtml, type ResumeWithSections, type Section } from '../utils';
+import { getLabel } from '@/lib/pdf/i18n-labels';
 
 const SIDEBAR_BG = '#1e40af';
 const ACCENT = '#3b82f6';
@@ -125,21 +126,21 @@ export function buildSidebarHtml(resume: ResumeWithSections): string {
         ${pi.jobTitle ? `<p class="mt-1 text-sm font-light text-blue-200">${esc(pi.jobTitle)}</p>` : ''}
       </div>
       <div class="mb-6 space-y-1.5 text-xs">
-        ${pi.age ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">Age:</span><span>${esc(pi.age)}</span></div>` : ''}
-        ${pi.politicalStatus ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">Political:</span><span>${esc(pi.politicalStatus)}</span></div>` : ''}
-        ${pi.gender ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">Gender:</span><span>${esc(pi.gender)}</span></div>` : ''}
-        ${pi.ethnicity ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">Ethnicity:</span><span>${esc(pi.ethnicity)}</span></div>` : ''}
-        ${pi.hometown ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">Hometown:</span><span>${esc(pi.hometown)}</span></div>` : ''}
-        ${pi.maritalStatus ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">Marital:</span><span>${esc(pi.maritalStatus)}</span></div>` : ''}
-        ${pi.yearsOfExperience ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">Experience:</span><span>${esc(pi.yearsOfExperience)}</span></div>` : ''}
-        ${pi.educationLevel ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">Education:</span><span>${esc(pi.educationLevel)}</span></div>` : ''}
-        ${pi.email ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">Email:</span><span class="break-all">${esc(pi.email)}</span></div>` : ''}
-        ${pi.phone ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">Phone:</span><span>${esc(pi.phone)}</span></div>` : ''}
-        ${pi.wechat ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">WeChat:</span><span>${esc(pi.wechat)}</span></div>` : ''}
-        ${pi.location ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">Location:</span><span>${esc(pi.location)}</span></div>` : ''}
-        ${pi.website ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">Web:</span><span class="break-all">${esc(pi.website)}</span></div>` : ''}
-        ${pi.linkedin ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">LinkedIn:</span><span class="break-all">${esc(pi.linkedin)}</span></div>` : ''}
-        ${pi.github ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">GitHub:</span><span class="break-all">${esc(pi.github)}</span></div>` : ''}
+        ${pi.age ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">${esc(getLabel('age', lang))}:</span><span>${esc(pi.age)}</span></div>` : ''}
+        ${pi.politicalStatus ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">${esc(getLabel('politicalStatus', lang))}:</span><span>${esc(pi.politicalStatus)}</span></div>` : ''}
+        ${pi.gender ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">${esc(getLabel('gender', lang))}:</span><span>${esc(pi.gender)}</span></div>` : ''}
+        ${pi.ethnicity ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">${esc(getLabel('ethnicity', lang))}:</span><span>${esc(pi.ethnicity)}</span></div>` : ''}
+        ${pi.hometown ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">${esc(getLabel('hometown', lang))}:</span><span>${esc(pi.hometown)}</span></div>` : ''}
+        ${pi.maritalStatus ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">${esc(getLabel('maritalStatus', lang))}:</span><span>${esc(pi.maritalStatus)}</span></div>` : ''}
+        ${pi.yearsOfExperience ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">${esc(getLabel('yearsOfExperience', lang))}:</span><span>${esc(pi.yearsOfExperience)}</span></div>` : ''}
+        ${pi.educationLevel ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">${esc(getLabel('educationLevel', lang))}:</span><span>${esc(pi.educationLevel)}</span></div>` : ''}
+        ${pi.email ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">${esc(getLabel('email', lang))}:</span><span class="break-all">${esc(pi.email)}</span></div>` : ''}
+        ${pi.phone ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">${esc(getLabel('phone', lang))}:</span><span>${esc(pi.phone)}</span></div>` : ''}
+        ${pi.wechat ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">${esc(getLabel('wechat', lang))}:</span><span>${esc(pi.wechat)}</span></div>` : ''}
+        ${pi.location ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">${esc(getLabel('location', lang))}:</span><span>${esc(pi.location)}</span></div>` : ''}
+        ${pi.website ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">${esc(getLabel('website', lang))}:</span><span class="break-all">${esc(pi.website)}</span></div>` : ''}
+        ${pi.linkedin ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">${esc(getLabel('linkedin', lang))}:</span><span class="break-all">${esc(pi.linkedin)}</span></div>` : ''}
+        ${pi.github ? `<div class="flex items-start gap-2 text-blue-100"><span class="shrink-0 text-blue-300">${esc(getLabel('github', lang))}:</span><span class="break-all">${esc(pi.github)}</span></div>` : ''}
       </div>
       ${sidebarSections.map(s => `<div class="mb-5" data-section>
         <h2 class="mb-2 border-b border-white/20 pb-1 text-xs font-bold uppercase tracking-wider text-white">${esc(s.title)}</h2>
