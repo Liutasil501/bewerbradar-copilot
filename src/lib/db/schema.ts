@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 
 export const users = sqliteTable('users', {
@@ -32,6 +32,16 @@ export const authAccounts = sqliteTable('auth_accounts', {
   expiresAt: integer('expires_at', { mode: 'timestamp' }),
   scope: text('scope'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+});
+
+export const verificationTokens = sqliteTable('verification_tokens', {
+  identifier: text('identifier').notNull(),
+  token: text('token').notNull(),
+  expires: integer('expires', { mode: 'timestamp' }).notNull(),
+}, (table) => {
+  return {
+    pk: primaryKey({ columns: [table.identifier, table.token] })
+  }
 });
 
 export const resumes = sqliteTable('resumes', {

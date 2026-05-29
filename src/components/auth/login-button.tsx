@@ -1,17 +1,97 @@
 'use client';
 
+import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Mail, CheckCircle2 } from 'lucide-react';
 
 export function LoginButton() {
   const t = useTranslations('auth');
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const handleMagicLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setIsLoading(true);
+    
+    try {
+      const res = await signIn('nodemailer', {
+        email,
+        callbackUrl,
+        redirect: false,
+      });
+      
+      if (res?.error) {
+        console.error(res.error);
+        setIsSuccess(false);
+      } else {
+        setIsSuccess(true);
+      }
+    } catch (error) {
+      console.error(error);
+      setIsSuccess(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isSuccess) {
+    return (
+      <div className="flex flex-col items-center justify-center space-y-4 rounded-xl border border-green-200 bg-green-50 p-6 text-center dark:border-green-900/30 dark:bg-green-900/20 w-full">
+        <CheckCircle2 className="h-8 w-8 text-green-500" />
+        <div className="space-y-1">
+          <h3 className="font-medium text-green-800 dark:text-green-400">E-Mail gesendet!</h3>
+          <p className="text-sm text-green-600 dark:text-green-500">
+            Bitte prüfe dein Postfach (und den Spam-Ordner) nach dem Login-Link.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <Button
+    <div className="flex w-full flex-col space-y-4">
+      <form onSubmit={handleMagicLink} className="flex flex-col space-y-3">
+        <div className="relative">
+          <Mail className="absolute left-3 top-3 h-4 w-4 text-zinc-400" />
+          <Input
+            type="email"
+            placeholder="E-Mail Adresse"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="pl-9 h-10"
+            required
+            disabled={isLoading}
+          />
+        </div>
+        <Button 
+          type="submit" 
+          disabled={isLoading || !email}
+          className="h-10 w-full"
+        >
+          {isLoading ? 'Sendet...' : 'Mit E-Mail anmelden'}
+        </Button>
+      </form>
+      
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-zinc-200 dark:border-zinc-700" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-white px-2 text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+            Oder
+          </span>
+        </div>
+      </div>
+
+      <Button
       onClick={() => signIn('google', { callbackUrl })}
       variant="outline"
       className="h-11 w-full cursor-pointer gap-3 rounded-xl border-zinc-200 bg-white px-6 text-sm font-medium text-zinc-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-zinc-50 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
@@ -36,5 +116,6 @@ export function LoginButton() {
       </svg>
       {t('loginWithGoogle')}
     </Button>
+    </div>
   );
 }

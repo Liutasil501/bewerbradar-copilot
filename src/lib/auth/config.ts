@@ -1,9 +1,13 @@
 import NextAuth from 'next-auth';
 import Google from 'next-auth/providers/google';
 import Credentials from 'next-auth/providers/credentials';
+import Nodemailer from 'next-auth/providers/nodemailer';
 import { config } from '@/lib/config';
 import { userRepository } from '@/lib/db/repositories/user.repository';
 import { createSampleResume } from '@/lib/db/sample-resume';
+import { db } from '@/lib/db';
+import { verificationTokens } from '@/lib/db/schema';
+import { eq, and } from 'drizzle-orm';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
@@ -12,6 +16,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         Google({
           clientId: process.env.GOOGLE_CLIENT_ID!,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        }),
+        Nodemailer({
+          server: {
+            host: process.env.EMAIL_SERVER_HOST,
+            port: Number(process.env.EMAIL_SERVER_PORT),
+            auth: {
+              user: process.env.EMAIL_SERVER_USER,
+              pass: process.env.EMAIL_SERVER_PASSWORD,
+            },
+          },
+          from: process.env.EMAIL_FROM,
         }),
       ]
     : [
@@ -30,10 +45,45 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           },
         }),
       ],
+  adapter: {
+    async createVerificationToken(data: any) {
+      return await db.insert(verificationTokens).values(data).returning().get();
+    },
+    async useVerificationToken({ identifier, token }: any) {
+      const result = await db.select().from(verificationTokens).where(
+        and(eq(verificationTokens.identifier, identifier), eq(verificationTokens.token, token))
+      ).get();
+      if (result) {
+        await db.delete(verificationTokens).where(
+          and(eq(verificationTokens.identifier, identifier), eq(verificationTokens.token, token))
+        );
+      }
+      return result || null;
+    },
+    async getUserByEmail(email: string) {
+      const user = await userRepository.findByEmail(email);
+      if (!user) return null;
+      return { id: user.id, email: user.email!, emailVerified: null };
+    },
+    async createUser(user: any) {
+      let dbUser = await userRepository.findByEmail(user.email);
+      if (!dbUser) {
+        dbUser = await userRepository.create({ email: user.email, authType: 'oauth' });
+        if (dbUser) await createSampleResume(dbUser.id);
+      }
+      return { id: dbUser!.id, email: dbUser!.email!, emailVerified: null };
+    },
+    async getUser(id: string) {
+      const user = await userRepository.findById(id);
+      if (!user) return null;
+      return { id: user.id, email: user.email!, emailVerified: null };
+    },
+  } as any,
+  session: { strategy: 'jwt' },
   callbacks: {
     async jwt({ token, user, account, profile }) {
-      // First sign-in via Google: create DB user immediately
-      if (user && account?.provider === 'google') {
+      // First sign-in via Google or Nodemailer: create DB user immediately
+      if (user && (account?.provider === 'google' || account?.provider === 'nodemailer')) {
         const email = (profile?.email || user.email) as string;
         const name = (profile?.name || user.name) as string | undefined;
         const avatar = ((profile as any)?.picture || user.image) as string | undefined;
@@ -54,9 +104,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (dbUser) {
           token.userId = dbUser.id;
         }
-        token.name = name;
+        token.name = name || dbUser?.name;
         token.email = email;
-        token.picture = avatar;
+        token.picture = avatar || dbUser?.avatarUrl;
       }
 
       // Credentials (fingerprint) mode
