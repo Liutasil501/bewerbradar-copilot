@@ -19,10 +19,16 @@ Auf dem VPS laufen drei wesentliche Projekte/Dienste via Docker (`docker-compose
    - Geplant als Zugang über eine eigene Subdomain (`studio.bewerbradar.de`), um die Nutzer und Tiers visuell zu managen.
    - *(Zusatz-Ports auf dem VPS: Postgres DB auf 5432, SeaweedFS Storage auf 8333).*
 
-## 2. GitHub Branching & Deployment-Logik (Hostinger vs. Actions)
-- **Deployment-Weg:** Wie wurde das aufgesetzt? Die App wird **direkt auf dem VPS via Hostinger Auto-Deploy** gezogen. Zwar gibt es im Repo unter `.github/workflows/publish.yml` eine Action, diese baut aber nur Images für den Docker Hub. Unser echter VPS-Flow ist: *Code geht auf GitHub -> Hostinger VPS zieht ihn sich automatisch (Git-Sync) und startet via `docker-compose up`.*
-- **Warum Stripe-Keys nicht in GitHub dürfen:** Die Datei `.env` (die unsere Stripe Secret Keys enthält) steht aus Sicherheitsgründen in der `.gitignore`. Sie wird *niemals* auf GitHub hochgeladen. Da Hostinger den Code von GitHub zieht, fehlt die `.env` dort logischerweise. **Deshalb müssen die Stripe Keys manuell in die `.env` Datei direkt auf dem VPS (via SSH/Terminal) eingetragen werden.**
-- **GitHub Repositories:** Das Hauptprojekt lebt in `Liutasil501/bewerbradar` (auf Branch `beta` für Auto-Deploy). Der Copilot-Code hier aus JadeAI muss über das Repo `Liutasil501/bewerbradar-copilot` mit dem VPS verknüpft werden.
+## 2. GitHub Architektur & Branching-Strategie (Going Forward)
+Um Konflikte zwischen der Landingpage/Haupt-App und dem Copilot zu vermeiden, fahren wir ab sofort folgende strikte Repository- und Branch-Strategie:
+
+- **Zwei getrennte Repositories:** 
+  1. `Liutasil501/bewerbradar`: Nur für die Haupt-App (Reactive Resume) & Landingpage.
+  2. `Liutasil501/bewerbradar-copilot`: Exklusiv für diesen KI-Copilot (JadeAI-Basis).
+- **Die Branch-Logik (Main vs. Beta):**
+  - **`main`:** Dient als unser lokaler Entwicklungs-Branch. Hier programmieren, testen und reviewen wir neue Features.
+  - **`beta`:** Dient als exklusiver **Deployment-Branch**. Sobald ein Feature stabil ist, pushen wir es von `main` nach `beta`. Der Hostinger VPS lauscht *ausschließlich* auf den `beta`-Branch und zieht sich via Auto-Deploy den Code, um ihn live zu schalten.
+- **Warum Stripe-Keys nicht in GitHub dürfen:** Die Datei `.env` (die unsere Stripe Secret Keys enthält) steht aus Sicherheitsgründen in der `.gitignore`. Sie wird *niemals* auf GitHub hochgeladen. Da Hostinger den Code von GitHub zieht, fehlt die `.env` dort logischerweise. **Deshalb müssen die Stripe Keys manuell in die `.env` Datei direkt auf dem VPS eingetragen werden.**
 
 ## 3. Datenbank-Felder (Stripe Integration)
 Wir haben das Schema in `src/lib/db/schema.ts` um folgende Stripe-spezifische Felder in der `users`-Tabelle erweitert, die über Stripe Webhooks (`checkout.session.completed`, `customer.subscription.updated/deleted`) auf `/api/stripe/webhook` befüllt werden:
@@ -33,8 +39,14 @@ Wir haben das Schema in `src/lib/db/schema.ts` um folgende Stripe-spezifische Fe
 - `subscriptionStatus`
 - `subscriptionPlan` (Enum: `'free', 'pro', 'premium'`)
 
-## 4. Stripe Paywall & Lokalisierungen (Exakte UI-Integration)
-- **Die Business Logik:** Wir nutzen die Hook `use-paywall.tsx`. Gratis-Nutzer können den Editor nutzen, stoßen aber bei Premium-Aktionen auf die `PricingModal`-Komponente.
+## 4. Stripe Paywall & Freemium-Modell (Warum & Wofür?)
+**Wieso ein Freemium-Modell (Free, Pro, Premium)?**
+KI-Tokens (LLM-Aufrufe) kosten Geld. Um Missbrauch zu verhindern und die Serverkosten zu decken, wurde eine harte Stripe-Paywall implementiert. 
+- **Free:** Erlaubt Nutzern, die App kennenzulernen (Basis-Editor), schließt aber alle KI- und Export-Features aus.
+- **Pro / Premium:** Schaltet tiefgreifende KI-Funktionen (wie das Mock-Interview) und Premium-Exporte (PDF/DOCX) frei. Das Modell stellt sicher, dass nur zahlende Kunden Rechenleistung verbrauchen.
+
+**Exakte UI-Integration (Die Business Logik):**
+- Wir nutzen den Hook `use-paywall.tsx`, um live zu prüfen, in welchem Tier der Nutzer ist. Gratis-Nutzer stoßen bei Premium-Aktionen auf die `PricingModal`-Komponente.
 - **Eingebaute Paywall-Buttons (Locations):** Die Paywall triggert explizit und blockiert den Zugriff in folgenden UI-Dateien:
   - `export-dialog.tsx` (Blockiert PDF/DOCX Download)
   - `cover-letter-dialog.tsx` (Blockiert KI-Anschreiben)
@@ -66,6 +78,9 @@ Die internen Zugänge und Keys zum VPS und den Hostinger-APIs liegen sicher im l
 - `HOSTINGER API 26-05.txt` (Hostinger API Zugänge)
 - `GITHUB_05_2026_OpenClaw.txt` (GitHub Tokens)
 - `id_ed25519` / `id_ed25519.pub` (SSH Keys für den direkten VPS Zugang)
+- `known_hosts` (SSH Known Hosts zur Verifizierung der VPS Identität)
+- `MS Portfolio Brand/` (Marken-Assets und Logos)
+
 Diese Dateien werden niemals ins Repo gepusht, sondern dienen uns als lokaler Anker für manuelle SSH-Verbindungen oder API-Verwaltungen.
 
 ---
