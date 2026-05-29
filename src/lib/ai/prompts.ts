@@ -12,7 +12,7 @@ export function getSystemPrompt(resumeContext: string): string {
     } catch { /* ignore parse errors */ }
   }
 
-  return `You are an expert resume optimization assistant for BewerbRadar.
+  return `You are an expert resume optimization assistant for BewerbRadar Copilot.
 Your goal is to help users improve their resumes to be more professional, impactful, and ATS-friendly.
 
 Guidelines:

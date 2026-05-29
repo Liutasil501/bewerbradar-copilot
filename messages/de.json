@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "BewerbRadar",
+    "appName": "BewerbRadar Copilot",
     "save": "Speichern",
     "cancel": "Abbrechen",
     "delete": "Löschen",
@@ -540,7 +540,7 @@
     "description": "Importieren Sie eine exportierte JSON-Datei, um den aktuellen Inhalt zu ersetzen",
     "dashboardDescription": "Importieren Sie eine zuvor exportierte JSON-Datei, um einen neuen Lebenslauf zu erstellen",
     "selectFile": "Klicken oder ziehen Sie eine .json-Datei hierher",
-    "dragHint": "Unterstützt .json-Dateien, die mit BewerbRadar exportiert wurden",
+    "dragHint": "Unterstützt .json-Dateien, die mit BewerbRadar Copilot exportiert wurden",
     "importing": "Importiert...",
     "success": "Import erfolgreich!",
     "error": "Import fehlgeschlagen. Bitte erneut versuchen.",
@@ -737,7 +737,7 @@
     },
     "cta": {
       "title": "Bereit für Ihren besten Lebenslauf?",
-      "subtitle": "Schließen Sie sich tausenden Bewerbern an, die mit BewerbRadar Interviews gelandet haben. Keine Anmeldung erforderlich.",
+      "subtitle": "Schließen Sie sich tausenden Bewerbern an, die mit BewerbRadar Copilot Interviews gelandet haben. Keine Anmeldung erforderlich.",
       "button": "Lebenslauf jetzt erstellen"
     },
     "footer": {
@@ -761,7 +761,7 @@
         "terms": "Nutzungsbedingungen",
         "cookies": "Cookie-Richtlinie"
       },
-      "copyright": "© {year} BewerbRadar. Alle Rechte vorbehalten."
+      "copyright": "© {year} BewerbRadar Copilot. Alle Rechte vorbehalten."
     }
   },
   "linkedinPhoto": {
@@ -818,7 +818,7 @@
     "submit": "Lebenslauf ansehen",
     "invalidPassword": "Falsches Passwort. Bitte erneut versuchen.",
     "notFound": "Dieser Lebenslauf ist nicht verfügbar oder wurde entfernt.",
-    "viewOnBewerbRadar": "Auf BewerbRadar ansehen"
+    "viewOnBewerbRadar Copilot": "Auf BewerbRadar Copilot ansehen"
   },
   "interview": {
     "nav": "Probe-Interview",

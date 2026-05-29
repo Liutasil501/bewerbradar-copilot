@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "BewerbRadar",
+    "appName": "BewerbRadar Copilot",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -540,7 +540,7 @@
     "description": "Import a previously exported JSON file to replace current content",
     "dashboardDescription": "Import a previously exported JSON file to create a new resume",
     "selectFile": "Click to select or drag a .json file here",
-    "dragHint": "Supports .json files exported from BewerbRadar",
+    "dragHint": "Supports .json files exported from BewerbRadar Copilot",
     "importing": "Importing...",
     "success": "Import successful!",
     "error": "Import failed. Please try again.",
@@ -737,7 +737,7 @@
     },
     "cta": {
       "title": "Ready to Build Your Best Resume?",
-      "subtitle": "Join thousands of job seekers who have landed interviews with BewerbRadar. No sign-up required.",
+      "subtitle": "Join thousands of job seekers who have landed interviews with BewerbRadar Copilot. No sign-up required.",
       "button": "Create Your Resume Now"
     },
     "footer": {
@@ -761,7 +761,7 @@
         "terms": "Terms of Service",
         "cookies": "Cookie Policy"
       },
-      "copyright": "© {year} BewerbRadar. All rights reserved."
+      "copyright": "© {year} BewerbRadar Copilot. All rights reserved."
     }
   },
   "linkedinPhoto": {
@@ -818,7 +818,7 @@
     "submit": "View Resume",
     "invalidPassword": "Invalid password. Please try again.",
     "notFound": "This resume is not available or has been removed.",
-    "viewOnBewerbRadar": "View on BewerbRadar"
+    "viewOnBewerbRadar Copilot": "View on BewerbRadar Copilot"
   },
   "interview": {
     "nav": "Mock Interview",

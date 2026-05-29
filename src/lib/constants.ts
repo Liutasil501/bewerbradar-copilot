@@ -1,4 +1,4 @@
-export const APP_NAME = 'BewerbRadar';
+export const APP_NAME = 'BewerbRadar Copilot';
 
 export const SECTION_TYPES = [
   'personal_info',

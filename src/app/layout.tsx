@@ -4,7 +4,7 @@ import './globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
-const appName = process.env.APP_NAME || 'BewerbRadar';
+const appName = process.env.APP_NAME || 'BewerbRadar Copilot';
 
 export const metadata: Metadata = {
   title: `${appName} - AI Resume Builder`,
