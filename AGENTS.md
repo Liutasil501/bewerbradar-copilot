@@ -13,11 +13,11 @@ Whenever you make significant architectural changes (e.g., adding database field
 - You MUST update the `PROJECT_CONTEXT.md` file at the end of the session to reflect these changes.
 - The `PROJECT_CONTEXT.md` is our "Survival Guide". It must always represent the exact, real-time state of the project.
 
-## 3. Branching & Deployment Safety
-- **`main` is LIVE:** The Hostinger VPS automatically pulls from the `main` branch. Anything pushed here will instantly be compiled and deployed to `copilot.bewerbradar.de`.
-- **`beta` is TEST:** Use the `beta` branch for feature development, testing, and AI experiments.
-- **NEVER** push directly to `main` without explicitly asking the user for permission. Always offer to create a feature branch or push to `beta` first.
-- **Semantic Versioning:** When a stable version is reached on `main`, remind the user to tag it (e.g., `git tag -a v1.2.0 -m "Release"`).
+## 3. Branching & Deployment Safety (Zero-Downtime Rule)
+- **`main` is LIVE:** The Hostinger VPS automatically pulls from the `main` branch. Anything pushed here will instantly restart the live server (`docker-compose down && up`) and disconnect active users!
+- **NEVER work on `main`:** You are STRICTLY FORBIDDEN to push directly to `main` during development. 
+- **`beta` is for WORK:** 100% of development, bug fixing, and testing happens on the `beta` branch.
+- **Controlled Deployments:** We only merge `beta` into `main` when a feature is fully tested and we are ready for a controlled server restart (e.g. during off-peak hours).
 
 ## 4. Secrets & Environment Variables
 - `STRIPE_SECRET_KEY` and other sensitive environment variables are **NOT** stored in GitHub. They reside manually in the `.env` file on the VPS.
