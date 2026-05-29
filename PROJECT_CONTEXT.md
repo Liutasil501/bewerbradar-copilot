@@ -28,7 +28,23 @@ Alle Referenzen an "JadeAI" wurden im Code, in den Lokalisierungs-Dateien (`mess
 - **CSS UTF-16 Fehler:** Powershell-Pipes hatten die `globals.css` korrumpiert (invalid characters). Dies wurde durch ein Node-Skript (`fix-css.js`) bereinigt.
 - **TypeScript:** Der Code wurde per `pnpm type-check` geprüft und ist komplett fehlerfrei kompiliert.
 
-## 4. Offene To-Do's für Live-Betrieb
+## 4. Drizzle Studio & Datenbank
+- **Drizzle Studio:** Die Datenbank (SQLite) kann visuell über Drizzle Studio verwaltet werden (`pnpm db:studio`). Der Befehl startet das Studio lokal, und es wurde angedacht, es evtl. über eine eigene Subdomain (`studio.bewerbradar.de`) via Reverse Proxy oder direkt ansprechbar zu machen.
+- **Datenbank-Felder (Stripe):** Wir haben das Schema in `src/lib/db/schema.ts` um folgende wesentliche Felder in der `users`-Tabelle erweitert:
+  - `stripeCustomerId`
+  - `stripeSubscriptionId`
+  - `stripePriceId`
+  - `stripeCurrentPeriodEnd`
+  - `subscriptionStatus`
+  - `subscriptionPlan` (Enum: `'free', 'pro', 'premium'`)
+
+## 5. Lokalisierungen & Hardcodings
+- **Sprachdateien:** Um das Pricing in allen Sprachen korrekt anzuzeigen, haben wir in den Dateien `messages/de.json`, `en.json` und `zh.json` die Stripe-Pakete hardcodiert. Wir haben Einträge wie `titlePro`, `titlePremium`, `descPro` und `descPremium` direkt in die Übersetzungs-JSONs geschrieben, anstatt sie dynamisch aus der Stripe API zu ziehen. Das reduziert Fehler und API-Aufrufe.
+
+## 6. Templates & Dummy-Daten
+- **Vorbelegte Templates:** Um neuen Usern den Einstieg zu erleichtern, wurden Dummy-Daten in Dateien wie `src/lib/db/sample-resume.ts` / `seed.ts` eingerichtet. Wenn ein Nutzer ein neues Resume aus einem Template erstellt, wird es direkt mit realistischen Muster-Daten befüllt, die wir ebenfalls auf "BewerbRadar Copilot" zugeschnitten haben.
+
+## 7. Offene To-Do's für Live-Betrieb
 1. **Hostinger Env Vars:** Im Hostinger-Dashboard müssen für den Copilot die Live-Stripe-Keys (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`) sowie `NEXT_PUBLIC_APP_URL` (`https://copilot.bewerbradar.de`) hinterlegt werden.
 2. **Stripe Dashboard:** Im Stripe-Dashboard muss die Webhook-URL `https://copilot.bewerbradar.de/api/stripe/webhook` für Live-Events eingetragen werden.
 3. **Logo austauschen:** Die Datei `public/logo.svg` muss noch manuell durch das BewerbRadar-Logo ersetzt werden.
