@@ -25,9 +25,11 @@ Um Konflikte zwischen der Landingpage/Haupt-App und dem Copilot zu vermeiden, fa
 - **Zwei getrennte Repositories:** 
   1. `Liutasil501/bewerbradar`: Nur für die Haupt-App (Reactive Resume) & Landingpage.
   2. `Liutasil501/bewerbradar-copilot`: Exklusiv für diesen KI-Copilot (JadeAI-Basis).
-- **Die Branch-Logik (Main vs. Beta):**
-  - **`main`:** Dient als unser lokaler Entwicklungs-Branch. Hier programmieren, testen und reviewen wir neue Features.
-  - **`beta`:** Dient als exklusiver **Deployment-Branch**. Sobald ein Feature stabil ist, pushen wir es von `main` nach `beta`. Der Hostinger VPS lauscht *ausschließlich* auf den `beta`-Branch und zieht sich via Auto-Deploy den Code, um ihn live zu schalten.
+- **Die Branch-Logik (Umgekehrt zum alten System!):**
+  - **`main`:** Ist der **Live-Branch** (Production). Der Hostinger VPS lauscht *ausschließlich* auf den `main`-Branch und zieht sich via Auto-Deploy den Code, um ihn live zu schalten. Was auf `main` liegt, ist für die Nutzer sichtbar.
+  - **`beta`:** Dient als unser **lokaler Test- und Entwicklungs-Branch**. Hier programmieren wir, testen neue Features und reviewen. Erst wenn alles perfekt ist, mergen wir von `beta` nach `main`.
+- **Semantic Versioning (Git Tags):** 
+  Um stets den Überblick zu behalten, arbeiten wir mit Tags (z.B. `v1.0.0`). Jeder Push auf `main`, der ein neues Feature oder einen kritischen Bugfix enthält, bekommt einen sauberen Release-Tag. Damit können wir im Notfall sofort auf eine alte Version zurückrollen.
 - **Warum Stripe-Keys nicht in GitHub dürfen:** Die Datei `.env` (die unsere Stripe Secret Keys enthält) steht aus Sicherheitsgründen in der `.gitignore`. Sie wird *niemals* auf GitHub hochgeladen. Da Hostinger den Code von GitHub zieht, fehlt die `.env` dort logischerweise. **Deshalb müssen die Stripe Keys manuell in die `.env` Datei direkt auf dem VPS eingetragen werden.**
 
 ## 3. Datenbank-Felder (Stripe Integration)
