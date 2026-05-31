@@ -121,6 +121,7 @@ services:
       - EMAIL_SERVER_USER=info@bewerbradar.de
       - EMAIL_SERVER_PASSWORD=${EMAIL_SERVER_PASSWORD}
       - EMAIL_FROM=BewerbRadar Copilot <noreply@bewerbradar.de>
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
     volumes:
       - jadeai_data:/app/data
 
