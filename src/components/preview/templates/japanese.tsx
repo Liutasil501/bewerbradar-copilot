@@ -86,7 +86,7 @@ function JapaneseSectionContent({ section, lang }: { section: any; lang?: string
           <div key={item.id}>
             <div className="flex items-baseline justify-between">
               <h3 className="text-sm font-normal" style={{ color: PRIMARY }}>{item.position}</h3>
-              <span className="shrink-0 text-[10px] font-light" style={{ color: ACCENT }}>{item.startDate} &ndash; {item.endDate || (item.current ? (lang === 'zh' ? '至今' : 'Present') : '')}</span>
+              <span className="shrink-0 text-[10px] font-light" style={{ color: ACCENT }}>{item.startDate} &ndash; {item.endDate || (item.current ? (lang === 'de' ? 'Heute' : 'Present') : '')}</span>
             </div>
             {item.company && <p className="mt-0.5 text-xs font-light" style={{ color: ACCENT }}>{item.company}{item.location ? `, ${item.location}` : ''}</p>}
             {item.description && <p className="mt-2 text-sm font-light leading-relaxed" style={{ color: PRIMARY }} dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
@@ -117,7 +117,7 @@ function JapaneseSectionContent({ section, lang }: { section: any; lang?: string
           <div key={item.id}>
             <div className="flex items-baseline justify-between">
               <h3 className="text-sm font-normal" style={{ color: PRIMARY }}>{degreeField(item.degree, item.field)}</h3>
-              <span className="shrink-0 text-[10px] font-light" style={{ color: ACCENT }}>{item.startDate} &ndash; {item.endDate || (lang === 'zh' ? '至今' : 'Present')}</span>
+              <span className="shrink-0 text-[10px] font-light" style={{ color: ACCENT }}>{item.startDate} &ndash; {item.endDate || (lang === 'de' ? 'Heute' : 'Present')}</span>
             </div>
             {item.institution && <p className="mt-0.5 text-xs font-light" style={{ color: ACCENT }}>{item.institution}{item.location ? `, ${item.location}` : ''}</p>}
             {item.gpa && <p className="mt-1 text-xs font-light" style={{ color: ACCENT }}>GPA: {item.gpa}</p>}
@@ -158,7 +158,7 @@ function JapaneseSectionContent({ section, lang }: { section: any; lang?: string
             <div className="flex items-baseline justify-between">
               <h3 className="text-sm font-normal" style={{ color: PRIMARY }}>{item.name}</h3>
               {item.startDate && (
-                <span className="shrink-0 text-[10px] font-light" style={{ color: ACCENT }}>{item.startDate} {'\u2013'} {item.endDate || (lang === 'zh' ? '至今' : 'Present')}</span>
+                <span className="shrink-0 text-[10px] font-light" style={{ color: ACCENT }}>{item.startDate} {'\u2013'} {item.endDate || (lang === 'de' ? 'Heute' : 'Present')}</span>
               )}
             </div>
             {item.description && <p className="mt-1 text-sm font-light leading-relaxed" style={{ color: PRIMARY }} dangerouslySetInnerHTML={{ __html: md(item.description) }} />}

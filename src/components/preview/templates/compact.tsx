@@ -167,11 +167,11 @@ function CompactRightContent({ section, resume }: { section: any; resume: Resume
                 {item.company && <span className="text-xs text-zinc-500"> | {item.company}</span>}
                 {item.location && <span className="text-xs text-zinc-400">, {item.location}</span>}
               </div>
-              <span className="shrink-0 text-[10px] text-zinc-400">{item.startDate} – {item.endDate || (item.current ? (resume.language === 'zh' ? '至今' : 'Present') : '')}</span>
+              <span className="shrink-0 text-[10px] text-zinc-400">{item.startDate} – {item.endDate || (item.current ? (resume.language === 'de' ? 'Heute' : 'Present') : '')}</span>
             </div>
             {item.description && <p className="mt-0.5 text-xs text-zinc-600" dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
             {item.technologies?.length > 0 && (
-              <p className="mt-0.5 text-[10px] text-zinc-400">{resume.language === 'zh' ? '技术栈' : 'Tech'}: {item.technologies.join(', ')}</p>
+              <p className="mt-0.5 text-[10px] text-zinc-400">{resume.language === 'de' ? 'Technologien' : 'Tech'}: {item.technologies.join(', ')}</p>
             )}
             {item.highlights?.length > 0 && (
               <ul className="mt-0.5 list-disc pl-3.5">
@@ -195,7 +195,7 @@ function CompactRightContent({ section, resume }: { section: any; resume: Resume
                 {item.institution && <span className="text-xs text-zinc-500"> — {item.institution}</span>}
                 {item.location && <span className="text-xs text-zinc-400">, {item.location}</span>}
               </div>
-              <span className="shrink-0 text-[10px] text-zinc-400">{item.startDate} – {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}</span>
+              <span className="shrink-0 text-[10px] text-zinc-400">{item.startDate} – {item.endDate || (resume.language === 'de' ? 'Heute' : 'Present')}</span>
             </div>
             {item.gpa && <p className="text-[10px] text-zinc-500">GPA: {item.gpa}</p>}
             {item.highlights?.length > 0 && (
@@ -216,11 +216,11 @@ function CompactRightContent({ section, resume }: { section: any; resume: Resume
           <div key={item.id}>
             <div className="flex items-baseline justify-between">
               <span className="text-xs font-bold text-zinc-800">{item.name}</span>
-              {item.startDate && <span className="shrink-0 text-[10px] text-zinc-400">{item.startDate} – {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}</span>}
+              {item.startDate && <span className="shrink-0 text-[10px] text-zinc-400">{item.startDate} – {item.endDate || (resume.language === 'de' ? 'Heute' : 'Present')}</span>}
             </div>
             {item.description && <p className="mt-0.5 text-xs text-zinc-600" dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
             {item.technologies?.length > 0 && (
-              <p className="mt-0.5 text-[10px] text-zinc-400">{resume.language === 'zh' ? '技术栈' : 'Tech'}: {item.technologies.join(', ')}</p>
+              <p className="mt-0.5 text-[10px] text-zinc-400">{resume.language === 'de' ? 'Technologien' : 'Tech'}: {item.technologies.join(', ')}</p>
             )}
             {item.highlights?.length > 0 && (
               <ul className="mt-0.5 list-disc pl-3.5">

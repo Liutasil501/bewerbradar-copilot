@@ -5,15 +5,24 @@ export const maxDuration = 60;
 const GEMINI_ENDPOINT =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent';
 
+import { resolveUser, getUserIdFromRequest } from '@/lib/auth/helpers';
+
 export async function POST(request: NextRequest) {
   try {
-    const { image, prompt, requirements, aspectRatio, apiKey } = await request.json();
+    const fingerprint = getUserIdFromRequest(request);
+    const user = await resolveUser(fingerprint);
 
-    if (!apiKey || typeof apiKey !== 'string') {
-      return NextResponse.json(
-        { error: 'API Key is required' },
-        { status: 400 }
-      );
+    let { image, prompt, requirements, aspectRatio, apiKey } = await request.json();
+
+    if (!apiKey) {
+      if (user?.subscriptionPlan === 'premium') {
+        apiKey = process.env.GEMINI_API_KEY || '';
+      } else {
+        return NextResponse.json(
+          { error: 'API Key is required or upgrade to Premium' },
+          { status: 400 }
+        );
+      }
     }
 
     if (!image || typeof image !== 'string') {

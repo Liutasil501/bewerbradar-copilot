@@ -20,6 +20,16 @@ export async function POST(req: NextRequest) {
 
     const priceId = STRIPE_CONFIG.prices[tier as 'pro' | 'premium'][plan as 'monthly' | 'yearly'];
 
+    // If user already has an active paid subscription, route them to the billing portal
+    // to prevent double-billing via creating a second concurrent subscription.
+    if (user.subscriptionPlan !== 'free' && user.stripeCustomerId) {
+      const portalSession = await stripe.billingPortal.sessions.create({
+        customer: user.stripeCustomerId,
+        return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard`,
+      });
+      return NextResponse.json({ url: portalSession.url });
+    }
+
     let customerId = user.stripeCustomerId;
 
     // Create a new customer if one doesn't exist

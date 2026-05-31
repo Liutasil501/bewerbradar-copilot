@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
     }
 
     const resumeContext = JSON.stringify(resume.sections);
-    const aiConfig = extractAIConfig(request);
+    const aiConfig = extractAIConfig(request, user);
     const model = getModel(aiConfig);
 
     const result = await generateText({

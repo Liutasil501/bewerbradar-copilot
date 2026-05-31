@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
       };
     });
 
-    const aiConfig = extractAIConfig(request);
+    const aiConfig = extractAIConfig(request, user);
     const model = getModel(aiConfig);
     const encoder = new TextEncoder();
 

@@ -31,6 +31,7 @@ const ACCEPTED_EXTENSIONS = '.pdf,.png,.jpg,.jpeg,.webp';
 
 export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDialogProps) {
   const t = useTranslations();
+  const tAi = useTranslations('ai');
   const locale = useLocale();
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('template');
@@ -98,7 +99,11 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
       resetAndClose();
       router.push(`/editor/${resume.id}`);
     } catch (err: any) {
-      setParseError(err.message || t('dashboard.upload.parseFailed'));
+      if (err.message === 'apiKeyMissing') {
+        setParseError(`${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}`);
+      } else {
+        setParseError(err.message || t('dashboard.upload.parseFailed'));
+      }
     } finally {
       setIsParsing(false);
     }

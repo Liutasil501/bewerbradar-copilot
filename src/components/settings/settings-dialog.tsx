@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { useTheme } from 'next-themes';
-import { Settings, Cpu, Paintbrush, PenTool, Eye, EyeOff, Sun, Moon, Monitor, ChevronsUpDown, Check, Loader2 } from 'lucide-react';
+import { Settings, Cpu, Paintbrush, PenTool, Eye, EyeOff, Sun, Moon, Monitor, ChevronsUpDown, Check, Loader2, CreditCard } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -32,6 +32,8 @@ import { useTourStore } from '@/stores/tour-store';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { locales, localeNames } from '@/i18n/config';
 import { cn } from '@/lib/utils';
+import { usePaywall } from '@/hooks/use-paywall';
+import { toast } from 'sonner';
 
 const AI_PROVIDERS: { value: AIProvider; label: string }[] = [
   { value: 'openai', label: 'OpenAI' },
@@ -63,6 +65,9 @@ export function SettingsDialog() {
     hydrate,
     _hydrated,
   } = useSettingsStore();
+
+  const { currentPlan, checkPaywall } = usePaywall();
+  const [managingPortal, setManagingPortal] = useState(false);
 
   const startTour = useTourStore((s) => s.startTour);
   const [showApiKey, setShowApiKey] = useState(false);
@@ -138,6 +143,23 @@ export function SettingsDialog() {
     setTheme(theme);
   };
 
+  const handleManageSubscription = async () => {
+    setManagingPortal(true);
+    try {
+      const res = await fetch('/api/stripe/portal', { method: 'POST' });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error(t('subscription.manageError'));
+      }
+    } catch {
+      toast.error(t('subscription.manageError'));
+    } finally {
+      setManagingPortal(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && closeModal()}>
       <DialogContent className="sm:max-w-[540px] p-0 gap-0">
@@ -162,6 +184,10 @@ export function SettingsDialog() {
               <TabsTrigger value="editor" className="flex-1 gap-1.5 cursor-pointer">
                 <PenTool className="h-3.5 w-3.5" />
                 {t('editorTab.title')}
+              </TabsTrigger>
+              <TabsTrigger value="subscription" className="flex-1 gap-1.5 cursor-pointer">
+                <CreditCard className="h-3.5 w-3.5" />
+                {t('subscription.title')}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -401,6 +427,46 @@ export function SettingsDialog() {
               >
                 {t('editorTab.restartTour')}
               </Button>
+            </div>
+          </TabsContent>
+
+          {/* Subscription Tab */}
+          <TabsContent value="subscription" className="px-6 pb-6 pt-4 space-y-5">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>{t('subscription.title')}</Label>
+                <p className="text-xs text-zinc-400">
+                  {t('subscription.currentPlan', {
+                    plan:
+                      currentPlan === 'premium'
+                        ? t('subscription.planPremium')
+                        : currentPlan === 'pro'
+                        ? t('subscription.planPro')
+                        : t('subscription.planFree'),
+                  })}
+                </p>
+              </div>
+              {currentPlan === 'free' ? (
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="cursor-pointer"
+                  onClick={() => checkPaywall('premium', () => {})}
+                >
+                  {t('subscription.upgrade')}
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="cursor-pointer"
+                  onClick={handleManageSubscription}
+                  disabled={managingPortal}
+                >
+                  {managingPortal && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {managingPortal ? t('subscription.managing') : t('subscription.manage')}
+                </Button>
+              )}
             </div>
           </TabsContent>
         </Tabs>

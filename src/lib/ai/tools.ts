@@ -223,16 +223,16 @@ CRITICAL: You are a JSON API. Your entire response must be a single valid JSON o
     }),
 
     translateResume: tool({
-      description: 'Translate the resume to a different language. Use this when the user asks to translate their resume to Chinese or English.',
+      description: 'Translate the resume to a different language. Use this when the user asks to translate their resume to German or English.',
       inputSchema: z.object({
-        targetLanguage: z.enum(['zh', 'en']).describe('Target language: "zh" for Chinese, "en" for English'),
+        targetLanguage: z.enum(['de', 'en']).describe('Target language: "de" for German, "en" for English'),
       }),
       execute: async ({ targetLanguage }) => {
         const resume = await resumeRepository.findById(resumeId);
         if (!resume) return { success: false, error: 'Resume not found' };
 
         const model = getModel(aiConfig);
-        const langName = targetLanguage === 'zh' ? 'Simplified Chinese' : 'English';
+        const langName = targetLanguage === 'de' ? 'German' : 'English';
 
         const singleSectionSchema = z.object({
           sectionId: z.string(),

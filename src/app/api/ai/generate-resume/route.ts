@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     const { jobTitle, yearsOfExperience, skills, industry, experience, template, language } = parsed.data;
     const lang = language || 'zh';
 
-    const aiConfig = extractAIConfig(request);
+    const aiConfig = extractAIConfig(request, user);
     const model = getModel(aiConfig);
 
     const skillsContext = skills && skills.length > 0
@@ -112,8 +112,8 @@ Respond with JSON only.`,
     const generatedData: GenerateResumeOutput = extractJson(result.text, generateResumeOutputSchema) as GenerateResumeOutput;
 
     // Create a new resume in the database
-    const resumeTitle = lang === 'zh'
-      ? `${jobTitle} - AI生成简历`
+    const resumeTitle = lang === 'de'
+      ? `${jobTitle} - KI-generierter Lebenslauf`
       : `${jobTitle} - AI Generated Resume`;
 
     const newResume = await resumeRepository.create({

@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const template = (formData.get('template') as string) || 'classic';
-    const language = (formData.get('language') as string) || 'zh';
+    const language = (formData.get('language') as string) || 'en';
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    const aiConfig = extractAIConfig(request);
+    const aiConfig = extractAIConfig(request, user);
     const model = getModel(aiConfig);
 
     // Build messages based on file type

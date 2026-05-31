@@ -230,6 +230,7 @@ function GrammarCheckResultView({ result, t }: { result: GrammarCheckResult; t: 
 
 export function GrammarCheckDialog({ open, onOpenChange, resumeId }: GrammarCheckDialogProps) {
   const t = useTranslations('grammarCheck');
+  const tAi = useTranslations('ai');
   const ct = useTranslations('common');
   const { setShowAiChat, setPendingAiMessage } = useEditorStore();
   const [isChecking, setIsChecking] = useState(false);
@@ -296,11 +297,11 @@ export function GrammarCheckDialog({ open, onOpenChange, resumeId }: GrammarChec
       setResult(data);
       fetchHistory();
       } catch (err: any) {
-        setError(err.message || 'Failed to check grammar');
+        setError(err.message === 'apiKeyMissing' ? `${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}` : (err.message || 'Failed to check grammar'));
       } finally {
         setIsChecking(false);
       }
-    });
+    }, { allowByok: true });
   };
 
   const handleCheckAgain = () => {

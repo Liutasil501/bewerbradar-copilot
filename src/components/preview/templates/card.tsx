@@ -93,7 +93,7 @@ function CardSectionContent({ section, resume }: { section: any; resume: Resume 
                 {item.company && <span className="text-sm" style={{ color: ACCENT }}> | {item.company}</span>}
                 {item.location && <span className="text-sm text-zinc-400"> , {item.location}</span>}
               </div>
-              <span className="shrink-0 text-xs text-zinc-400">{item.startDate} – {item.endDate || (item.current ? (resume.language === 'zh' ? '至今' : 'Present') : '')}</span>
+              <span className="shrink-0 text-xs text-zinc-400">{item.startDate} – {item.endDate || (item.current ? (resume.language === 'de' ? 'Heute' : 'Present') : '')}</span>
             </div>
             {item.description && <p className="mt-1 text-sm text-zinc-600" dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
             {item.technologies?.length > 0 && (
@@ -126,7 +126,7 @@ function CardSectionContent({ section, resume }: { section: any; resume: Resume 
           <div key={item.id} className="rounded-md bg-white p-3" style={{ border: '1px solid #f4f4f5' }}>
             <div className="flex items-baseline justify-between">
               <span className="text-sm font-semibold" style={{ color: PRIMARY }}>{item.institution}</span>
-              <span className="shrink-0 text-xs text-zinc-400">{item.startDate} – {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}</span>
+              <span className="shrink-0 text-xs text-zinc-400">{item.startDate} – {item.endDate || (resume.language === 'de' ? 'Heute' : 'Present')}</span>
             </div>
             <p className="text-sm text-zinc-600">{degreeField(item.degree, item.field)}{item.location ? ` , ${item.location}` : ''}</p>
             {item.gpa && <p className="text-xs text-zinc-500">GPA: {item.gpa}</p>}
@@ -173,7 +173,7 @@ function CardSectionContent({ section, resume }: { section: any; resume: Resume 
               <span className="text-sm font-semibold" style={{ color: ACCENT }}>{item.name}</span>
               {item.startDate && (
                 <span className="shrink-0 text-xs text-zinc-400">
-                  {item.startDate} – {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}
+                  {item.startDate} – {item.endDate || (resume.language === 'de' ? 'Heute' : 'Present')}
                 </span>
               )}
             </div>

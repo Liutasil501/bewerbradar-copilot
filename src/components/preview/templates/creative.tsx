@@ -98,7 +98,7 @@ function CreativeSectionContent({ section, resume }: { section: any; resume: Res
             <div className="flex items-baseline justify-between">
               <h3 className="text-sm font-bold text-zinc-800">{item.position}</h3>
               <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold text-white" style={{ background: PRIMARY }}>
-                {item.startDate} – {item.endDate || (item.current ? (resume.language === 'zh' ? '至今' : 'Present') : '')}
+                {item.startDate} – {item.endDate || (item.current ? (resume.language === 'de' ? 'Heute' : 'Present') : '')}
               </span>
             </div>
             {item.company && (
@@ -141,7 +141,7 @@ function CreativeSectionContent({ section, resume }: { section: any; resume: Res
           <div key={item.id} className="rounded-lg border border-zinc-100 p-4">
             <div className="flex items-baseline justify-between">
               <h3 className="text-sm font-bold text-zinc-800">{item.institution}</h3>
-              <span className="text-xs text-zinc-400">{item.startDate} – {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}</span>
+              <span className="text-xs text-zinc-400">{item.startDate} – {item.endDate || (resume.language === 'de' ? 'Heute' : 'Present')}</span>
             </div>
             <p className="text-sm text-zinc-600">
               {degreeField(item.degree, item.field)}
@@ -198,7 +198,7 @@ function CreativeSectionContent({ section, resume }: { section: any; resume: Res
               <h3 className="text-sm font-bold" style={{ color: PRIMARY }}>{item.name}</h3>
               {item.startDate && (
                 <span className="text-xs text-zinc-400">
-                  {item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}
+                  {item.startDate} - {item.endDate || (resume.language === 'de' ? 'Heute' : 'Present')}
                 </span>
               )}
             </div>

@@ -65,6 +65,7 @@ async function readNDJSON(
 
 export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialogProps) {
   const t = useTranslations('translate');
+  const tAi = useTranslations('ai');
   const router = useRouter();
   const currentResume = useResumeStore((s) => s.currentResume);
 
@@ -180,10 +181,10 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
       } catch (err: any) {
         if (err.name !== 'AbortError') {
           setState('error');
-          setErrorMessage(err.message || 'Translation failed');
+          setErrorMessage(err.message === 'apiKeyMissing' ? `${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}` : (err.message || 'Translation failed'));
         }
       }
-    });
+    }, { allowByok: true });
   }, [resumeId, targetLanguage, mode, checkPaywall, onOpenChange, t, router]);
 
   const progressPercent = progress.total > 0

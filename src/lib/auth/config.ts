@@ -16,6 +16,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         Google({
           clientId: process.env.GOOGLE_CLIENT_ID!,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+          allowDangerousEmailAccountLinking: true,
         }),
         Nodemailer({
           server: {
@@ -77,6 +78,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const user = await userRepository.findById(id);
       if (!user) return null;
       return { id: user.id, email: user.email!, emailVerified: null };
+    },
+    async updateUser(user: any) {
+      const dbUser = await userRepository.findById(user.id);
+      if (dbUser) {
+        return { id: dbUser.id, email: dbUser.email!, emailVerified: new Date() };
+      }
+      return user;
+    },
+    async linkAccount(account: any) {
+      return account;
+    },
+    async getUserByAccount(provider_providerAccountId: any) {
+      return null;
     },
   } as any,
   session: { strategy: 'jwt' },

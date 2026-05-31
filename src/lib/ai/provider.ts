@@ -8,21 +8,35 @@ export interface AIConfig {
   apiKey: string;
   baseURL: string;
   model: string;
+  isPremiumBypass?: boolean;
 }
 
-export function extractAIConfig(request: NextRequest): AIConfig {
-  const provider = request.headers.get('x-provider') || 'openai';
-  const apiKey = request.headers.get('x-api-key') || '';
-  const baseURL = request.headers.get('x-base-url') || 'https://api.openai.com/v1';
-  const model = request.headers.get('x-model') || 'gpt-4o';
-  return { provider, apiKey, baseURL, model };
+export function extractAIConfig(request: NextRequest, user?: { subscriptionPlan?: string | null } | null): AIConfig {
+  let provider = request.headers.get('x-provider') || 'openai';
+  let apiKey = request.headers.get('x-api-key') || '';
+  let baseURL = request.headers.get('x-base-url') || 'https://api.openai.com/v1';
+  let model = request.headers.get('x-model') || 'gpt-4o';
+  let isPremiumBypass = false;
+
+  // Premium Bypass: If no user-provided key, and user is premium, use Server Gemini Key
+  if (!apiKey && user?.subscriptionPlan === 'premium') {
+    provider = 'gemini';
+    apiKey = process.env.GEMINI_API_KEY || '';
+    baseURL = ''; // Use default
+    model = 'gemini-1.5-flash';
+    isPremiumBypass = true;
+  }
+
+  return { provider, apiKey, baseURL, model, isPremiumBypass };
 }
 
 export function getModel(config: AIConfig, modelOverride?: string) {
   if (!config.apiKey) {
-    throw new AIConfigError('API key is required. Please configure it in Settings.');
+    throw new AIConfigError('apiKeyMissing');
   }
-  const modelId = modelOverride || config.model;
+  
+  // If Premium Bypass is active, ignore client's model override since they don't own the key
+  const modelId = config.isPremiumBypass ? config.model : (modelOverride || config.model);
 
   switch (config.provider) {
     case 'anthropic': {

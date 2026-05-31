@@ -8,7 +8,7 @@ export const generateResumeInputSchema = z.object({
   industry: z.string().optional().describe('Optional industry context, e.g. "fintech", "healthcare"'),
   experience: z.string().optional().describe('Optional free-text work experience description for AI to parse and incorporate'),
   template: z.string().optional().describe('Template to use for the generated resume'),
-  language: z.enum(['zh', 'en']).optional().default('zh').describe('Language for the generated resume'),
+  language: z.enum(['en', 'de']).optional().default('en').describe('Language for the generated resume'),
 });
 
 export type GenerateResumeInput = z.infer<typeof generateResumeInputSchema>;

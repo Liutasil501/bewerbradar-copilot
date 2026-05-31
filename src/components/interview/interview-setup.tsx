@@ -10,9 +10,11 @@ import { InterviewerPicker } from './interviewer-picker';
 import { useRouter } from '@/i18n/routing';
 import { getAIHeaders } from '@/stores/settings-store';
 import type { InterviewerConfig } from '@/types/interview';
+import { toast } from 'sonner';
 
 export function InterviewSetup() {
   const t = useTranslations('interview.setup');
+  const tAi = useTranslations('ai');
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [jd, setJd] = useState('');
@@ -43,10 +45,19 @@ export function InterviewSetup() {
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to create interview');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to create interview');
+      }
       const { session } = await res.json();
       router.push(`/interview/${session.id}`);
-    } catch (err) {
+    } catch (err: any) {
+      const msg = err.message || '';
+      if (msg.includes('apiKeyMissing')) {
+        toast.error(tAi('apiKeyMissing'), { description: tAi('apiKeyMissingHint') });
+      } else {
+        toast.error(msg);
+      }
       console.error('Failed to create interview:', err);
     } finally {
       setIsCreating(false);

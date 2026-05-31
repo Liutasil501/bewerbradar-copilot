@@ -31,6 +31,7 @@ type GenerateState = 'form' | 'generating' | 'success' | 'error';
 
 export function GenerateResumeDialog({ open, onOpenChange, onCreated }: GenerateResumeDialogProps) {
   const t = useTranslations('generateResume');
+  const tAi = useTranslations('ai');
   const tGlobal = useTranslations();
   const locale = useLocale();
   const router = useRouter();
@@ -83,7 +84,7 @@ export function GenerateResumeDialog({ open, onOpenChange, onCreated }: Generate
       setState('success');
       onCreated?.();
     } catch (err: any) {
-      setError(err.message || 'Failed to generate resume');
+      setError(err.message === 'apiKeyMissing' ? `${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}` : (err.message || 'Failed to generate resume'));
       setState('error');
     }
   };

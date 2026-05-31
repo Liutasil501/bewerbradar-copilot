@@ -208,11 +208,6 @@ export function AIChatBubble({ resumeId }: AIChatBubbleProps) {
           onClick={onBubbleClick}
         >
           <MessageSquare className="h-6 w-6" />
-          {!hasApiKey && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 shadow-sm">
-              <AlertTriangle className="h-3 w-3 text-amber-900" />
-            </span>
-          )}
         </button>
       </div>
     </>

@@ -23,7 +23,7 @@ function buildJapaneseSectionContent(section: Section, lang: string): string {
     return `<div class="space-y-6">${((c as WorkExperienceContent).items || []).map((it: any) => `<div>
       <div class="flex items-baseline justify-between">
         <h3 class="text-sm font-normal" style="color:${PRIMARY}">${esc(it.position)}</h3>
-        <span class="shrink-0 text-[10px] font-light" style="color:${ACCENT}">${esc(it.startDate)} &ndash; ${esc(it.endDate) || (it.current ? (lang === 'zh' ? '至今' : 'Present') : '')}</span>
+        <span class="shrink-0 text-[10px] font-light" style="color:${ACCENT}">${esc(it.startDate)} &ndash; ${esc(it.endDate) || (it.current ? (lang === 'de' ? 'Heute' : 'Present') : '')}</span>
       </div>
       ${it.company ? `<p class="mt-0.5 text-xs font-light" style="color:${ACCENT}">${esc(it.company)}${it.location ? `, ${esc(it.location)}` : ''}</p>` : ''}
       ${it.description ? `<div class="mt-2 text-sm font-light leading-relaxed" style="color:#57534e">${md(it.description)}</div>` : ''}
@@ -37,7 +37,7 @@ function buildJapaneseSectionContent(section: Section, lang: string): string {
     return `<div class="space-y-5">${((c as EducationContent).items || []).map((it: any) => `<div>
       <div class="flex items-baseline justify-between">
         <h3 class="text-sm font-normal" style="color:${PRIMARY}">${esc(degreeField(it.degree, it.field))}</h3>
-        <span class="shrink-0 text-[10px] font-light" style="color:${ACCENT}">${esc(it.startDate)} &ndash; ${esc(it.endDate) || (lang === 'zh' ? '至今' : 'Present')}</span>
+        <span class="shrink-0 text-[10px] font-light" style="color:${ACCENT}">${esc(it.startDate)} &ndash; ${esc(it.endDate) || (lang === 'de' ? 'Heute' : 'Present')}</span>
       </div>
       ${it.institution ? `<p class="mt-0.5 text-xs font-light" style="color:${ACCENT}">${esc(it.institution)}${it.location ? `, ${esc(it.location)}` : ''}</p>` : ''}
       ${it.gpa ? `<p class="mt-1 text-xs font-light" style="color:${ACCENT}">GPA: ${esc(it.gpa)}</p>` : ''}
@@ -55,7 +55,7 @@ function buildJapaneseSectionContent(section: Section, lang: string): string {
     return `<div class="space-y-5">${((c as ProjectsContent).items || []).map((it: any) => `<div>
       <div class="flex items-baseline justify-between">
         <h3 class="text-sm font-normal" style="color:${PRIMARY}">${esc(it.name)}</h3>
-        ${it.startDate ? `<span class="shrink-0 text-[10px] font-light" style="color:${ACCENT}">${esc(it.startDate)} \u2013 ${it.endDate ? esc(it.endDate) : (lang === 'zh' ? '至今' : 'Present')}</span>` : ''}
+        ${it.startDate ? `<span class="shrink-0 text-[10px] font-light" style="color:${ACCENT}">${esc(it.startDate)} \u2013 ${it.endDate ? esc(it.endDate) : (lang === 'de' ? 'Heute' : 'Present')}</span>` : ''}
       </div>
       ${it.description ? `<div class="mt-1 text-sm font-light leading-relaxed" style="color:#57534e">${md(it.description)}</div>` : ''}
       ${it.technologies?.length ? `<p class="mt-1 text-xs font-light" style="color:${ACCENT}">${esc(it.technologies.join(' \u00b7 '))}</p>` : ''}

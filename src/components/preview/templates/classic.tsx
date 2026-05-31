@@ -86,11 +86,11 @@ function SectionContent({ section, lang }: { section: any; lang?: string }) {
                 {item.company && <span className="text-sm text-zinc-600"> at {item.company}</span>}
                 {item.location && <span className="text-sm text-zinc-400"> , {item.location}</span>}
               </div>
-              <span className="text-xs text-zinc-400">{item.startDate} - {item.endDate || (item.current ? (lang === 'zh' ? '至今' : 'Present') : '')}</span>
+              <span className="text-xs text-zinc-400">{item.startDate} - {item.endDate || (item.current ? (lang === 'de' ? 'Heute' : 'Present') : '')}</span>
             </div>
             {item.description && <p className="mt-1 text-sm text-zinc-600" dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
             {item.technologies?.length > 0 && (
-              <p className="mt-0.5 text-xs text-zinc-400">{lang === 'zh' ? '技术栈' : 'Tech'}: {item.technologies.join(', ')}</p>
+              <p className="mt-0.5 text-xs text-zinc-400">{lang === 'de' ? 'Technologien' : 'Tech'}: {item.technologies.join(', ')}</p>
             )}
             {item.highlights?.length > 0 && (
               <ul className="mt-1 list-disc pl-4">
@@ -117,7 +117,7 @@ function SectionContent({ section, lang }: { section: any; lang?: string }) {
                 {item.institution && <span className="text-sm text-zinc-600"> - {item.institution}</span>}
                 {item.location && <span className="text-sm text-zinc-400"> , {item.location}</span>}
               </div>
-              <span className="text-xs text-zinc-400">{item.startDate} - {item.endDate || (lang === 'zh' ? '至今' : 'Present')}</span>
+              <span className="text-xs text-zinc-400">{item.startDate} - {item.endDate || (lang === 'de' ? 'Heute' : 'Present')}</span>
             </div>
             {item.gpa && <p className="text-sm text-zinc-500">GPA: {item.gpa}</p>}
             {item.highlights?.length > 0 && (
@@ -157,13 +157,13 @@ function SectionContent({ section, lang }: { section: any; lang?: string }) {
               <span className="font-semibold text-zinc-800 text-sm">{item.name}</span>
               {item.startDate && (
                 <span className="text-xs text-zinc-400">
-                  {item.startDate} - {item.endDate || (lang === 'zh' ? '至今' : 'Present')}
+                  {item.startDate} - {item.endDate || (lang === 'de' ? 'Heute' : 'Present')}
                 </span>
               )}
             </div>
             {item.description && <p className="mt-1 text-sm text-zinc-600" dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
             {item.technologies?.length > 0 && (
-              <p className="mt-0.5 text-xs text-zinc-400">{lang === 'zh' ? '技术栈' : 'Tech'}: {item.technologies.join(', ')}</p>
+              <p className="mt-0.5 text-xs text-zinc-400">{lang === 'de' ? 'Technologien' : 'Tech'}: {item.technologies.join(', ')}</p>
             )}
             {item.highlights?.length > 0 && (
               <ul className="mt-1 list-disc pl-4">

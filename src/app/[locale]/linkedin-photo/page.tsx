@@ -35,6 +35,7 @@ import { Link } from '@/i18n/routing';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { Resume } from '@/types/resume';
+import { usePaywall } from '@/hooks/use-paywall';
 
 const API_KEY_STORAGE_KEY = 'jade_nanobanana_api_key';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -124,6 +125,9 @@ function resizeDataUrl(
 
 export default function LinkedInPhotoPage() {
   const t = useTranslations('linkedinPhoto');
+  const tAi = useTranslations('ai');
+  const { currentPlan } = usePaywall();
+  const isPremium = currentPlan === 'premium';
 
   // API Key
   const [apiKey, setApiKey] = useState('');
@@ -298,10 +302,6 @@ export default function LinkedInPhotoPage() {
 
   // Generate
   const handleGenerate = async () => {
-    if (!apiKey.trim()) {
-      toast.error(t('errorNoApiKey'));
-      return;
-    }
     if (!uploadedImage) {
       toast.error(t('errorNoImage'));
       return;
@@ -330,6 +330,8 @@ export default function LinkedInPhotoPage() {
           toast.error(t('errorInvalidKey'));
         } else if (data.error === 'safety_filtered') {
           toast.error(t('errorSafety'));
+        } else if (data.error?.includes('API Key is required')) {
+          toast.error(tAi('apiKeyMissing'), { description: tAi('apiKeyMissingHint') });
         } else {
           toast.error(t('errorGenerate'));
         }
@@ -432,34 +434,36 @@ export default function LinkedInPhotoPage() {
         {/* Left Column — Settings & Upload */}
         <div className="space-y-6">
           {/* API Key */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <Label className="mb-2 block text-sm font-medium">
-              {t('apiKey')}
-            </Label>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Input
-                  type={showKey ? 'text' : 'password'}
-                  value={apiKey}
-                  onChange={(e) => handleApiKeyChange(e.target.value)}
-                  placeholder={t('apiKeyPlaceholder')}
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowKey(!showKey)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-                >
-                  {showKey ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
+          {!isPremium && (
+            <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+              <Label className="mb-2 block text-sm font-medium">
+                {t('apiKey')}
+              </Label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    type={showKey ? 'text' : 'password'}
+                    value={apiKey}
+                    onChange={(e) => handleApiKeyChange(e.target.value)}
+                    placeholder={t('apiKeyPlaceholder')}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowKey(!showKey)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                  >
+                    {showKey ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
               </div>
+              <p className="mt-1.5 text-xs text-zinc-400">{t('apiKeyHint')}</p>
             </div>
-            <p className="mt-1.5 text-xs text-zinc-400">{t('apiKeyHint')}</p>
-          </div>
+          )}
 
           {/* Image Upload / Camera */}
           <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
@@ -685,7 +689,7 @@ export default function LinkedInPhotoPage() {
           {/* Generate Button */}
           <Button
             onClick={handleGenerate}
-            disabled={isGenerating || !apiKey.trim() || !uploadedImage}
+            disabled={isGenerating || !uploadedImage}
             className="w-full cursor-pointer gap-2 bg-brand py-6 text-base font-medium hover:bg-brand-hover disabled:opacity-50"
           >
             {isGenerating ? (

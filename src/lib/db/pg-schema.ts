@@ -40,7 +40,7 @@ export const resumes = pgTable('resumes', {
   template: text('template').notNull().default('classic'),
   themeConfig: text('theme_config').default('{}'),
   isDefault: integer('is_default').notNull().default(0),
-  language: text('language').notNull().default('zh'),
+  language: text('language').notNull().default('en'),
   shareToken: text('share_token'),
   isPublic: integer('is_public').notNull().default(0),
   sharePassword: text('share_password'),

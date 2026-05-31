@@ -50,5 +50,5 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/(zh|en|de)/:path*', '/share/:path*'],
+  matcher: ['/', '/(zh|en|de)/:path*', '/share/:path*', '/login'],
 };

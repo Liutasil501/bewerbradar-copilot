@@ -52,7 +52,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       }
     }
 
-    const aiConfig = extractAIConfig(request);
+    const aiConfig = extractAIConfig(request, user);
     const model = getModel(aiConfig, modelId);
     const modelMessages = await convertToModelMessages(messages);
 

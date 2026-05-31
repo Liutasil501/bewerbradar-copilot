@@ -37,7 +37,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (existing) return NextResponse.json(existing);
 
     const { model: modelId, locale = 'zh' } = await request.json();
-    const aiConfig = extractAIConfig(request);
+    const aiConfig = extractAIConfig(request, user);
     const model = getModel(aiConfig, modelId);
 
     const roundsWithMessages = await interviewRepository.findAllMessagesBySessionId(sessionId);

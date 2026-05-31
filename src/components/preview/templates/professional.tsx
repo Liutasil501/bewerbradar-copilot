@@ -93,11 +93,11 @@ function ProfessionalSectionContent({ section, lang }: { section: any; lang?: st
                 {item.company && <span className="text-sm text-zinc-600"> — {item.company}</span>}
                 {item.location && <span className="text-sm text-zinc-400"> ({item.location})</span>}
               </div>
-              <span className="shrink-0 text-xs text-zinc-400 italic">{item.startDate} – {item.endDate || (item.current ? (lang === 'zh' ? '至今' : 'Present') : '')}</span>
+              <span className="shrink-0 text-xs text-zinc-400 italic">{item.startDate} – {item.endDate || (item.current ? (lang === 'de' ? 'Heute' : 'Present') : '')}</span>
             </div>
             {item.description && <p className="mt-1 text-sm text-zinc-600" dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
             {item.technologies?.length > 0 && (
-              <p className="mt-0.5 text-xs text-zinc-400">{lang === 'zh' ? '技术栈' : 'Tech'}: {item.technologies.join(', ')}</p>
+              <p className="mt-0.5 text-xs text-zinc-400">{lang === 'de' ? 'Technologien' : 'Tech'}: {item.technologies.join(', ')}</p>
             )}
             {item.highlights?.length > 0 && (
               <ul className="mt-1 list-disc pl-5">
@@ -123,7 +123,7 @@ function ProfessionalSectionContent({ section, lang }: { section: any; lang?: st
                 <span className="text-sm font-bold" style={{ color: '#1e3a5f' }}>{item.institution}</span>
                 {item.location && <span className="text-sm text-zinc-400"> ({item.location})</span>}
               </div>
-              <span className="shrink-0 text-xs text-zinc-400 italic">{item.startDate} – {item.endDate || (lang === 'zh' ? '至今' : 'Present')}</span>
+              <span className="shrink-0 text-xs text-zinc-400 italic">{item.startDate} – {item.endDate || (lang === 'de' ? 'Heute' : 'Present')}</span>
             </div>
             <p className="text-sm text-zinc-600">{degreeField(item.degree, item.field)}</p>
             {item.gpa && <p className="text-xs text-zinc-500">GPA: {item.gpa}</p>}
@@ -164,13 +164,13 @@ function ProfessionalSectionContent({ section, lang }: { section: any; lang?: st
               <span className="text-sm font-bold" style={{ color: '#1e3a5f' }}>{item.name}</span>
               {item.startDate && (
                 <span className="shrink-0 text-xs text-zinc-400 italic">
-                  {item.startDate} – {item.endDate || (lang === 'zh' ? '至今' : 'Present')}
+                  {item.startDate} – {item.endDate || (lang === 'de' ? 'Heute' : 'Present')}
                 </span>
               )}
             </div>
             {item.description && <p className="mt-1 text-sm text-zinc-600" dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
             {item.technologies?.length > 0 && (
-              <p className="mt-0.5 text-xs text-zinc-400">{lang === 'zh' ? '技术栈' : 'Tech'}: {item.technologies.join(', ')}</p>
+              <p className="mt-0.5 text-xs text-zinc-400">{lang === 'de' ? 'Technologien' : 'Tech'}: {item.technologies.join(', ')}</p>
             )}
             {item.highlights?.length > 0 && (
               <ul className="mt-1 list-disc pl-5">

@@ -16,6 +16,13 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (user.subscriptionPlan !== 'pro' && user.subscriptionPlan !== 'premium') {
+      return NextResponse.json(
+        { error: 'Pro or Premium subscription required to manage shares' },
+        { status: 403 }
+      );
+    }
+
     const resume = await resumeRepository.findById(id);
     if (!resume || resume.userId !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -63,6 +70,13 @@ export async function DELETE(
     const user = await resolveUser(fingerprint);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (user.subscriptionPlan !== 'pro' && user.subscriptionPlan !== 'premium') {
+      return NextResponse.json(
+        { error: 'Pro or Premium subscription required to manage shares' },
+        { status: 403 }
+      );
     }
 
     const resume = await resumeRepository.findById(id);

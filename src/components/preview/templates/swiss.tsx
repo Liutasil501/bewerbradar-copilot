@@ -86,14 +86,14 @@ function SwissSectionContent({ section, lang }: { section: any; lang?: string })
         {((content as WorkExperienceContent).items || []).map((item: any) => (
           <div key={item.id} className="grid grid-cols-[140px_1fr] gap-4">
             <div className="text-xs" style={{ color: '#52525b' }}>
-              <span>{item.startDate} &ndash; {item.endDate || (item.current ? (lang === 'zh' ? '至今' : 'Present') : '')}</span>
+              <span>{item.startDate} &ndash; {item.endDate || (item.current ? (lang === 'de' ? 'Heute' : 'Present') : '')}</span>
             </div>
             <div>
               <h3 className="text-sm font-bold" style={{ color: TEXT }}>{item.position}</h3>
               {item.company && <p className="text-sm" style={{ color: RED }}>{item.company}</p>}
               {item.description && <p className="mt-1 text-sm" style={{ color: '#3f3f46' }} dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
               {item.technologies?.length > 0 && (
-                <p className="mt-0.5 text-xs" style={{ color: '#52525b' }}>{lang === 'zh' ? '技术栈' : 'Tech'}: {item.technologies.join(', ')}</p>
+                <p className="mt-0.5 text-xs" style={{ color: '#52525b' }}>{lang === 'de' ? 'Technologien' : 'Tech'}: {item.technologies.join(', ')}</p>
               )}
               {item.highlights?.length > 0 && (
                 <ul className="mt-1 list-none space-y-0.5">
@@ -117,7 +117,7 @@ function SwissSectionContent({ section, lang }: { section: any; lang?: string })
       <div className="space-y-3">
         {((content as EducationContent).items || []).map((item: any) => (
           <div key={item.id} className="grid grid-cols-[140px_1fr] gap-4">
-            <span className="text-xs" style={{ color: '#52525b' }}>{item.startDate} &ndash; {item.endDate || (lang === 'zh' ? '至今' : 'Present')}</span>
+            <span className="text-xs" style={{ color: '#52525b' }}>{item.startDate} &ndash; {item.endDate || (lang === 'de' ? 'Heute' : 'Present')}</span>
             <div>
               <h3 className="text-sm font-bold" style={{ color: TEXT }}>{degreeField(item.degree, item.field)}</h3>
               {item.institution && <p className="text-sm" style={{ color: RED }}>{item.institution}</p>}
@@ -158,13 +158,13 @@ function SwissSectionContent({ section, lang }: { section: any; lang?: string })
         {((content as ProjectsContent).items || []).map((item: any) => (
           <div key={item.id} className="grid grid-cols-[140px_1fr] gap-4">
             {item.startDate ? (
-              <span className="text-xs" style={{ color: '#52525b' }}>{item.startDate} {'\u2013'} {item.endDate || (lang === 'zh' ? '至今' : 'Present')}</span>
+              <span className="text-xs" style={{ color: '#52525b' }}>{item.startDate} {'\u2013'} {item.endDate || (lang === 'de' ? 'Heute' : 'Present')}</span>
             ) : <span />}
             <div>
               <h3 className="text-sm font-bold" style={{ color: TEXT }}>{item.name}</h3>
               {item.description && <p className="mt-0.5 text-sm" style={{ color: '#3f3f46' }} dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
               {item.technologies?.length > 0 && (
-                <p className="mt-0.5 text-xs" style={{ color: '#52525b' }}>{lang === 'zh' ? '技术栈' : 'Tech'}: {item.technologies.join(', ')}</p>
+                <p className="mt-0.5 text-xs" style={{ color: '#52525b' }}>{lang === 'de' ? 'Technologien' : 'Tech'}: {item.technologies.join(', ')}</p>
               )}
               {item.highlights?.length > 0 && (
                 <ul className="mt-1 list-none space-y-0.5">

@@ -7,7 +7,7 @@ export const config = {
     type: (process.env.DB_TYPE || 'sqlite') as 'postgresql' | 'sqlite',
   },
   i18n: {
-    defaultLocale: 'zh' as const,
-    locales: ['zh', 'en'] as const,
+    defaultLocale: 'en' as const,
+    locales: ['de', 'en'] as const,
   },
 };

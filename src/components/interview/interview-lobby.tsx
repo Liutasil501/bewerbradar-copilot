@@ -61,7 +61,7 @@ export function InterviewLobby() {
           onClick={() => {
             checkPaywall('premium', () => {
               router.push('/interview/new');
-            });
+            }, { allowByok: true });
           }}
         >
           <Plus className="mr-2 h-4 w-4" />

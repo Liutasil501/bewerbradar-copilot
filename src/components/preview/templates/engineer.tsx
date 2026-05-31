@@ -105,7 +105,7 @@ function EngineerSectionContent({ section, resume }: { section: any; resume: Res
                 className="shrink-0 px-2 py-0.5 text-[10px] font-medium uppercase"
                 style={{ fontFamily: 'JetBrains Mono, Consolas, monospace', color: SECONDARY, backgroundColor: LIGHT_BG }}
               >
-                {item.startDate} - {item.endDate || (item.current ? (resume.language === 'zh' ? '至今' : 'Present') : '')}
+                {item.startDate} - {item.endDate || (item.current ? (resume.language === 'de' ? 'Heute' : 'Present') : '')}
               </span>
             </div>
             {item.description && <p className="mt-1 text-sm" style={{ color: BODY_TEXT }} dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
@@ -155,7 +155,7 @@ function EngineerSectionContent({ section, resume }: { section: any; resume: Res
                 className="shrink-0 text-xs"
                 style={{ fontFamily: 'JetBrains Mono, Consolas, monospace', color: SECONDARY }}
               >
-                {item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}
+                {item.startDate} - {item.endDate || (resume.language === 'de' ? 'Heute' : 'Present')}
               </span>
             </div>
             {item.gpa && <p className="text-xs" style={{ color: SECONDARY }}>GPA: {item.gpa}</p>}
@@ -215,7 +215,7 @@ function EngineerSectionContent({ section, resume }: { section: any; resume: Res
                   className="shrink-0 text-xs"
                   style={{ fontFamily: 'JetBrains Mono, Consolas, monospace', color: SECONDARY }}
                 >
-                  {item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}
+                  {item.startDate} - {item.endDate || (resume.language === 'de' ? 'Heute' : 'Present')}
                 </span>
               )}
             </div>

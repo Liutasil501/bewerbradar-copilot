@@ -15,6 +15,13 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (user.subscriptionPlan !== 'pro' && user.subscriptionPlan !== 'premium') {
+      return NextResponse.json(
+        { error: 'Pro or Premium subscription required to share resumes' },
+        { status: 403 }
+      );
+    }
+
     const resume = await resumeRepository.findById(id);
     if (!resume) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -59,6 +66,13 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (user.subscriptionPlan !== 'pro' && user.subscriptionPlan !== 'premium') {
+      return NextResponse.json(
+        { error: 'Pro or Premium subscription required to share resumes' },
+        { status: 403 }
+      );
+    }
+
     const resume = await resumeRepository.findById(id);
     if (!resume) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -90,6 +104,13 @@ export async function DELETE(
     const user = await resolveUser(fingerprint);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (user.subscriptionPlan !== 'pro' && user.subscriptionPlan !== 'premium') {
+      return NextResponse.json(
+        { error: 'Pro or Premium subscription required to share resumes' },
+        { status: 403 }
+      );
     }
 
     const resume = await resumeRepository.findById(id);

@@ -21,6 +21,8 @@ import { ResumeGrid } from '@/components/dashboard/resume-grid';
 import { ResumeListItem } from '@/components/dashboard/resume-list-item';
 import { CreateResumeDialog } from '@/components/dashboard/create-resume-dialog';
 import { GenerateResumeDialog } from '@/components/dashboard/generate-resume-dialog';
+import { usePaywall } from '@/hooks/use-paywall';
+import { PricingModal } from '@/components/billing/pricing-modal';
 import { ImportJsonDialog } from '@/components/dashboard/import-json-dialog';
 import { ShareDialog } from '@/components/editor/share-dialog';
 import { SettingsDialog } from '@/components/settings/settings-dialog';
@@ -81,6 +83,7 @@ export default function DashboardPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [shareResumeId, setShareResumeId] = useState<string | null>(null);
   const startTour = useTourStore((s) => s.startTour);
+  const { checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
 
   // Auto-start dashboard tour for first-time users
   useEffect(() => {
@@ -154,7 +157,11 @@ export default function DashboardPage() {
           <Button
             data-tour="dash-ai-generate"
             variant="outline"
-            onClick={() => openModal('generate-resume')}
+            onClick={() => {
+              checkPaywall('premium', () => {
+                openModal('generate-resume');
+              }, { allowByok: true });
+            }}
             className="cursor-pointer gap-2"
           >
             <Sparkles className="h-4 w-4" />
@@ -308,6 +315,7 @@ export default function DashboardPage() {
         />
       )}
       <TourOverlay tourId="dashboard" steps={DASHBOARD_TOUR_STEPS} />
+      <PricingModal open={showPaywall} onOpenChange={setShowPaywall} requiredTier={requiredTier} />
     </div>
   );
 }

@@ -92,11 +92,11 @@ function AcademicSectionContent({ section, resume }: { section: any; resume: Res
                 {item.company && <span className="text-sm text-zinc-600">, {item.company}</span>}
                 {item.location && <span className="text-sm text-zinc-500">, {item.location}</span>}
               </div>
-              <span className="shrink-0 text-xs text-zinc-500">{item.startDate} – {item.endDate || (item.current ? (resume.language === 'zh' ? '至今' : 'Present') : '')}</span>
+              <span className="shrink-0 text-xs text-zinc-500">{item.startDate} – {item.endDate || (item.current ? (resume.language === 'de' ? 'Heute' : 'Present') : '')}</span>
             </div>
             {item.description && <p className="mt-0.5 text-sm text-zinc-600" dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
             {item.technologies?.length > 0 && (
-              <p className="text-xs text-zinc-500 italic">{resume.language === 'zh' ? '技术栈' : 'Technologies'}: {item.technologies.join(', ')}</p>
+              <p className="text-xs text-zinc-500 italic">{resume.language === 'de' ? 'Technologien' : 'Technologies'}: {item.technologies.join(', ')}</p>
             )}
             {item.highlights?.length > 0 && (
               <ul className="mt-0.5 list-disc pl-5">
@@ -122,7 +122,7 @@ function AcademicSectionContent({ section, resume }: { section: any; resume: Res
                 <span className="text-sm font-bold text-zinc-800">{item.degree}</span>
                 {item.field && <span className="text-sm text-zinc-600"> - {item.field}</span>}
               </div>
-              <span className="shrink-0 text-xs text-zinc-500">{item.startDate} – {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}</span>
+              <span className="shrink-0 text-xs text-zinc-500">{item.startDate} – {item.endDate || (resume.language === 'de' ? 'Heute' : 'Present')}</span>
             </div>
             <p className="text-sm text-zinc-600">{item.institution}{item.location ? `, ${item.location}` : ''}</p>
             {item.gpa && <p className="text-xs text-zinc-500">GPA: {item.gpa}</p>}
@@ -166,13 +166,13 @@ function AcademicSectionContent({ section, resume }: { section: any; resume: Res
               </div>
               {item.startDate && (
                 <span className="shrink-0 text-xs text-zinc-500">
-                  {item.startDate} – {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}
+                  {item.startDate} – {item.endDate || (resume.language === 'de' ? 'Heute' : 'Present')}
                 </span>
               )}
             </div>
             {item.description && <p className="mt-0.5 text-sm text-zinc-600" dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
             {item.technologies?.length > 0 && (
-              <p className="text-xs text-zinc-500 italic">{resume.language === 'zh' ? '技术栈' : 'Technologies'}: {item.technologies.join(', ')}</p>
+              <p className="text-xs text-zinc-500 italic">{resume.language === 'de' ? 'Technologien' : 'Technologies'}: {item.technologies.join(', ')}</p>
             )}
             {item.highlights?.length > 0 && (
               <ul className="mt-0.5 list-disc pl-5">

@@ -7,6 +7,7 @@ import { useRouter } from '@/i18n/routing';
 import { useInterviewStore } from '@/stores/interview-store';
 import { useInterviewChat } from '@/hooks/use-interview-chat';
 import { useSettingsStore } from '@/stores/settings-store';
+import { toast } from 'sonner';
 import { ProgressBar } from './progress-bar';
 import { InterviewerBanner } from './interviewer-banner';
 import { MessageList } from './message-list';
@@ -34,6 +35,7 @@ interface InterviewRoomProps {
 
 export function InterviewRoom({ sessionId, initialMessages }: InterviewRoomProps) {
   const t = useTranslations('interview.room');
+  const tAi = useTranslations('ai');
   const router = useRouter();
   const { rounds, currentRoundIndex, setCurrentRoundIndex, advanceToNextRound, setIsGeneratingReport } =
     useInterviewStore();
@@ -44,7 +46,7 @@ export function InterviewRoom({ sessionId, initialMessages }: InterviewRoomProps
   const interviewerConfig = currentRound?.interviewerConfig as InterviewerConfig;
   const isRoundDone = currentRound?.status === 'completed' || currentRound?.status === 'skipped';
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading, resetMessages, sendMessage, setMessages } =
+  const { messages, input, handleInputChange, handleSubmit, isLoading, resetMessages, sendMessage, setMessages, error } =
     useInterviewChat({
       sessionId,
       roundId: currentRound?.id || '',
@@ -59,6 +61,20 @@ export function InterviewRoom({ sessionId, initialMessages }: InterviewRoomProps
       setMessages(initialMessages);
     }
   }, [initialMessages, setMessages]);
+
+  // Handle AI errors
+  useEffect(() => {
+    if (error) {
+      const msg = error.message || '';
+      if (msg.includes('apiKeyMissing') || msg.includes('API Key is required')) {
+        toast.error(tAi('apiKeyMissing'), {
+          description: tAi('apiKeyMissingHint'),
+        });
+      } else {
+        toast.error(msg);
+      }
+    }
+  }, [error, t, tAi]);
 
   // Auto-send trigger to start interview (only if no history and round is active)
   const sentInitRef = useRef<string | null>(null);

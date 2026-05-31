@@ -34,6 +34,7 @@ type Tone = 'formal' | 'friendly' | 'confident';
 
 export function CoverLetterDialog({ open, onOpenChange, resumeId }: CoverLetterDialogProps) {
   const t = useTranslations('coverLetter');
+  const tAi = useTranslations('ai');
 
   const [jobDescription, setJobDescription] = useState('');
   const [tone, setTone] = useState<Tone>('formal');
@@ -71,11 +72,11 @@ export function CoverLetterDialog({ open, onOpenChange, resumeId }: CoverLetterD
         const data: CoverLetterResult = await res.json();
         setResult(data);
       } catch (err: any) {
-        setError(err.message || t('error'));
+        setError(err.message === 'apiKeyMissing' ? `${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}` : (err.message || t('error')));
       } finally {
         setIsGenerating(false);
       }
-    });
+    }, { allowByok: true });
   };
 
   const handleCopy = async () => {

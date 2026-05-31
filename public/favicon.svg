@@ -1,32 +1,23 @@
-<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="jade-v" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#34D399"/>
-      <stop offset="100%" stop-color="#059669"/>
+    <linearGradient id="brBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2BC48E"></stop>
+      <stop offset="1" stop-color="#06A074"></stop>
+    </linearGradient>
+    <linearGradient id="brSweep" x1="0.5" y1="0.5" x2="1" y2="0.06">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0"></stop>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.42"></stop>
     </linearGradient>
   </defs>
-
-  <!-- Background -->
-  <rect x="2" y="2" width="28" height="28" rx="7" fill="url(#jade-v)"/>
-
-  <!-- White JR monogram -->
-  <g stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none">
-    <!-- J top serif -->
-    <path d="M8 9H17"/>
-    <!-- Shared vertical -->
-    <path d="M15 9V21"/>
-    <!-- J hook -->
-    <path d="M15 21C15 23.5 13 25 11 25C9.5 25 8.5 24 8.5 23"/>
-    <!-- R bowl -->
-    <path d="M15 9H20.5C23.5 9 25 11 25 13.5C25 16 23.5 18 20.5 18H15"/>
-    <!-- R leg -->
-    <path d="M19.5 18L26 25"/>
+  <rect x="3" y="3" width="94" height="94" rx="27" fill="url(#brBg)"></rect>
+  <g transform="translate(50 50)" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-opacity="0.6">
+    <circle r="11"></circle>
+    <circle r="22"></circle>
+    <circle r="32"></circle>
+    <line x1="-32" y1="0" x2="32" y2="0" stroke-opacity="0.32"></line>
+    <line x1="0" y1="-32" x2="0" y2="32" stroke-opacity="0.32"></line>
   </g>
-
-  <!-- AI sparkle glow -->
-  <circle cx="27" cy="6.5" r="4" fill="#FCD34D" opacity="0.15"/>
-  <!-- AI sparkle — main star -->
-  <path d="M27 3L27.8 5.5L30.5 6.5L27.8 7.5L27 10L26.2 7.5L23.5 6.5L26.2 5.5Z" fill="#FCD34D"/>
-  <!-- AI sparkle — small dot -->
-  <circle cx="23.5" cy="3.5" r="1" fill="#FCD34D" opacity="0.5"/>
+  <path d="M50 50 L50 18 A32 32 0 0 1 78 34 Z" fill="url(#brSweep)" transform="rotate(8 50 50)"></path>
+  <circle cx="68" cy="34" r="5.4" fill="#ffffff"></circle>
+  <circle cx="68" cy="34" r="9.5" fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="0.45"></circle>
 </svg>

@@ -21,6 +21,13 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (user.subscriptionPlan !== 'pro' && user.subscriptionPlan !== 'premium') {
+      return NextResponse.json(
+        { error: 'Pro or Premium subscription required for export' },
+        { status: 403 }
+      );
+    }
+
     const resume = await resumeRepository.findById(id);
     if (!resume) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });

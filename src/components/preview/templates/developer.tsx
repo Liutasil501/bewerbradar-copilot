@@ -87,12 +87,12 @@ function DeveloperSectionContent({ section, resume }: { section: any; resume: Re
                 {item.company && <span className="text-sm" style={{ color: BLUE }}> @ {item.company}</span>}
               </div>
               <span className="shrink-0 rounded px-2 py-0.5 text-[10px] font-medium" style={{ background: '#f0f0f0', color: '#636d83' }}>
-                {item.startDate} – {item.endDate || (item.current ? (resume.language === 'zh' ? '至今' : 'Present') : '')}
+                {item.startDate} – {item.endDate || (item.current ? (resume.language === 'de' ? 'Heute' : 'Present') : '')}
               </span>
             </div>
             {item.description && <p className="mt-1 text-sm text-zinc-600" dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
             {item.technologies?.length > 0 && (
-              <p className="mt-0.5 text-xs" style={{ color: BLUE }}>{resume.language === 'zh' ? '技术栈' : 'Tech'}: {item.technologies.join(' | ')}</p>
+              <p className="mt-0.5 text-xs" style={{ color: BLUE }}>{resume.language === 'de' ? 'Technologien' : 'Tech'}: {item.technologies.join(' | ')}</p>
             )}
             {item.highlights?.length > 0 && (
               <ul className="mt-1 space-y-0.5">
@@ -120,7 +120,7 @@ function DeveloperSectionContent({ section, resume }: { section: any; resume: Re
                 <span className="text-sm font-bold" style={{ color: DARK }}>{degreeField(item.degree, item.field)}</span>
                 {item.institution && <span className="text-sm text-zinc-500"> — {item.institution}</span>}
               </div>
-              <span className="shrink-0 text-xs text-zinc-400">{item.startDate} – {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}</span>
+              <span className="shrink-0 text-xs text-zinc-400">{item.startDate} – {item.endDate || (resume.language === 'de' ? 'Heute' : 'Present')}</span>
             </div>
             {item.gpa && <p className="text-sm text-zinc-500">GPA: {item.gpa}</p>}
             {item.highlights?.length > 0 && (
@@ -164,13 +164,13 @@ function DeveloperSectionContent({ section, resume }: { section: any; resume: Re
               </div>
               {item.startDate && (
                 <span className="shrink-0 rounded px-2 py-0.5 text-[10px] font-medium" style={{ background: '#f0f0f0', color: '#636d83' }}>
-                  {item.startDate} – {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}
+                  {item.startDate} – {item.endDate || (resume.language === 'de' ? 'Heute' : 'Present')}
                 </span>
               )}
             </div>
             {item.description && <p className="mt-1 text-sm text-zinc-600" dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
             {item.technologies?.length > 0 && (
-              <p className="mt-0.5 text-xs" style={{ color: BLUE }}>{resume.language === 'zh' ? '技术栈' : 'Tech'}: {item.technologies.join(' | ')}</p>
+              <p className="mt-0.5 text-xs" style={{ color: BLUE }}>{resume.language === 'de' ? 'Technologien' : 'Tech'}: {item.technologies.join(' | ')}</p>
             )}
             {item.highlights?.length > 0 && (
               <ul className="mt-1 space-y-0.5">

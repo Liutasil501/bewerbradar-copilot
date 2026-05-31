@@ -186,8 +186,9 @@ export function AIChatContent({ resumeId, hideTitle }: AIChatContentProps) {
     if (chatError && chatError !== lastErrorRef.current) {
       lastErrorRef.current = chatError;
       const msg = chatError.message || t('errorMessage');
-      // Show a user-friendly message for common errors
-      if (msg.includes('ETIMEDOUT') || msg.includes('Cannot connect')) {
+      if (msg.includes('apiKeyMissing') || msg.includes('API Key is required')) {
+        toast.error('Kein API-Key', { description: 'Bitte upgrade auf Premium oder hinterlege einen API-Key in den Einstellungen.' });
+      } else if (msg.includes('ETIMEDOUT') || msg.includes('Cannot connect')) {
         toast.error(t('errorMessage'), { description: 'API 连接超时，请检查网络或 API 配置' });
       } else if (msg.includes('No tool call found')) {
         toast.error(t('errorMessage'), { description: 'AI 模型返回了无效的工具调用，请重试' });

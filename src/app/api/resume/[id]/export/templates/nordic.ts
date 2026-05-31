@@ -24,16 +24,16 @@ function buildNordicSectionContent(section: Section, lang: string): string {
 
   if (section.type === 'work_experience') {
     return `<div class="space-y-4">${((c as WorkExperienceContent).items || []).map((it: any) => `<div class="rounded-sm p-3" style="background-color:${SLATE_50}">
-      <div class="flex items-baseline justify-between"><div><span class="text-sm font-medium" style="color:${SLATE_500}">${esc(it.position)}</span>${it.company ? `<span class="text-sm font-light" style="color:${SLATE_400}"> | ${esc(it.company)}</span>` : ''}</div><span class="shrink-0 text-xs font-light" style="color:${SLATE_400}">${esc(it.startDate)} - ${esc(it.endDate) || (it.current ? (lang === 'zh' ? '至今' : 'Present') : '')}</span></div>
+      <div class="flex items-baseline justify-between"><div><span class="text-sm font-medium" style="color:${SLATE_500}">${esc(it.position)}</span>${it.company ? `<span class="text-sm font-light" style="color:${SLATE_400}"> | ${esc(it.company)}</span>` : ''}</div><span class="shrink-0 text-xs font-light" style="color:${SLATE_400}">${esc(it.startDate)} - ${esc(it.endDate) || (it.current ? (lang === 'de' ? 'Heute' : 'Present') : '')}</span></div>
       ${it.description ? `<div class="mt-1 text-sm font-light" style="color:${SLATE_500}">${md(it.description)}</div>` : ''}
-      ${it.technologies?.length ? `<p class="mt-0.5 text-xs font-light" style="color:${SLATE_400}">${lang === 'zh' ? '技术栈' : 'Tech'}: ${esc(it.technologies.join(', '))}</p>` : ''}
+      ${it.technologies?.length ? `<p class="mt-0.5 text-xs font-light" style="color:${SLATE_400}">${lang === 'de' ? 'Technologien' : 'Tech'}: ${esc(it.technologies.join(', '))}</p>` : ''}
       ${it.highlights?.length ? `<ul class="mt-1.5 list-disc pl-4">${it.highlights.map((h: string) => `<li class="text-sm font-light" style="color:${SLATE_500}">${md(h)}</li>`).join('')}</ul>` : ''}
     </div>`).join('')}</div>`;
   }
 
   if (section.type === 'education') {
     return `<div class="space-y-3">${((c as EducationContent).items || []).map((it: any) => `<div class="rounded-sm p-3" style="background-color:${SLATE_50}">
-      <div class="flex items-baseline justify-between"><div><span class="text-sm font-medium" style="color:${SLATE_500}">${esc(degreeField(it.degree, it.field))}</span>${it.institution ? `<span class="text-sm font-light" style="color:${SLATE_400}"> - ${esc(it.institution)}</span>` : ''}</div><span class="shrink-0 text-xs font-light" style="color:${SLATE_400}">${esc(it.startDate)} - ${esc(it.endDate) || (lang === 'zh' ? '至今' : 'Present')}</span></div>
+      <div class="flex items-baseline justify-between"><div><span class="text-sm font-medium" style="color:${SLATE_500}">${esc(degreeField(it.degree, it.field))}</span>${it.institution ? `<span class="text-sm font-light" style="color:${SLATE_400}"> - ${esc(it.institution)}</span>` : ''}</div><span class="shrink-0 text-xs font-light" style="color:${SLATE_400}">${esc(it.startDate)} - ${esc(it.endDate) || (lang === 'de' ? 'Heute' : 'Present')}</span></div>
       ${it.gpa ? `<p class="text-xs font-light" style="color:${SLATE_400}">GPA: ${esc(it.gpa)}</p>` : ''}
       ${it.highlights?.length ? `<ul class="mt-1.5 list-disc pl-4">${it.highlights.filter(Boolean).map((h: string) => `<li class="text-sm font-light" style="color:${SLATE_500}">${esc(h)}</li>`).join('')}</ul>` : ''}
     </div>`).join('')}</div>`;
@@ -47,9 +47,9 @@ function buildNordicSectionContent(section: Section, lang: string): string {
 
   if (section.type === 'projects') {
     return `<div class="space-y-3">${((c as ProjectsContent).items || []).map((it: any) => `<div class="rounded-sm p-3" style="background-color:${SLATE_50}">
-      <div class="flex items-baseline justify-between"><span class="text-sm font-medium" style="color:${SLATE_500}">${esc(it.name)}</span>${it.startDate ? `<span class="shrink-0 text-xs font-light" style="color:${SLATE_400}">${esc(it.startDate)} - ${it.endDate ? esc(it.endDate) : (lang === 'zh' ? '至今' : 'Present')}</span>` : ''}</div>
+      <div class="flex items-baseline justify-between"><span class="text-sm font-medium" style="color:${SLATE_500}">${esc(it.name)}</span>${it.startDate ? `<span class="shrink-0 text-xs font-light" style="color:${SLATE_400}">${esc(it.startDate)} - ${it.endDate ? esc(it.endDate) : (lang === 'de' ? 'Heute' : 'Present')}</span>` : ''}</div>
       ${it.description ? `<div class="mt-1 text-sm font-light" style="color:${SLATE_500}">${md(it.description)}</div>` : ''}
-      ${it.technologies?.length ? `<p class="mt-0.5 text-xs font-light" style="color:${SLATE_400}">${lang === 'zh' ? '技术栈' : 'Tech'}: ${esc(it.technologies.join(', '))}</p>` : ''}
+      ${it.technologies?.length ? `<p class="mt-0.5 text-xs font-light" style="color:${SLATE_400}">${lang === 'de' ? 'Technologien' : 'Tech'}: ${esc(it.technologies.join(', '))}</p>` : ''}
       ${it.highlights?.length ? `<ul class="mt-1.5 list-disc pl-4">${it.highlights.map((h: string) => `<li class="text-sm font-light" style="color:${SLATE_500}">${md(h)}</li>`).join('')}</ul>` : ''}
     </div>`).join('')}</div>`;
   }

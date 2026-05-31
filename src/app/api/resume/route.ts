@@ -32,7 +32,8 @@ export async function POST(request: NextRequest) {
     const { title, template, language, sections, themeConfig } = body;
 
     const reqLanguage = language || 'de';
-    const defaultTitle = reqLanguage === 'en' ? 'Untitled Resume' : reqLanguage === 'zh' ? '未命名简历' : 'Unbenannter Lebenslauf';
+    // Determine default title based on locale
+    const defaultTitle = reqLanguage === 'de' ? 'Unbenannter Lebenslauf' : 'Untitled Resume';
 
     const resume = await resumeRepository.create({
       userId: user.id,

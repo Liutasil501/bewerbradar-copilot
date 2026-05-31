@@ -312,9 +312,9 @@
     "ai": {
       "title": "KI-Konfiguration",
       "provider": "Modell-Anbieter",
-      "apiKey": "API-Schlüssel",
+      "apiKey": "Eigener API-Schlüssel (Optional)",
       "apiKeyPlaceholder": "Geben Sie Ihren API-Schlüssel ein...",
-      "apiKeyHint": "Ihr API-Schlüssel wird lokal gespeichert und direkt an den Modellanbieter gesendet.",
+      "apiKeyHint": "Als Premium-Nutzer brauchst du keinen Key. Willst du ein spezielles Modell (z.B. GPT-4o) nutzen, trage ihn hier ein.",
       "baseURL": "Basis-URL",
       "model": "Standardmodell",
       "modelPlaceholder": "Modellname eingeben...",
@@ -335,6 +335,17 @@
       "autoSaveInterval": "Speicherintervall",
       "restartTour": "Geführte Tour",
       "restartTourDescription": "Startet die geführte Tour durch den Editor neu"
+    },
+    "subscription": {
+      "title": "Abonnement",
+      "currentPlan": "Aktueller Plan: {plan}",
+      "manage": "Abonnement verwalten",
+      "upgrade": "Upgrade auf Pro/Premium",
+      "managing": "Weiterleitung...",
+      "manageError": "Fehler beim Öffnen des Portals. Bitte versuchen Sie es erneut.",
+      "planFree": "Free",
+      "planPro": "Pro",
+      "planPremium": "Premium"
     }
   },
   "brand": {
@@ -757,6 +768,7 @@
       },
       "legal": {
         "title": "Rechtliches",
+        "impressum": "Impressum",
         "privacy": "Datenschutzerklärung",
         "terms": "Nutzungsbedingungen",
         "cookies": "Cookie-Richtlinie"
@@ -767,9 +779,9 @@
   "linkedinPhoto": {
     "title": "KI LinkedIn Foto",
     "subtitle": "Laden Sie ein Selfie hoch, generieren Sie ein professionelles LinkedIn Portrait",
-    "apiKey": "Gemini API-Schlüssel",
+    "apiKey": "Eigener Gemini API-Schlüssel (Optional)",
     "apiKeyPlaceholder": "Geben Sie Ihren Gemini API-Schlüssel ein...",
-    "apiKeyHint": "Der API-Schlüssel wird lokal gespeichert und nie auf unsere Server hochgeladen.",
+    "apiKeyHint": "Als Premium-Nutzer wird automatisch der Server-Key verwendet. Ansonsten hier den eigenen eintragen.",
     "showKey": "Anzeigen",
     "hideKey": "Verbergen",
     "uploadTitle": "Selfie hochladen",

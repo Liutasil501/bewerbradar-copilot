@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Check, Sparkles, Download, Wand2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { useUIStore } from '@/stores/ui-store';
+import { cn } from '@/lib/utils';
 
 interface PricingModalProps {
   open: boolean;
@@ -18,6 +19,8 @@ export function PricingModal({ open, onOpenChange, requiredTier }: PricingModalP
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const t = useTranslations('billing');
+  const tAi = useTranslations('ai');
+  const openModal = useUIStore((s) => s.openModal);
 
   const handleCheckout = async (tier: 'pro' | 'premium') => {
     setIsLoading(tier);
@@ -149,6 +152,18 @@ export function PricingModal({ open, onOpenChange, requiredTier }: PricingModalP
             >
               {isLoading === 'premium' ? t('loading') : t('premiumTitle')}
             </Button>
+
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => {
+                  onOpenChange(false);
+                  openModal('settings');
+                }}
+                className="text-xs text-zinc-500 underline hover:text-zinc-800 dark:hover:text-zinc-300 transition-colors"
+              >
+                {tAi('apiKeyMissingHint')}
+              </button>
+            </div>
           </div>
         </div>
       </DialogContent>

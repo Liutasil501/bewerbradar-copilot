@@ -88,11 +88,11 @@ function AtsSectionContent({ section, resume }: { section: any; resume: Resume }
                 {item.company && <span className="text-sm text-zinc-700">, {item.company}</span>}
                 {item.location && <span className="text-sm text-zinc-500">, {item.location}</span>}
               </div>
-              <span className="shrink-0 text-sm text-zinc-600">{item.startDate} - {item.endDate || (item.current ? (resume.language === 'zh' ? '至今' : 'Present') : '')}</span>
+              <span className="shrink-0 text-sm text-zinc-600">{item.startDate} - {item.endDate || (item.current ? (resume.language === 'de' ? 'Heute' : 'Present') : '')}</span>
             </div>
             {item.description && <p className="mt-0.5 text-sm text-zinc-700" dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
             {item.technologies?.length > 0 && (
-              <p className="text-sm text-zinc-600">{resume.language === 'zh' ? '技术栈' : 'Technologies'}: {item.technologies.join(', ')}</p>
+              <p className="text-sm text-zinc-600">{resume.language === 'de' ? 'Technologien' : 'Technologies'}: {item.technologies.join(', ')}</p>
             )}
             {item.highlights?.length > 0 && (
               <ul className="mt-1 list-disc pl-5">
@@ -119,7 +119,7 @@ function AtsSectionContent({ section, resume }: { section: any; resume: Resume }
                 {item.institution && <span className="text-sm text-zinc-700">, {item.institution}</span>}
                 {item.location && <span className="text-sm text-zinc-500">, {item.location}</span>}
               </div>
-              <span className="shrink-0 text-sm text-zinc-600">{item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}</span>
+              <span className="shrink-0 text-sm text-zinc-600">{item.startDate} - {item.endDate || (resume.language === 'de' ? 'Heute' : 'Present')}</span>
             </div>
             {item.gpa && <p className="text-sm text-zinc-600">GPA: {item.gpa}</p>}
             {item.highlights?.length > 0 && (
@@ -159,13 +159,13 @@ function AtsSectionContent({ section, resume }: { section: any; resume: Resume }
               <span className="text-sm font-bold text-black">{item.name}</span>
               {item.startDate && (
                 <span className="shrink-0 text-sm text-zinc-600">
-                  {item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}
+                  {item.startDate} - {item.endDate || (resume.language === 'de' ? 'Heute' : 'Present')}
                 </span>
               )}
             </div>
             {item.description && <p className="mt-0.5 text-sm text-zinc-700" dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
             {item.technologies?.length > 0 && (
-              <p className="text-sm text-zinc-600">{resume.language === 'zh' ? '技术栈' : 'Technologies'}: {item.technologies.join(', ')}</p>
+              <p className="text-sm text-zinc-600">{resume.language === 'de' ? 'Technologien' : 'Technologies'}: {item.technologies.join(', ')}</p>
             )}
             {item.highlights?.length > 0 && (
               <ul className="mt-1 list-disc pl-5">

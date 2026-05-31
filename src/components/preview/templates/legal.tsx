@@ -95,12 +95,12 @@ function LegalSectionContent({ section, resume }: { section: any; resume: Resume
                 {item.location && <span className="text-sm" style={{ color: MUTED }}> ({item.location})</span>}
               </div>
               <span className="shrink-0 text-xs italic" style={{ color: MUTED }}>
-                {item.startDate} - {item.endDate || (item.current ? (resume.language === 'zh' ? '至今' : 'Present') : '')}
+                {item.startDate} - {item.endDate || (item.current ? (resume.language === 'de' ? 'Heute' : 'Present') : '')}
               </span>
             </div>
             {item.description && <p className="mt-1 text-sm" style={{ color: BODY_TEXT }} dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
             {item.technologies?.length > 0 && (
-              <p className="mt-0.5 text-xs italic" style={{ color: MUTED }}>{resume.language === 'zh' ? '技术栈' : 'Technologies'}: {item.technologies.join(', ')}</p>
+              <p className="mt-0.5 text-xs italic" style={{ color: MUTED }}>{resume.language === 'de' ? 'Technologien' : 'Technologies'}: {item.technologies.join(', ')}</p>
             )}
             {item.highlights?.length > 0 && (
               <ul className="mt-1.5 list-disc pl-5 space-y-0.5">
@@ -129,7 +129,7 @@ function LegalSectionContent({ section, resume }: { section: any; resume: Resume
                 {item.location && <span className="text-sm" style={{ color: MUTED }}> ({item.location})</span>}
               </div>
               <span className="shrink-0 text-xs italic" style={{ color: MUTED }}>
-                {item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}
+                {item.startDate} - {item.endDate || (resume.language === 'de' ? 'Heute' : 'Present')}
               </span>
             </div>
             {item.gpa && <p className="text-xs" style={{ color: MUTED }}>GPA: {item.gpa}</p>}
@@ -168,13 +168,13 @@ function LegalSectionContent({ section, resume }: { section: any; resume: Resume
               <span className="text-sm font-bold" style={{ color: PRIMARY }}>{item.name}</span>
               {item.startDate && (
                 <span className="shrink-0 text-xs italic" style={{ color: MUTED }}>
-                  {item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}
+                  {item.startDate} - {item.endDate || (resume.language === 'de' ? 'Heute' : 'Present')}
                 </span>
               )}
             </div>
             {item.description && <p className="mt-1 text-sm" style={{ color: BODY_TEXT }} dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
             {item.technologies?.length > 0 && (
-              <p className="mt-0.5 text-xs italic" style={{ color: MUTED }}>{resume.language === 'zh' ? '技术栈' : 'Technologies'}: {item.technologies.join(', ')}</p>
+              <p className="mt-0.5 text-xs italic" style={{ color: MUTED }}>{resume.language === 'de' ? 'Technologien' : 'Technologies'}: {item.technologies.join(', ')}</p>
             )}
             {item.highlights?.length > 0 && (
               <ul className="mt-1 list-disc pl-5 space-y-0.5">

@@ -312,9 +312,9 @@
     "ai": {
       "title": "AI Config",
       "provider": "Model Protocol",
-      "apiKey": "API Key",
-      "apiKeyPlaceholder": "Enter your API Key...",
-      "apiKeyHint": "Your API Key is stored locally and sent directly to the model provider per request.",
+      "apiKey": "Custom API Key (Optional)",
+      "apiKeyPlaceholder": "Enter your API key...",
+      "apiKeyHint": "Premium users don't need a key. If you want to use a specific model (e.g. GPT-4o), enter it here.",
       "baseURL": "Base URL",
       "model": "Default Model",
       "modelPlaceholder": "Enter model name...",
@@ -335,6 +335,17 @@
       "autoSaveInterval": "Auto Save Interval",
       "restartTour": "Guided Tour",
       "restartTourDescription": "Restart the editor guided tour"
+    },
+    "subscription": {
+      "title": "Subscription",
+      "currentPlan": "Current Plan: {plan}",
+      "manage": "Manage Subscription",
+      "upgrade": "Upgrade to Pro/Premium",
+      "managing": "Redirecting...",
+      "manageError": "Failed to open portal. Please try again.",
+      "planFree": "Free",
+      "planPro": "Pro",
+      "planPremium": "Premium"
     }
   },
   "brand": {
@@ -767,9 +778,9 @@
   "linkedinPhoto": {
     "title": "AI LinkedIn Photo",
     "subtitle": "Upload a selfie, generate a professional LinkedIn headshot",
-    "apiKey": "Gemini API Key",
-    "apiKeyPlaceholder": "Enter your Gemini API Key...",
-    "apiKeyHint": "API Key is stored locally in your browser, never uploaded to any server.",
+    "apiKey": "Custom Gemini API Key (Optional)",
+    "apiKeyPlaceholder": "Enter your Gemini API key...",
+    "apiKeyHint": "Premium users automatically use the server key. Otherwise, enter your own here.",
     "showKey": "Show",
     "hideKey": "Hide",
     "uploadTitle": "Upload Selfie",

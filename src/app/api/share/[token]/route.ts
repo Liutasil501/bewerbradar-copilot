@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resumeRepository } from '@/lib/db/repositories/resume.repository';
 import { shareRepository } from '@/lib/db/repositories/share.repository';
+import { userRepository } from '@/lib/db/repositories/user.repository';
 import { hashPassword } from '@/lib/utils/share';
 
 export async function GET(
@@ -42,6 +43,11 @@ export async function GET(
         return NextResponse.json({ error: 'Not found' }, { status: 404 });
       }
 
+      const owner = await userRepository.findById(resume.userId);
+      if (owner && owner.subscriptionPlan === 'free') {
+        return NextResponse.json({ error: 'The creator of this resume no longer has an active subscription.' }, { status: 403 });
+      }
+
       const { userId, sharePassword, ...publicResume } = resume;
       return NextResponse.json(publicResume);
     }
@@ -73,6 +79,11 @@ export async function GET(
     }
 
     await resumeRepository.incrementViewCount(resume.id);
+
+    const owner = await userRepository.findById(resume.userId);
+    if (owner && owner.subscriptionPlan === 'free') {
+      return NextResponse.json({ error: 'The creator of this resume no longer has an active subscription.' }, { status: 403 });
+    }
 
     const { userId, sharePassword, ...publicResume } = resume;
     return NextResponse.json(publicResume);

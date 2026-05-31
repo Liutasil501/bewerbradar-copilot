@@ -267,6 +267,7 @@ function JdAnalysisResultView({ result, jobDescription, t }: { result: JdAnalysi
 
 export function JdAnalysisDialog({ open, onOpenChange, resumeId }: JdAnalysisDialogProps) {
   const t = useTranslations('jdAnalysis');
+  const tAi = useTranslations('ai');
   const ct = useTranslations('common');
   const { setShowAiChat, setPendingAiMessage } = useEditorStore();
   const [jobDescription, setJobDescription] = useState('');
@@ -338,11 +339,11 @@ export function JdAnalysisDialog({ open, onOpenChange, resumeId }: JdAnalysisDia
       // Refresh history count
       fetchHistory();
       } catch (err: any) {
-        setError(err.message || 'Failed to analyze');
+        setError(err.message === 'apiKeyMissing' ? `${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}` : (err.message || 'Failed to analyze'));
       } finally {
         setIsAnalyzing(false);
       }
-    });
+    }, { allowByok: true });
   };
 
   const handleAnalyzeAgain = () => {

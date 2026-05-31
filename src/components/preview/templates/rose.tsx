@@ -98,7 +98,7 @@ function RoseSectionContent({ section, resume }: { section: any; resume: Resume 
             <div className="flex items-baseline justify-between">
               <h3 className="text-sm font-semibold" style={{ color: PRIMARY }}>{item.position}</h3>
               <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ backgroundColor: ROSE_50, color: ACCENT }}>
-                {item.startDate} &ndash; {item.endDate || (item.current ? (resume.language === 'zh' ? '至今' : 'Present') : '')}
+                {item.startDate} &ndash; {item.endDate || (item.current ? (resume.language === 'de' ? 'Heute' : 'Present') : '')}
               </span>
             </div>
             {item.company && <p className="text-sm" style={{ color: ACCENT }}>{item.company}</p>}
@@ -133,7 +133,7 @@ function RoseSectionContent({ section, resume }: { section: any; resume: Resume 
           <div key={item.id} className="rounded-xl border p-4" style={{ borderColor: ROSE_100 }}>
             <div className="flex items-baseline justify-between">
               <h3 className="text-sm font-semibold" style={{ color: PRIMARY }}>{degreeField(item.degree, item.field)}</h3>
-              <span className="shrink-0 text-xs" style={{ color: ACCENT }}>{item.startDate} &ndash; {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}</span>
+              <span className="shrink-0 text-xs" style={{ color: ACCENT }}>{item.startDate} &ndash; {item.endDate || (resume.language === 'de' ? 'Heute' : 'Present')}</span>
             </div>
             {item.institution && <p className="text-sm" style={{ color: ACCENT }}>{item.institution}</p>}
             {item.gpa && <p className="text-xs" style={{ color: '#a8a29e' }}>GPA: {item.gpa}</p>}
@@ -184,7 +184,7 @@ function RoseSectionContent({ section, resume }: { section: any; resume: Resume 
             <div className="flex items-baseline justify-between">
               <h3 className="text-sm font-semibold" style={{ color: PRIMARY }}>{item.name}</h3>
               {item.startDate && (
-                <span className="shrink-0 text-xs" style={{ color: ACCENT }}>{item.startDate} {'\u2013'} {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}</span>
+                <span className="shrink-0 text-xs" style={{ color: ACCENT }}>{item.startDate} {'\u2013'} {item.endDate || (resume.language === 'de' ? 'Heute' : 'Present')}</span>
               )}
             </div>
             {item.description && <p className="mt-0.5 text-sm text-zinc-600" dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
