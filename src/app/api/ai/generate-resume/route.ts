@@ -6,13 +6,14 @@ import { resumeRepository } from '@/lib/db/repositories/resume.repository';
 import { generateResumeInputSchema, type GenerateResumeOutput } from '@/lib/ai/generate-resume-schema';
 
 const SECTION_TITLES: Record<string, Record<string, string>> = {
-  zh: {
-    personal_info: '个人信息',
-    summary: '个人简介',
-    work_experience: '工作经历',
-    education: '教育背景',
-    skills: '专业技能',
-    projects: '项目经历',
+
+  de: {
+    personal_info: 'Persönliche Daten',
+    summary: 'Profil',
+    work_experience: 'Berufserfahrung',
+    education: 'Bildungsweg',
+    skills: 'Kenntnisse',
+    projects: 'Projekte',
   },
   en: {
     personal_info: 'Personal Information',

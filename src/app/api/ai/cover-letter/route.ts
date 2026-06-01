@@ -18,10 +18,9 @@ const TONE_INSTRUCTIONS: Record<string, string> = {
 
 function getSystemPrompt(tone: string, language: string): string {
   const LANG_NAMES: Record<string, string> = {
-    zh: 'Simplified Chinese', en: 'English', ja: 'Japanese', ko: 'Korean',
-    fr: 'French', de: 'German', es: 'Spanish', pt: 'Portuguese', ru: 'Russian', ar: 'Arabic',
+    en: 'English', de: 'German'
   };
-  const lang = LANG_NAMES[language] || 'English';
+  const lang = LANG_NAMES[language] || 'German';
   const toneInstruction = TONE_INSTRUCTIONS[tone] || TONE_INSTRUCTIONS.formal;
 
   return `You are an expert cover letter writer. Write a tailored cover letter in ${lang}.

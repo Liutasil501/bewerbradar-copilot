@@ -5,7 +5,7 @@ export const coverLetterInputSchema = z.object({
   resumeId: z.string().min(1).describe('The ID of the resume to base the cover letter on'),
   jobDescription: z.string().min(1).describe('The target job description'),
   tone: z.enum(['formal', 'friendly', 'confident']).describe('The tone of the cover letter'),
-  language: z.enum(['de', 'en', 'ja', 'ko', 'fr', 'es', 'pt', 'ru', 'ar']).optional().default('en').describe('Language for the cover letter'),
+  language: z.enum(['de', 'en']).optional().default('de').describe('Language for the cover letter'),
 });
 
 export type CoverLetterInput = z.infer<typeof coverLetterInputSchema>;

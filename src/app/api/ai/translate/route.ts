@@ -8,16 +8,8 @@ import { extractJson } from '@/lib/ai/extract-json';
 import { z } from 'zod/v4';
 
 const LANGUAGE_NAMES: Record<string, string> = {
-  zh: 'Simplified Chinese',
   en: 'English',
-  ja: 'Japanese',
-  ko: 'Korean',
-  fr: 'French',
   de: 'German',
-  es: 'Spanish',
-  pt: 'Portuguese',
-  ru: 'Russian',
-  ar: 'Arabic',
 };
 
 /** Fields to strip before sending to AI (e.g. base64 avatar), keyed by section type */
