@@ -127,9 +127,8 @@ Respond with JSON only.`,
     if (!newResume) {
       return NextResponse.json({ error: 'Failed to create resume' }, { status: 500 });
     }
-
     // Create sections in the database
-    const titles = SECTION_TITLES[lang] || SECTION_TITLES.zh;
+    const titles = SECTION_TITLES[lang] || SECTION_TITLES.de;
     const sectionTypes = ['personal_info', 'summary', 'work_experience', 'education', 'skills', 'projects'] as const;
 
     for (let i = 0; i < sectionTypes.length; i++) {
