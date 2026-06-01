@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import type { Resume } from '@/types/resume';
+import { toast } from 'sonner';
 
 function getHeaders() {
   const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
@@ -22,9 +23,13 @@ export function useResume() {
       if (res.ok) {
         const data = await res.json();
         setResumes(data);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        toast.error(errData.error || 'Failed to fetch resumes');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch resumes:', error);
+      toast.error(error.message || 'Failed to fetch resumes');
     } finally {
       setIsLoading(false);
     }
@@ -41,9 +46,13 @@ export function useResume() {
         const resume = await res.json();
         setResumes((prev) => [resume, ...prev]);
         return resume;
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        toast.error(errData.error || 'Failed to create resume');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create resume:', error);
+      toast.error(error.message || 'Failed to create resume');
     }
     return null;
   }, []);
@@ -57,9 +66,13 @@ export function useResume() {
       if (res.ok) {
         setResumes((prev) => prev.filter((r) => r.id !== id));
         return true;
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        toast.error(errData.error || 'Failed to delete resume');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete resume:', error);
+      toast.error(error.message || 'Failed to delete resume');
     }
     return false;
   }, []);
@@ -74,9 +87,13 @@ export function useResume() {
       if (res.ok) {
         setResumes((prev) => prev.map((r) => r.id === id ? { ...r, title } : r));
         return true;
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        toast.error(errData.error || 'Failed to rename resume');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to rename resume:', error);
+      toast.error(error.message || 'Failed to rename resume');
     }
     return false;
   }, []);
@@ -91,9 +108,13 @@ export function useResume() {
         const resume = await res.json();
         setResumes((prev) => [resume, ...prev]);
         return resume;
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        toast.error(errData.error || 'Failed to duplicate resume');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to duplicate resume:', error);
+      toast.error(error.message || 'Failed to duplicate resume');
     }
     return null;
   }, []);

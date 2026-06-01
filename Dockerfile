@@ -13,7 +13,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN pnpm build
+RUN NEXT_PRIVATE_WORKER_CPUS=1 NODE_OPTIONS="--max-old-space-size=2048" pnpm build
 
 # --- Production ---
 FROM base AS runner
