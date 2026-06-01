@@ -70,7 +70,9 @@ export function ExportDialog({ open, onOpenChange, resumeId }: ExportDialogProps
   const { checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
 
   const handleExport = useCallback(() => {
-    checkPaywall('pro', async () => {
+    const isPremiumFormat = selectedFormat !== 'json' && selectedFormat !== 'txt';
+    
+    const runExport = async () => {
       setState('exporting');
       setErrorMessage('');
 
@@ -120,7 +122,13 @@ export function ExportDialog({ open, onOpenChange, resumeId }: ExportDialogProps
         setState('error');
         setErrorMessage(err.message || t('error'));
       }
-    });
+    };
+
+    if (isPremiumFormat) {
+      checkPaywall('pro', runExport);
+    } else {
+      runExport();
+    }
   }, [resumeId, selectedFormat, currentResume, isDirty, save, onOpenChange, t, checkPaywall]);
 
   const isLoading = state === 'exporting';

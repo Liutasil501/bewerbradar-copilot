@@ -21,11 +21,15 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const format = request.nextUrl.searchParams.get('format') || 'json';
+
     if (user.subscriptionPlan !== 'pro' && user.subscriptionPlan !== 'premium') {
-      return NextResponse.json(
-        { error: 'Pro or Premium subscription required for export' },
-        { status: 403 }
-      );
+      if (format !== 'json' && format !== 'txt') {
+        return NextResponse.json(
+          { error: 'Pro or Premium subscription required for PDF/DOCX/HTML export' },
+          { status: 403 }
+        );
+      }
     }
 
     const resume = await resumeRepository.findById(id);
