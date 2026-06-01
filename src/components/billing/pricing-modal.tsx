@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useUIStore } from '@/stores/ui-store';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface PricingModalProps {
   open: boolean;
@@ -34,10 +35,10 @@ export function PricingModal({ open, onOpenChange, requiredTier }: PricingModalP
       if (data.url) {
         window.location.href = data.url;
       } else {
-        alert(data.error || 'Checkout failed');
+        toast.error(data.error || 'Checkout failed');
       }
     } catch (e) {
-      alert('An error occurred during checkout');
+      toast.error('An error occurred during checkout');
     } finally {
       setIsLoading(null);
     }
