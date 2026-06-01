@@ -113,7 +113,7 @@ export function buildMetroHtml(resume: ResumeWithSections): string {
         <div class="px-3 py-1 text-xs font-bold uppercase tracking-wider text-white" style="background-color:${PRIMARY}">${esc(s.title)}</div>
         <div class="h-0.5 flex-1" style="background-color:${AMBER}"></div>
       </div>
-      ${buildMetroSectionContent(s, resume.language || 'en')}
+      ${buildMetroSectionContent(s, resume.language || 'de')}
     </div>`).join('')}
   </div>`;
 }

@@ -126,7 +126,7 @@ export function buildSwissHtml(resume: ResumeWithSections): string {
         <span class="inline-block h-2.5 w-2.5 shrink-0" style="background-color:${RED}"></span>
         <h2 class="text-xs font-bold uppercase tracking-[0.2em]" style="color:${TEXT}">${esc(s.title)}</h2>
       </div>
-      ${buildSwissSectionContent(s, resume.language || 'en')}
+      ${buildSwissSectionContent(s, resume.language || 'de')}
     </div>`).join('')}
   </div>`;
 }

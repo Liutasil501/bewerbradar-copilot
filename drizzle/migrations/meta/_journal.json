@@ -64,6 +64,13 @@
       "when": 1780079242852,
       "tag": "0008_warm_odin",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1780313234527,
+      "tag": "0009_petite_bloodstrike",
+      "breakpoints": true
     }
   ]
 }

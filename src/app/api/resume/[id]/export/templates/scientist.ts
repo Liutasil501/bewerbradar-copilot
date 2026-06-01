@@ -110,7 +110,7 @@ export function buildScientistHtml(resume: ResumeWithSections): string {
     ${sections.map((s, idx) => `<div class="mb-6" data-section>
       <div class="mb-2 flex items-baseline gap-2"><span class="text-sm font-bold" style="color:${ACCENT}">${idx + 1}.</span><h2 class="text-sm font-bold uppercase tracking-wider" style="color:${PRIMARY}">${esc(s.title)}</h2></div>
       <div class="h-px w-full" style="background-color:${GRID_LINE}"></div>
-      <div class="mt-2">${buildScientistSectionContent(s, idx, resume.language || 'en')}</div>
+      <div class="mt-2">${buildScientistSectionContent(s, idx, resume.language || 'de')}</div>
     </div>`).join('')}
     <div class="mt-8 h-px w-full" style="background-color:${PRIMARY}"></div>
   </div>`;

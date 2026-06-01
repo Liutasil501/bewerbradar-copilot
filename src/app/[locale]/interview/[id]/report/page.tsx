@@ -34,7 +34,7 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
           fetch(`/api/interview/${id}/report`, {
             method: 'POST',
             headers,
-            body: JSON.stringify({ locale: document.documentElement.lang || 'zh' }),
+            body: JSON.stringify({ locale: document.documentElement.lang || 'de' }),
           })
             .then((res) => res.json())
             .then((data) => setReport(data))

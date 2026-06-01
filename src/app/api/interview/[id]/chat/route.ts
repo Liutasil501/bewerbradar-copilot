@@ -20,7 +20,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return new Response('Not found', { status: 404 });
     }
 
-    const { messages, roundId, model: modelId, locale = 'zh' } = await request.json();
+    const { messages, roundId, model: modelId, locale = 'de' } = await request.json();
 
     const round = await interviewRepository.findRound(roundId);
     if (!round || round.sessionId !== sessionId) {

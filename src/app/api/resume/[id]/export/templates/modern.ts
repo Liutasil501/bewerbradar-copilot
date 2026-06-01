@@ -102,7 +102,7 @@ export function buildModernHtml(resume: ResumeWithSections): string {
         <h2 class="mb-3 flex items-center gap-2.5 text-sm font-bold uppercase tracking-wider" style="color:#e94560">
           <span class="h-[3px] w-7 rounded-full" style="background:linear-gradient(90deg,#e94560,#0f3460)"></span>${esc(s.title)}
         </h2>
-        ${buildModernSectionContent(s, resume.language || 'en')}
+        ${buildModernSectionContent(s, resume.language || 'de')}
       </div>`).join('')}
     </div>
   </div>`;

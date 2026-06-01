@@ -114,7 +114,7 @@ function buildSidebarMainContent(section: Section, lang: string = 'en'): string 
 export function buildSidebarHtml(resume: ResumeWithSections): string {
   const pi = getPersonalInfo(resume);
   const sections = visibleSections(resume);
-  const lang = resume.language || 'en';
+  const lang = resume.language || 'de';
   const sidebarSections = sections.filter(s => SIDEBAR_TYPES.has(s.type));
   const mainSections = sections.filter(s => !SIDEBAR_TYPES.has(s.type));
 

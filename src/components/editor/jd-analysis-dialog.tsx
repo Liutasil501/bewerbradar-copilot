@@ -368,15 +368,15 @@ export function JdAnalysisDialog({ open, onOpenChange, resumeId }: JdAnalysisDia
     if (!result) return;
     const parts: string[] = [];
     if (result.missingKeywords.length > 0) {
-      parts.push(`缺失关键词：${result.missingKeywords.join('、')}`);
+      parts.push(`${t('optimizePromptKeywords')} ${result.missingKeywords.join(', ')}`);
     }
     if (result.suggestions.length > 0) {
       const list = result.suggestions
         .map((s, i) => `${i + 1}. [${s.section}] "${s.current}" → "${s.suggested}"`)
         .join('\n');
-      parts.push(`优化建议：\n${list}`);
+      parts.push(`${t('optimizePromptSuggestions')}\n${list}`);
     }
-    const message = `请根据以下 JD 匹配分析结果优化简历，使其更匹配目标职位：\n\n${parts.join('\n\n')}\n\n请使用工具直接修改对应的简历模块内容，尽量自然地融入缺失关键词。`;
+    const message = `${t('optimizePromptHeader')}\n\n${parts.join('\n\n')}\n\n${t('optimizePromptFooter')}`;
     onOpenChange(false);
     setTimeout(() => {
       setPendingAiMessage(message);

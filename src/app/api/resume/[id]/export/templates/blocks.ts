@@ -117,7 +117,7 @@ export function buildBlocksHtml(resume: ResumeWithSections): string {
         <h2 class="text-sm font-semibold" style="color:${PRIMARY}">${esc(s.title)}</h2>
       </div>
       <div class="ml-5">
-        ${buildBlocksSectionContent(s, resume.language || 'en')}
+        ${buildBlocksSectionContent(s, resume.language || 'de')}
       </div>
     </div>`).join('')}
   </div>`;

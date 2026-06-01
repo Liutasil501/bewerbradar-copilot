@@ -221,11 +221,11 @@ const presets: Record<string, PresetInterviewer> = {
 
 export const INTERVIEWER_TYPES = Object.keys(presets);
 
-export function getPresetInterviewers(locale: 'zh' | 'en' | 'de'): InterviewerConfig[] {
+export function getPresetInterviewers(locale: 'en' | 'de'): InterviewerConfig[] {
   return Object.values(presets).map((p) => p[locale]);
 }
 
-export function getPresetInterviewer(type: string, locale: 'zh' | 'en' | 'de'): InterviewerConfig | null {
+export function getPresetInterviewer(type: string, locale: 'en' | 'de'): InterviewerConfig | null {
   return presets[type]?.[locale] ?? null;
 }
 

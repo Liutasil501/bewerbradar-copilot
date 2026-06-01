@@ -106,7 +106,7 @@ export function buildNordicHtml(resume: ResumeWithSections): string {
     <div class="mx-auto mb-8 h-px w-full" style="background-color:${SLATE_400}"></div>
     ${sections.map(s => `<div class="mb-7" data-section>
       <h2 class="mb-3 text-xs font-medium uppercase tracking-[0.2em]" style="color:${SLATE_500}">${esc(s.title)}</h2>
-      ${buildNordicSectionContent(s, resume.language || 'en')}
+      ${buildNordicSectionContent(s, resume.language || 'de')}
     </div>`).join('')}
   </div>`;
 }

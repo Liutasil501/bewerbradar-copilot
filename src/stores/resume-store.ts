@@ -170,7 +170,7 @@ export const useResumeStore = create<ResumeStore>((set, get) => ({
         ? localStorage.getItem('br_fingerprint')
         : null;
 
-      await fetch(`/api/resume/${currentResume.id}`, {
+      const res = await fetch(`/api/resume/${currentResume.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -191,9 +191,14 @@ export const useResumeStore = create<ResumeStore>((set, get) => ({
         }),
       });
 
+      if (!res.ok) {
+        throw new Error('Server returned ' + res.status);
+      }
+
       set({ isDirty: false });
     } catch (error) {
       console.error('Failed to save resume:', error);
+      throw error;
     } finally {
       set({ isSaving: false });
     }
@@ -213,7 +218,10 @@ export const useResumeStore = create<ResumeStore>((set, get) => ({
 
     const delay = _hydrated ? autoSaveInterval : AUTOSAVE_DELAY;
     const timeout = setTimeout(() => {
-      get().save();
+      get().save().catch(() => {
+        // Error is already logged in save(), but we need to catch it here 
+        // to prevent UnhandledPromiseRejection warning on autosave failure.
+      });
     }, delay);
 
     set({ _saveTimeout: timeout });

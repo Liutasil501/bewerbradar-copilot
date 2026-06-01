@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { jobTitle, yearsOfExperience, skills, industry, experience, template, language } = parsed.data;
-    const lang = language || 'zh';
+    const lang = language || 'de';
 
     const aiConfig = extractAIConfig(request, user);
     const model = getModel(aiConfig);

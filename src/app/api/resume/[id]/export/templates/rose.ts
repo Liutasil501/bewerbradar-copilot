@@ -119,7 +119,7 @@ export function buildRoseHtml(resume: ResumeWithSections): string {
         <div class="h-0.5 w-6 rounded-full" style="background-color:${ACCENT}"></div>
         <h2 class="text-xs font-semibold uppercase tracking-[0.15em]" style="color:${PRIMARY}">${esc(s.title)}</h2>
       </div>
-      ${buildRoseSectionContent(s, resume.language || 'en')}
+      ${buildRoseSectionContent(s, resume.language || 'de')}
     </div>`).join('')}
   </div>`;
 }

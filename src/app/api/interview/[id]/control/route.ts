@@ -16,7 +16,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  const { action, roundId, locale = 'zh' } = await request.json();
+  const { action, roundId, locale = 'de' } = await request.json();
 
   let systemMessage = '';
   switch (action) {

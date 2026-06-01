@@ -114,7 +114,7 @@ export function buildMagazineHtml(resume: ResumeWithSections): string {
     </div>
     ${sections.map(s => `<div class="mb-5" data-section>
       <div class="mb-2 flex items-center gap-2"><div class="h-4 w-4 shrink-0" style="background-color:${ACCENT}"></div><h2 class="text-xs font-bold uppercase tracking-[0.2em]" style="color:${PRIMARY}">${esc(s.title)}</h2><div class="h-px flex-1" style="background-color:#e5e5e5"></div></div>
-      ${buildMagazineSectionContent(s, resume.language || 'en')}
+      ${buildMagazineSectionContent(s, resume.language || 'de')}
     </div>`).join('')}
   </div>`;
 }

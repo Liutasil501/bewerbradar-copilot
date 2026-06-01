@@ -100,7 +100,7 @@ export function buildInfographicHtml(resume: ResumeWithSections): string {
           <span class="inline-flex h-6 w-6 items-center justify-center rounded-full text-[10px] text-white" style="background:${COLORS[idx % COLORS.length]}">${idx + 1}</span>
           <span style="color:${COLORS[idx % COLORS.length]}">${esc(s.title)}</span>
         </h2>
-        ${buildInfographicSectionContent(s, COLORS[idx % COLORS.length], idx, resume.language || 'en')}
+        ${buildInfographicSectionContent(s, COLORS[idx % COLORS.length], idx, resume.language || 'de')}
       </div>`).join('')}
     </div>
   </div>`;

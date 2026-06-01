@@ -118,7 +118,7 @@ export function buildNeonHtml(resume: ResumeWithSections): string {
     <div class="p-8 pt-6">
       ${sections.map(s => `<div class="mb-6" data-section>
         <div class="mb-3 flex items-center gap-3"><h2 class="text-sm font-extrabold uppercase tracking-widest" style="color:${CYAN};text-shadow:0 0 10px ${CYAN}40">${esc(s.title)}</h2><div class="h-px flex-1" style="background:linear-gradient(90deg,${CYAN}40,transparent)"></div></div>
-        ${buildNeonSectionContent(s, resume.language || 'en')}
+        ${buildNeonSectionContent(s, resume.language || 'de')}
       </div>`).join('')}
     </div>
   </div>`;

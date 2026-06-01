@@ -14,7 +14,7 @@ interface InterviewerPickerProps {
 
 export function InterviewerPicker({ selected, onChange }: InterviewerPickerProps) {
   const t = useTranslations('interview.setup');
-  const locale = useLocale() as 'zh' | 'en';
+  const locale = useLocale() as 'en' | 'de';
   const presets = getPresetInterviewers(locale);
 
   const allInterviewers = [

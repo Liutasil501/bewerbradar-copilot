@@ -325,7 +325,7 @@ export function GrammarCheckDialog({ open, onOpenChange, resumeId }: GrammarChec
     const issueList = result.issues
       .map((issue, i) => `${i + 1}. [${issue.sectionTitle}] "${issue.original}" → "${issue.suggestion}"`)
       .join('\n');
-    const message = `请根据以下语法检查结果，逐一修复简历中的问题：\n\n${issueList}\n\n请使用工具直接修改对应的简历模块内容。`;
+    const message = `${t('fixAllPromptHeader')}\n\n${issueList}\n\n${t('fixAllPromptFooter')}`;
     onOpenChange(false);
     setTimeout(() => {
       setPendingAiMessage(message);

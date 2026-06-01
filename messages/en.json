@@ -423,7 +423,11 @@
     "jdPreview": "JD Preview",
     "viewDetail": "View Details",
     "loadingHistory": "Loading history...",
-    "jobDescriptionLabel": "Job Description"
+    "jobDescriptionLabel": "Job Description",
+    "optimizePromptHeader": "Please optimize the resume based on the following JD match analysis to better fit the target role:",
+    "optimizePromptKeywords": "Missing Keywords:",
+    "optimizePromptSuggestions": "Optimization Suggestions:",
+    "optimizePromptFooter": "Please use your tools to directly modify the corresponding resume sections and naturally integrate the missing keywords."
   },
   "translate": {
     "title": "AI Resume Translation",
@@ -522,7 +526,9 @@
     "deleted": "Record deleted",
     "issueCountLabel": "{count} issues",
     "viewDetail": "View Details",
-    "loadingHistory": "Loading history..."
+    "loadingHistory": "Loading history...",
+    "fixAllPromptHeader": "Please fix the issues in the resume one by one based on the following grammar check results:",
+    "fixAllPromptFooter": "Please use your tools to directly modify the corresponding resume sections."
   },
   "export": {
     "title": "Export Resume",

@@ -107,7 +107,7 @@ export function buildTimelineHtml(resume: ResumeWithSections): string {
     </div>
     ${sections.map(s => `<div class="mb-6" data-section>
       <h2 class="mb-3 text-sm font-bold uppercase tracking-wider" style="color:${BG}">${esc(s.title)}</h2>
-      ${buildTimelineSectionContent(s, resume.language || 'en')}
+      ${buildTimelineSectionContent(s, resume.language || 'de')}
     </div>`).join('')}
   </div>`;
 }

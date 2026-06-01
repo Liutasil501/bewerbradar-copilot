@@ -121,7 +121,7 @@ export function buildBerlinHtml(resume: ResumeWithSections): string {
           <h2 class="text-sm font-extrabold uppercase tracking-wider" style="color:${TEXT}">${esc(s.title)}</h2>
           <div class="ml-auto h-1 w-12" style="background-color:${YELLOW}"></div>
         </div>
-        ${buildBerlinSectionContent(s, resume.language || 'en')}
+        ${buildBerlinSectionContent(s, resume.language || 'de')}
       </div>`).join('')}
     </div>
   </div>`;

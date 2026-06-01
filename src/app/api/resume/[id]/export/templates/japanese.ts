@@ -123,7 +123,7 @@ export function buildJapaneseHtml(resume: ResumeWithSections): string {
         <span class="inline-block h-1 w-1 rounded-full" style="background-color:${ACCENT}"></span>
         <h2 class="text-[10px] font-light uppercase tracking-[0.25em]" style="color:${ACCENT}">${esc(s.title)}</h2>
       </div>
-      ${buildJapaneseSectionContent(s, resume.language || 'en')}
+      ${buildJapaneseSectionContent(s, resume.language || 'de')}
     </div>`).join('')}
   </div>`;
 }

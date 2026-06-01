@@ -106,7 +106,7 @@ export function buildDeveloperHtml(resume: ResumeWithSections): string {
       ${sections.map(s => `<div class="mb-6" data-section>
         <h2 class="mb-2 text-sm font-bold" style="color:${ORANGE}">&gt; ${esc(s.title).toUpperCase()}</h2>
         <div class="border-l-2 pl-4" style="border-color:#3e4451">
-          ${buildDeveloperSectionContent(s, resume.language || 'en')}
+          ${buildDeveloperSectionContent(s, resume.language || 'de')}
         </div>
       </div>`).join('')}
     </div>

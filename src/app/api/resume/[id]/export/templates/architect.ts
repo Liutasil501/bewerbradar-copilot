@@ -124,7 +124,7 @@ export function buildArchitectHtml(resume: ResumeWithSections): string {
         <h2 class="text-sm font-bold uppercase tracking-[0.15em]" style="font-family:JetBrains Mono,Consolas,monospace;color:${PRIMARY}">${esc(s.title)}</h2>
         <div class="h-px flex-1" style="background-color:${PRIMARY};opacity:0.3"></div>
       </div>
-      ${buildArchitectSectionContent(s, resume.language || 'en')}
+      ${buildArchitectSectionContent(s, resume.language || 'de')}
     </div>`).join('')}
   </div>`;
 }

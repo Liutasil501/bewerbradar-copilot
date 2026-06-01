@@ -94,7 +94,7 @@ export function buildDesignerHtml(resume: ResumeWithSections): string {
     <div class="p-8">
       ${sections.map(s => `<div class="mb-6" data-section>
         <h2 class="mb-3 text-xs font-black uppercase tracking-[0.3em]" style="color:${CORAL}">${esc(s.title)}</h2>
-        ${buildDesignerSectionContent(s, resume.language || 'en')}
+        ${buildDesignerSectionContent(s, resume.language || 'de')}
       </div>`).join('')}
     </div>
   </div>`;

@@ -94,7 +94,7 @@ export function buildProfessionalHtml(resume: ResumeWithSections): string {
     </div>
     ${sections.map(s => `<div class="mb-5" data-section>
       <div class="mb-3 flex items-center gap-3"><h2 class="text-sm font-bold uppercase tracking-[0.2em]" style="color:${BLUE}">${esc(s.title)}</h2><div class="h-[1px] flex-1 bg-zinc-200"></div></div>
-      ${buildProfessionalSectionContent(s, resume.language || 'en')}
+      ${buildProfessionalSectionContent(s, resume.language || 'de')}
     </div>`).join('')}
   </div>`;
 }

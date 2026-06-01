@@ -109,7 +109,7 @@ export function buildConsultantHtml(resume: ResumeWithSections): string {
     </div>
     ${sections.map(s => `<div class="mb-6" data-section>
       <h2 class="mb-3 border-l-[3px] pl-3 text-sm font-bold uppercase tracking-wider" style="color:${GRAY_700};border-color:${BLUE_600}">${esc(s.title)}</h2>
-      ${buildConsultantSectionContent(s, resume.language || 'en')}
+      ${buildConsultantSectionContent(s, resume.language || 'de')}
     </div>`).join('')}
   </div>`;
 }

@@ -112,7 +112,7 @@ export function buildTeacherHtml(resume: ResumeWithSections): string {
     <div class="mb-6 h-0.5 w-full rounded-full" style="background-color:${ACCENT};opacity:0.3"></div>
     ${sections.map(s => `<div class="mb-6" data-section>
       <h2 class="mb-3 inline-block rounded-full px-4 py-1 text-xs font-bold uppercase tracking-wider text-white" style="background-color:${PRIMARY}">${esc(s.title)}</h2>
-      ${buildTeacherSectionContent(s, resume.language || 'en')}
+      ${buildTeacherSectionContent(s, resume.language || 'de')}
     </div>`).join('')}
   </div>`;
 }

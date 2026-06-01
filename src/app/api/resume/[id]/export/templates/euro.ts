@@ -126,7 +126,7 @@ export function buildEuroHtml(resume: ResumeWithSections): string {
           <h2 class="text-xs font-bold uppercase tracking-wider" style="color:${BL}">${esc(s.title)}</h2>
         </div>
         <div class="flex-1 border-l-2 pl-4" style="border-color:#dbeafe">
-          ${buildEuroSectionContent(s, resume.language || 'en')}
+          ${buildEuroSectionContent(s, resume.language || 'de')}
         </div>
       </div>`).join('')}
     </div>

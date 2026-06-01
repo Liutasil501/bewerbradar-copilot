@@ -51,7 +51,7 @@ export const resumes = sqliteTable('resumes', {
   template: text('template').notNull().default('classic'),
   themeConfig: text('theme_config', { mode: 'json' }).default('{}'),
   isDefault: integer('is_default', { mode: 'boolean' }).notNull().default(false),
-  language: text('language').notNull().default('en'),
+  language: text('language').notNull().default('de'),
   shareToken: text('share_token'),
   isPublic: integer('is_public', { mode: 'boolean' }).notNull().default(false),
   sharePassword: text('share_password'),

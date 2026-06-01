@@ -102,7 +102,7 @@ function buildTwoColumnRightContent(section: Section, lang: string): string {
 
 export function buildTwoColumnHtml(resume: ResumeWithSections): string {
   const pi = getPersonalInfo(resume);
-  const lang = resume.language || 'en';
+  const lang = resume.language || 'de';
   const LEFT_TYPES = new Set(['skills', 'languages', 'certifications', 'custom']);
   const sections = visibleSections(resume);
   const leftSections = sections.filter(s => LEFT_TYPES.has(s.type));

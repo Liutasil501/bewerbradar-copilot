@@ -96,7 +96,7 @@ export function buildFormalHtml(resume: ResumeWithSections): string {
         <h2 class="shrink-0 text-sm font-bold uppercase tracking-wider" style="color:${DG}">${esc(s.title)}</h2>
         <div class="h-px flex-1 bg-zinc-200"></div>
       </div>
-      ${buildFormalSectionContent(s, resume.language || 'en')}
+      ${buildFormalSectionContent(s, resume.language || 'de')}
     </div>`).join('')}
   </div>`;
 }

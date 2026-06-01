@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { resumeId, jobDescription, tone, language } = parsed.data;
-    const lang = language || 'zh';
+    const lang = language || 'de';
 
     // Fetch the resume and verify ownership
     const resume = await resumeRepository.findById(resumeId);

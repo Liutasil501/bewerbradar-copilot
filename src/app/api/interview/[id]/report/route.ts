@@ -36,7 +36,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const existing = await interviewRepository.findReportBySessionId(sessionId);
     if (existing) return NextResponse.json(existing);
 
-    const { model: modelId, locale = 'zh' } = await request.json();
+    const { model: modelId, locale = 'de' } = await request.json();
     const aiConfig = extractAIConfig(request, user);
     const model = getModel(aiConfig, modelId);
 
@@ -56,51 +56,50 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       };
     });
 
-    const lang = locale === 'zh' ? '中文' : 'English';
+    const lang = locale === 'de' ? 'Deutsch' : 'English';
+    const reportPrompt = locale === 'de'
+      ? `Du bist ein erfahrener Experte für Talentbewertung. Bitte erstelle basierend auf den folgenden Interview-Protokollen eine systematische, strukturierte Bewertung des Kandidaten. Die Ausgabe muss im JSON-Format erfolgen.
 
-    const reportPrompt = locale === 'zh'
-      ? `你是一位拥有丰富面试评估经验的人才评估专家。请基于以下面试对话记录，对候选人进行系统化、结构化的评估分析，生成专业的面试评估报告。请以 JSON 格式输出。
-
-# 岗位要求
+# Stellenanforderungen
 
 ${session.jobDescription}
 
-# 面试对话记录
+# Interview-Protokolle
 
 ${JSON.stringify(conversationLog, null, 2)}
 
-# 评估要求
+# Bewertungsanforderungen
 
-## 1. 综合评分（0-100）
-基于候选人在所有轮次中的整体表现给出综合分数。评分参考标准：
-- 90-100：远超岗位要求，强烈建议录用
-- 75-89：符合或略超岗位要求，建议录用
-- 60-74：基本符合，但有明显短板需考量
-- 40-59：部分能力不足，慎重考虑
-- 0-39：明显不满足岗位要求
+## 1. Gesamtpunktzahl (0-100)
+Bewerte basierend auf der Leistung des Kandidaten in allen Runden:
+- 90-100: Übertrifft die Anforderungen bei weitem - unbedingte Einstellungsempfehlung
+- 75-89: Erfüllt oder übertrifft die Anforderungen - Einstellungsempfehlung
+- 60-74: Erfüllt im Allgemeinen die Anforderungen, mit erkennbaren Lücken
+- 40-59: Teilweise qualifiziert - mit Vorsicht zu genießen
+- 0-39: Erfüllt die Anforderungen nicht
 
-## 2. 能力维度评分（6-8 个维度，每个维度 0-100）
-根据岗位要求和面试表现，选择最相关的 6-8 个评估维度（如：技术深度、系统设计、编码能力、沟通表达、团队协作、学习能力、业务理解、问题解决等）。每个维度独立评分，用于生成雷达图。
+## 2. Kompetenzdimensionen (6-8 Dimensionen, jeweils 0-100)
+Wähle die 6-8 relevantesten Dimensionen für die Rolle aus (z. B. technische Tiefe, Systemdesign, Programmierfähigkeit, Kommunikation, Teamarbeit, Lernfähigkeit, Geschäftssinn, Problemlösung). Werte jede Dimension unabhängig für das Radar-Diagramm aus.
 
-## 3. 逐轮逐题评估
-对每轮面试的每个问题进行独立评估：
-- 评分（1-5 分）：1=未能回答 / 2=基础薄弱 / 3=基本合格 / 4=表现良好 / 5=表现优秀
-- 亮点：候选人回答中值得肯定的具体表现
-- 不足：回答中暴露的问题或可改进之处
-- 参考思路：针对该问题，给出更好的回答方向或关键知识点提示，帮助候选人后续学习
+## 3. Bewertung pro Runde und Frage
+Für jede Frage in jeder Runde:
+- Punktzahl (1-5): 1=Keine Antwort möglich / 2=Schwache Grundlagen / 3=Ausreichend / 4=Gut / 5=Exzellent
+- Highlights: Besondere Stärken in der Antwort
+- Schwächen: Probleme oder Bereiche mit Verbesserungspotenzial
+- Referenz-Tipps: Bessere Antwortrichtungen oder wichtige Wissenspunkte, um dem Kandidaten bei der Verbesserung zu helfen
 
-## 4. 总体反馈
-撰写 3-5 段专业、具有建设性的综合反馈，涵盖：候选人的核心优势、主要短板、与目标岗位的匹配度分析、以及是否推荐录用的建议。
+## 4. Gesamtrückmeldung
+Verfasse 3-5 Absätze professionelles, konstruktives Feedback zu: Kernkompetenzen, Hauptschwächen, Analyse der Rollenpassung und Einstellungsempfehlung.
 
-## 5. 改进计划
-按优先级（high/medium/low）列出候选人最需要提升的领域，每项附带：改进方向说明和推荐的具体学习资源（书籍、课程、文档、开源项目等）。
+## 5. Verbesserungsplan
+Liste Bereiche auf, in denen Verbesserungsbedarf besteht, geordnet nach Priorität (high/medium/low), mit: Beschreibung dessen, was verbessert werden sollte, und spezifischen Lernressourcen (Bücher, Kurse, Dokumentationen, Open-Source-Projekte).
 
-# 特殊标记处理
-- \`"marked": true\`：候选人主动标记想复习的内容 → 在报告中重点标注
-- \`"hinted": true\`：候选人请求了提示 → 在评估中标注为"使用了提示"
-- \`"skipped": true\`：候选人跳过了该问题 → 标注为"已跳过"并相应扣分
+# Spezielle Markierungen
+- \`"marked": true\`: Der Kandidat hat dies zur Überprüfung markiert → Im Bericht hervorheben
+- \`"hinted": true\`: Der Kandidat hat um einen Hinweis gebeten → Als "Hinweis verwendet" in der Bewertung vermerken
+- \`"skipped": true\`: Der Kandidat hat die Frage übersprungen → Als "Übersprungen" markieren und in die Punktzahl einfließen lassen
 
-请用中文输出报告内容。`
+Bitte gib den Bericht auf Deutsch aus.`
       : `You are an experienced talent assessment professional. Based on the following interview transcripts, produce a systematic, structured evaluation of the candidate. Output the report in JSON format.
 
 # Job Requirements

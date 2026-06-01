@@ -111,7 +111,7 @@ export function buildFinanceHtml(resume: ResumeWithSections): string {
       ${sections.map(s => `<div class="mb-6" data-section>
         <h2 class="mb-3 text-sm font-bold uppercase tracking-wider" style="color:${SLATE_800}">${esc(s.title)}</h2>
         <div class="mb-3 border-t border-b py-px" style="border-color:${SLATE_800}"></div>
-        ${buildFinanceSectionContent(s, resume.language || 'en')}
+        ${buildFinanceSectionContent(s, resume.language || 'de')}
       </div>`).join('')}
     </div>
   </div>`;

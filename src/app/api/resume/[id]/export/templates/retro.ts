@@ -105,7 +105,7 @@ export function buildRetroHtml(resume: ResumeWithSections): string {
       : '';
     return `<div data-section>
       <div class="mb-2 text-center"><h2 class="inline-block text-xs font-bold uppercase tracking-[0.3em]" style="color:${PRIMARY};border-bottom:1px solid ${PRIMARY};border-top:1px solid ${PRIMARY};padding:4px 16px">${esc(s.title)}</h2></div>
-      <div class="mb-4">${buildRetroSectionContent(s, resume.language || 'en')}</div>
+      <div class="mb-4">${buildRetroSectionContent(s, resume.language || 'de')}</div>
       ${divider}
     </div>`;
   }).join('');

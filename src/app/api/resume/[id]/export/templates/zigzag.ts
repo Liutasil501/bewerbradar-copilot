@@ -85,7 +85,7 @@ function buildZigzagSectionContent(section: Section, lang: string = 'en'): strin
 export function buildZigzagHtml(resume: ResumeWithSections): string {
   const pi = getPersonalInfo(resume);
   const sections = visibleSections(resume);
-  const lang = resume.language || 'en';
+  const lang = resume.language || 'de';
   const contacts = [pi.age, pi.politicalStatus, pi.gender, pi.ethnicity, pi.hometown, pi.maritalStatus, pi.yearsOfExperience, pi.educationLevel, pi.email, pi.phone, pi.wechat, pi.location, pi.website].filter(Boolean);
 
   const zigzagDots = Array.from({ length: 20 }, (_, i) =>

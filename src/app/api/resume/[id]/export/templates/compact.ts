@@ -132,7 +132,7 @@ export function buildCompactHtml(resume: ResumeWithSections): string {
       <div class="flex-1 p-4">
         ${rightSections.map(s => `<div class="mb-4" data-section>
           <h2 class="mb-1.5 border-b border-zinc-200 pb-0.5 text-xs font-bold uppercase tracking-wider text-zinc-700">${esc(s.title)}</h2>
-          ${buildCompactRightContent(s, resume.language || 'en')}
+          ${buildCompactRightContent(s, resume.language || 'de')}
         </div>`).join('')}
       </div>
     </div>

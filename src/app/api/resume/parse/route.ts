@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const template = (formData.get('template') as string) || 'classic';
-    const language = (formData.get('language') as string) || 'en';
+    const language = (formData.get('language') as string) || 'de';
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });

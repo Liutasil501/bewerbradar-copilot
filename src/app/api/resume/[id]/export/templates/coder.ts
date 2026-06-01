@@ -180,7 +180,7 @@ export function buildCoderHtml(resume: ResumeWithSections): string {
       ${mainSections.map(s => `<div class="mb-5" data-section>
         <h2 class="mb-2 text-xs font-bold" style="color:${DARK}"><span style="color:${GREEN}">&gt; </span><span class="uppercase tracking-wider">${esc(s.title)}</span></h2>
         <div class="border-l-2 pl-4" style="border-color:${BORDER}">
-          ${buildCoderMainContent(s, resume.language || 'en')}
+          ${buildCoderMainContent(s, resume.language || 'de')}
         </div>
       </div>`).join('')}
     </div>

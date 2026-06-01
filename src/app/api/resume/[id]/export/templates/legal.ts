@@ -110,7 +110,7 @@ export function buildLegalHtml(resume: ResumeWithSections): string {
     ${sections.map(s => `<div class="mb-6" data-section>
       <h2 class="mb-1 text-sm font-bold uppercase tracking-wider" style="color:${PRIMARY}">${esc(s.title)}</h2>
       <div class="mb-3"><div class="h-px w-full" style="background-color:${BORDER};opacity:0.5"></div><div class="mt-0.5 h-px w-full" style="background-color:${BORDER};opacity:0.5"></div></div>
-      ${buildLegalSectionContent(s, resume.language || 'en')}
+      ${buildLegalSectionContent(s, resume.language || 'de')}
     </div>`).join('')}
   </div>`;
 }

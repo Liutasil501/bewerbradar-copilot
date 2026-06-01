@@ -9,7 +9,6 @@ import {
 } from '@/components/ui/select';
 
 export const LANGUAGE_OPTIONS = [
-  { value: 'zh', label: '中文', flag: '🇨🇳' },
   { value: 'en', label: 'English', flag: '🇺🇸' },
   { value: 'ja', label: '日本語', flag: '🇯🇵' },
   { value: 'ko', label: '한국어', flag: '🇰🇷' },

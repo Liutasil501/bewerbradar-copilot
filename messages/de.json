@@ -423,7 +423,11 @@
     "jdPreview": "JD Vorschau",
     "viewDetail": "Details ansehen",
     "loadingHistory": "Verlauf wird geladen...",
-    "jobDescriptionLabel": "Stellenbeschreibung"
+    "jobDescriptionLabel": "Stellenbeschreibung",
+    "optimizePromptHeader": "Bitte optimieren Sie den Lebenslauf basierend auf der folgenden JD-Abgleich-Analyse, um besser zur Zielposition zu passen:",
+    "optimizePromptKeywords": "Fehlende Keywords:",
+    "optimizePromptSuggestions": "Optimierungsvorschläge:",
+    "optimizePromptFooter": "Bitte verwenden Sie Ihre Tools, um die entsprechenden Lebenslauf-Abschnitte direkt zu ändern und die fehlenden Keywords natürlich zu integrieren."
   },
   "translate": {
     "title": "KI Lebenslauf-Übersetzung",
@@ -522,7 +526,9 @@
     "deleted": "Eintrag gelöscht",
     "issueCountLabel": "{count} Probleme",
     "viewDetail": "Details ansehen",
-    "loadingHistory": "Verlauf wird geladen..."
+    "loadingHistory": "Verlauf wird geladen...",
+    "fixAllPromptHeader": "Bitte beheben Sie die Probleme im Lebenslauf nacheinander, basierend auf den folgenden Ergebnissen der Grammatikprüfung:",
+    "fixAllPromptFooter": "Bitte verwenden Sie Ihre Tools, um die entsprechenden Lebenslauf-Abschnitte direkt zu ändern."
   },
   "export": {
     "title": "Lebenslauf exportieren",

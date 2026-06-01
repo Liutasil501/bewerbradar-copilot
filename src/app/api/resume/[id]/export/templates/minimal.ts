@@ -107,7 +107,7 @@ export function buildMinimalHtml(resume: ResumeWithSections): string {
     </div>
     ${sections.map(s => `<div class="mb-6" data-section>
       <h2 class="mb-2 text-xs font-medium uppercase tracking-widest text-zinc-400">${esc(s.title)}</h2>
-      ${buildMinimalSectionContent(s, resume.language || 'en')}
+      ${buildMinimalSectionContent(s, resume.language || 'de')}
     </div>`).join('')}
   </div>`;
 }

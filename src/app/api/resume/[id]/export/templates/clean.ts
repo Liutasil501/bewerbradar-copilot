@@ -129,7 +129,7 @@ export function buildCleanHtml(resume: ResumeWithSections): string {
     </div>
     ${sections.map(s => `<div class="mb-5" data-section>
       <h2 class="mb-2 text-sm font-bold uppercase tracking-wider" style="color:${BL}">${esc(s.title)}</h2>
-      ${buildCleanSectionContent(s, resume.language || 'en')}
+      ${buildCleanSectionContent(s, resume.language || 'de')}
     </div>`).join('')}
   </div>`;
 }
