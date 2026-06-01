@@ -33,6 +33,7 @@ import { usePathname, useRouter } from '@/i18n/routing';
 import { locales, localeNames } from '@/i18n/config';
 import { cn } from '@/lib/utils';
 import { usePaywall } from '@/hooks/use-paywall';
+import { PricingModal } from '@/components/billing/pricing-modal';
 import { toast } from 'sonner';
 
 const AI_PROVIDERS: { value: AIProvider; label: string }[] = [
@@ -66,7 +67,7 @@ export function SettingsDialog() {
     _hydrated,
   } = useSettingsStore();
 
-  const { currentPlan, checkPaywall } = usePaywall();
+  const { currentPlan, checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
   const [managingPortal, setManagingPortal] = useState(false);
 
   const startTour = useTourStore((s) => s.startTour);
@@ -146,7 +147,13 @@ export function SettingsDialog() {
   const handleManageSubscription = async () => {
     setManagingPortal(true);
     try {
-      const res = await fetch('/api/stripe/portal', { method: 'POST' });
+      const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
+      const res = await fetch('/api/stripe/portal', {
+        method: 'POST',
+        headers: {
+          ...(fingerprint ? { 'x-fingerprint': fingerprint } : {}),
+        },
+      });
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
@@ -471,6 +478,7 @@ export function SettingsDialog() {
           </TabsContent>
         </Tabs>
       </DialogContent>
+      <PricingModal open={showPaywall} onOpenChange={setShowPaywall} requiredTier={requiredTier} />
     </Dialog>
   );
 }

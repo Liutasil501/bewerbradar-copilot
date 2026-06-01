@@ -19,6 +19,7 @@ import { Upload, FileText, Image, X, Loader2, Check, Lock } from 'lucide-react';
 import { usePaywall } from '@/hooks/use-paywall';
 import { TemplateThumbnail } from './template-thumbnail';
 import { templateLabelsMap } from '@/lib/template-labels';
+import { PricingModal } from '@/components/billing/pricing-modal';
 
 interface CreateResumeDialogProps {
   open: boolean;
@@ -39,7 +40,7 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
   const [title, setTitle] = useState('');
   const [template, setTemplate] = useState<string>('classic');
   const [isCreating, setIsCreating] = useState(false);
-  const { currentPlan, checkPaywall } = usePaywall();
+  const { currentPlan, checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
 
   // Upload state
   const [file, setFile] = useState<File | null>(null);
@@ -234,12 +235,21 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
                           </div>
                           {/* Label */}
                           <div className={cn(
-                            'px-2 py-1.5 text-center text-xs font-medium transition-colors',
+                            'px-2 py-1.5 text-center text-xs font-medium transition-colors flex items-center justify-between gap-1 border-t border-zinc-100 dark:border-zinc-800/50',
                             isSelected
                               ? 'bg-brand-muted text-brand dark:bg-brand-muted dark:text-brand'
                               : 'text-zinc-600 dark:text-zinc-400'
                           )}>
-                            {t(templateLabelsMap[tpl])}
+                            <span className="truncate flex-1 text-left">{t(templateLabelsMap[tpl])}</span>
+                            {FREE_TEMPLATES.has(tpl) ? (
+                              <span className="rounded bg-emerald-50 px-1 py-0.5 text-[9px] font-semibold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 shrink-0">
+                                {t('templates.freeBadge')}
+                              </span>
+                            ) : (
+                              <span className="rounded bg-blue-50 px-1 py-0.5 text-[9px] font-semibold text-blue-700 dark:bg-blue-950/30 dark:text-blue-400 shrink-0">
+                                {t('templates.proBadge')}
+                              </span>
+                            )}
                           </div>
                         </button>
                       );
@@ -358,12 +368,21 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
                             )}
                           </div>
                           <div className={cn(
-                            'px-2 py-1.5 text-center text-xs font-medium transition-colors',
+                            'px-2 py-1.5 text-center text-xs font-medium transition-colors flex items-center justify-between gap-1 border-t border-zinc-100 dark:border-zinc-800/50',
                             isSelected
                               ? 'bg-brand-muted text-brand dark:bg-brand-muted dark:text-brand'
                               : 'text-zinc-600 dark:text-zinc-400'
                           )}>
-                            {t(templateLabelsMap[tpl])}
+                            <span className="truncate flex-1 text-left">{t(templateLabelsMap[tpl])}</span>
+                            {FREE_TEMPLATES.has(tpl) ? (
+                              <span className="rounded bg-emerald-50 px-1 py-0.5 text-[9px] font-semibold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 shrink-0">
+                                {t('templates.freeBadge')}
+                              </span>
+                            ) : (
+                              <span className="rounded bg-blue-50 px-1 py-0.5 text-[9px] font-semibold text-blue-700 dark:bg-blue-950/30 dark:text-blue-400 shrink-0">
+                                {t('templates.proBadge')}
+                              </span>
+                            )}
                           </div>
                         </button>
                       );
@@ -406,6 +425,7 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
           )}
         </div>
       </DialogContent>
+      <PricingModal open={showPaywall} onOpenChange={setShowPaywall} requiredTier={requiredTier} />
     </Dialog>
   );
 }

@@ -612,7 +612,9 @@
     "preview": "Vorschau",
     "useTemplate": "Diese Vorlage nutzen",
     "creating": "Wird erstellt...",
-    "nav": "Vorlagen"
+    "nav": "Vorlagen",
+    "freeBadge": "Kostenlos",
+    "proBadge": "Pro"
   },
   "tour": {
     "next": "Weiter",
@@ -973,7 +975,7 @@
     "premiumTitle": "Premium",
     "premiumDesc": "Das ultimative KI-Karriere-Toolkit.",
     "proFeat1": "Unbegrenzte Lebensläufe",
-    "proFeat2": "Alle Premium Vorlagen",
+    "proFeat2": "Alle 40+ Lebenslauf-Vorlagen",
     "proFeat3": "PDF & DOCX Exporte",
     "proFeat4": "Öffentliches Teilen",
     "premiumFeat1": "Alles aus Pro",

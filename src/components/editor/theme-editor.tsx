@@ -37,6 +37,7 @@ import { TEMPLATES, FREE_TEMPLATES } from '@/lib/constants';
 import { templateLabelsMap } from '@/lib/template-labels';
 import { usePaywall } from '@/hooks/use-paywall';
 import { TemplateThumbnail } from '@/components/dashboard/template-thumbnail';
+import { PricingModal } from '@/components/billing/pricing-modal';
 import { cn } from '@/lib/utils';
 import type { ThemeConfig } from '@/types/resume';
 
@@ -265,7 +266,7 @@ export function ThemeEditor({ onClose }: ThemeEditorProps) {
   const t = useTranslations('themeEditor');
   const tRoot = useTranslations();
   const { currentResume } = useResumeStore();
-  const { currentPlan, checkPaywall } = usePaywall();
+  const { currentPlan, checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
 
   const themeConfig: ThemeConfig = {
     ...DEFAULT_THEME,
@@ -376,12 +377,21 @@ export function ThemeEditor({ onClose }: ThemeEditorProps) {
                       )}
                     </div>
                     <div className={cn(
-                      'truncate px-1 py-0.5 text-center text-[10px] font-medium transition-colors',
+                      'truncate px-1 py-0.5 text-center text-[9px] font-medium transition-colors flex items-center justify-between gap-0.5 border-t border-zinc-100 dark:border-zinc-800/50',
                       isSelected
                         ? 'bg-brand-muted text-brand dark:bg-brand-muted dark:text-brand'
                         : 'text-zinc-500 dark:text-zinc-400'
                     )}>
-                      {tRoot(templateLabelsMap[tpl])}
+                      <span className="truncate flex-1 text-left">{tRoot(templateLabelsMap[tpl])}</span>
+                      {FREE_TEMPLATES.has(tpl) ? (
+                        <span className="text-[8px] font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
+                          {tRoot('templates.freeBadge')}
+                        </span>
+                      ) : (
+                        <span className="text-[8px] font-semibold text-blue-600 dark:text-blue-400 shrink-0">
+                          {tRoot('templates.proBadge')}
+                        </span>
+                      )}
                     </div>
                   </button>
                 );
@@ -544,6 +554,7 @@ export function ThemeEditor({ onClose }: ThemeEditorProps) {
           </ThemeSection>
         </div>
       </ScrollArea>
+      <PricingModal open={showPaywall} onOpenChange={setShowPaywall} requiredTier={requiredTier} />
     </div>
   );
 }

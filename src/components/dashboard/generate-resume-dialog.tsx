@@ -16,10 +16,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LanguageSelect } from '@/components/ui/language-select';
-import { TEMPLATES } from '@/lib/constants';
+import { TEMPLATES, FREE_TEMPLATES } from '@/lib/constants';
 import { TemplateThumbnail } from './template-thumbnail';
 import { templateLabelsMap } from '@/lib/template-labels';
 import { getAIHeaders } from '@/stores/settings-store';
+import { usePaywall } from '@/hooks/use-paywall';
+import { Lock } from 'lucide-react';
 
 interface GenerateResumeDialogProps {
   open: boolean;
@@ -46,6 +48,7 @@ export function GenerateResumeDialog({ open, onOpenChange, onCreated }: Generate
   const [state, setState] = useState<GenerateState>('form');
   const [error, setError] = useState('');
   const [result, setResult] = useState<{ resumeId: string; title: string } | null>(null);
+  const { currentPlan } = usePaywall();
 
   const handleGenerate = async () => {
     if (!jobTitle.trim()) return;
@@ -211,14 +214,29 @@ export function GenerateResumeDialog({ open, onOpenChange, onCreated }: Generate
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="max-h-64">
-                      {TEMPLATES.map((tpl) => (
-                        <SelectItem key={tpl} value={tpl}>
-                          <span className="flex items-center gap-2">
-                            <TemplateThumbnail template={tpl} className="h-8 w-6 shrink-0 rounded-sm ring-1 ring-zinc-200/50" />
-                            {tGlobal(templateLabelsMap[tpl])}
-                          </span>
-                        </SelectItem>
-                      ))}
+                      {TEMPLATES.map((tpl) => {
+                        const isLocked = currentPlan === 'free' && !FREE_TEMPLATES.has(tpl);
+                        return (
+                          <SelectItem key={tpl} value={tpl}>
+                            <span className="flex items-center justify-between w-full gap-8 pr-6">
+                              <span className="flex items-center gap-2">
+                                <TemplateThumbnail template={tpl} className="h-8 w-6 shrink-0 rounded-sm ring-1 ring-zinc-200/50" />
+                                <span>{tGlobal(templateLabelsMap[tpl])}</span>
+                              </span>
+                              {FREE_TEMPLATES.has(tpl) ? (
+                                <span className="rounded bg-emerald-50 px-1 py-0.5 text-[9px] font-semibold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 shrink-0">
+                                  {tGlobal('templates.freeBadge')}
+                                </span>
+                              ) : (
+                                <span className="rounded bg-blue-50 px-1 py-0.5 text-[9px] font-semibold text-blue-700 dark:bg-blue-950/30 dark:text-blue-400 shrink-0 flex items-center gap-0.5">
+                                  {isLocked && <Lock className="h-2.5 w-2.5" />}
+                                  {tGlobal('templates.proBadge')}
+                                </span>
+                              )}
+                            </span>
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>

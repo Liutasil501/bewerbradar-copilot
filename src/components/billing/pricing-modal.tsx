@@ -26,9 +26,13 @@ export function PricingModal({ open, onOpenChange, requiredTier }: PricingModalP
   const handleCheckout = async (tier: 'pro' | 'premium') => {
     setIsLoading(tier);
     try {
+      const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(fingerprint ? { 'x-fingerprint': fingerprint } : {}),
+        },
         body: JSON.stringify({ tier, plan: billingCycle }),
       });
       const data = await res.json();

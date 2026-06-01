@@ -612,7 +612,9 @@
     "preview": "Preview",
     "useTemplate": "Use This Template",
     "creating": "Creating...",
-    "nav": "Templates"
+    "nav": "Templates",
+    "freeBadge": "Free",
+    "proBadge": "Pro"
   },
   "tour": {
     "next": "Next",
@@ -972,7 +974,7 @@
     "premiumTitle": "Premium",
     "premiumDesc": "The ultimate AI career toolkit.",
     "proFeat1": "Unlimited Resumes",
-    "proFeat2": "All Premium Templates",
+    "proFeat2": "All 40+ resume templates",
     "proFeat3": "PDF & DOCX Exports",
     "proFeat4": "Public Sharing",
     "premiumFeat1": "Everything in Pro",

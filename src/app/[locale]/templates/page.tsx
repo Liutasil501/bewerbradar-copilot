@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { ArrowLeft, Eye, Loader2 } from 'lucide-react';
+import { ArrowLeft, Eye, Loader2, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { TEMPLATES } from '@/lib/constants';
+import { TEMPLATES, FREE_TEMPLATES, type Template } from '@/lib/constants';
 import { useResume } from '@/hooks/use-resume';
 import { Link, useRouter } from '@/i18n/routing';
 import { useFingerprint } from '@/hooks/use-fingerprint';
@@ -19,6 +19,8 @@ import { TourOverlay, type TourStepConfig } from '@/components/tour/tour-overlay
 import { useTourStore, hasCompletedTour } from '@/stores/tour-store';
 import { templateLabelsMap as templateLabelKeys } from '@/lib/template-labels';
 import type { Resume } from '@/types/resume';
+import { usePaywall } from '@/hooks/use-paywall';
+import { PricingModal } from '@/components/billing/pricing-modal';
 
 const TEMPLATES_TOUR_STEPS: TourStepConfig[] = [
   { target: 'tpl-preview', placement: 'bottom', i18nKey: 'tplPreview' },
@@ -232,6 +234,7 @@ export default function TemplatesPage() {
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
   const [creatingTemplate, setCreatingTemplate] = useState<string | null>(null);
   const startTour = useTourStore((s) => s.startTour);
+  const { checkPaywall, showPaywall, setShowPaywall, requiredTier, currentPlan } = usePaywall();
 
   useEffect(() => {
     if (hasCompletedTour('templates')) return;
@@ -241,6 +244,12 @@ export default function TemplatesPage() {
   }, [startTour]);
 
   const handleUseTemplate = async (template: string) => {
+    const isPremium = !FREE_TEMPLATES.has(template as Template);
+    if (isPremium && currentPlan === 'free') {
+      checkPaywall('pro', () => {});
+      return;
+    }
+
     setCreatingTemplate(template);
     try {
       const mockResume = buildMockResume(template, tm, ts);
@@ -291,10 +300,20 @@ export default function TemplatesPage() {
               className="group flex flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white transition-shadow hover:shadow-lg dark:border-zinc-700 dark:bg-zinc-900"
             >
               {/* Template name */}
-              <div className="border-b border-zinc-100 px-4 py-3 text-center dark:border-zinc-800">
-                <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+              <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3 dark:border-zinc-800">
+                <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 truncate pr-2">
                   {label}
                 </h3>
+                {FREE_TEMPLATES.has(template as Template) ? (
+                  <span className="flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 shrink-0">
+                    {t('templates.freeBadge')}
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700 dark:bg-blue-950/30 dark:text-blue-400 shrink-0">
+                    <Lock className="h-3 w-3" />
+                    {t('templates.proBadge')}
+                  </span>
+                )}
               </div>
 
               {/* Scaled preview */}
@@ -383,6 +402,11 @@ export default function TemplatesPage() {
         </DialogContent>
       </Dialog>
       <TourOverlay tourId="templates" steps={TEMPLATES_TOUR_STEPS} />
+      <PricingModal
+        open={showPaywall}
+        onOpenChange={setShowPaywall}
+        requiredTier={requiredTier}
+      />
     </div>
   );
 }
