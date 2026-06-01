@@ -3,6 +3,7 @@ import type { Resume, ResumeSection, SectionContent } from '@/types/resume';
 import { AUTOSAVE_DELAY } from '@/lib/constants';
 import { generateId } from '@/lib/utils';
 import { useSettingsStore } from '@/stores/settings-store';
+import { toast } from 'sonner';
 
 interface ResumeStore {
   currentResume: Resume | null;
@@ -218,9 +219,8 @@ export const useResumeStore = create<ResumeStore>((set, get) => ({
 
     const delay = _hydrated ? autoSaveInterval : AUTOSAVE_DELAY;
     const timeout = setTimeout(() => {
-      get().save().catch(() => {
-        // Error is already logged in save(), but we need to catch it here 
-        // to prevent UnhandledPromiseRejection warning on autosave failure.
+      get().save().catch((error) => {
+        toast.error('Automatisches Speichern fehlgeschlagen! Bitte überprüfe deine Internetverbindung.');
       });
     }, delay);
 
