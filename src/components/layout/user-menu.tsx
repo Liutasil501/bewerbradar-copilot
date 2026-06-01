@@ -13,10 +13,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { BrandSwitcher } from '@/components/layout/brand-switcher';
 import { useRuntimeConfig } from '@/components/providers/runtime-config-provider';
+import { useUIStore } from '@/stores/ui-store';
+import { Settings } from 'lucide-react';
 
 export function UserMenu() {
   const { user, signOut } = useAuth();
   const t = useTranslations('auth');
+  const tSettings = useTranslations('settings');
   const { authEnabled } = useRuntimeConfig();
 
   if (!user) return null;
@@ -39,6 +42,18 @@ export function UserMenu() {
           )}
         </div>
         <DropdownMenuSeparator />
+        <DropdownMenuItem 
+          onClick={() => {
+            const setSettingsTab = useUIStore.getState().setSettingsTab;
+            const openModal = useUIStore.getState().openModal;
+            setSettingsTab('subscription');
+            openModal('settings');
+          }} 
+          className="cursor-pointer"
+        >
+          <Settings className="mr-2 h-4 w-4" />
+          {tSettings('subscription.title') || 'Subscription & Billing'}
+        </DropdownMenuItem>
         <BrandSwitcher />
         {authEnabled && (
           <>
