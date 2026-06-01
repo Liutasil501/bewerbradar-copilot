@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { resumeRepository } from '@/lib/db/repositories/resume.repository';
 import { resolveUser, getUserIdFromRequest } from '@/lib/auth/helpers';
 
+import { FREE_TEMPLATES, type Template } from '@/lib/constants';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -51,6 +53,12 @@ export async function PUT(
 
     const body = await request.json();
     const { title, template, themeConfig, sections } = body;
+
+    if (template && user.subscriptionPlan === 'free') {
+      if (!FREE_TEMPLATES.has(template as Template)) {
+        return NextResponse.json({ error: 'Premium template requires Pro or Premium subscription' }, { status: 403 });
+      }
+    }
 
     // Update resume metadata
     if (title || template || themeConfig) {

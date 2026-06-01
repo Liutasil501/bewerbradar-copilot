@@ -12,10 +12,11 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { TEMPLATES } from '@/lib/constants';
+import { TEMPLATES, FREE_TEMPLATES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { getAIHeaders } from '@/stores/settings-store';
-import { Upload, FileText, Image, X, Loader2, Check } from 'lucide-react';
+import { Upload, FileText, Image, X, Loader2, Check, Lock } from 'lucide-react';
+import { usePaywall } from '@/hooks/use-paywall';
 import { TemplateThumbnail } from './template-thumbnail';
 import { templateLabelsMap } from '@/lib/template-labels';
 
@@ -38,6 +39,7 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
   const [title, setTitle] = useState('');
   const [template, setTemplate] = useState<string>('classic');
   const [isCreating, setIsCreating] = useState(false);
+  const { currentPlan, checkPaywall } = usePaywall();
 
   // Upload state
   const [file, setFile] = useState<File | null>(null);
@@ -191,6 +193,7 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
                     {TEMPLATES.map((tpl) => {
                       const isSelected = template === tpl;
+                      const isLocked = currentPlan === 'free' && !FREE_TEMPLATES.has(tpl);
                       return (
                         <button
                           key={tpl}
@@ -199,9 +202,16 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
                             'group/tpl relative cursor-pointer overflow-hidden rounded-xl border-2 transition-all duration-200',
                             isSelected
                               ? 'border-brand shadow-md shadow-brand/10'
-                              : 'border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600'
+                              : 'border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600',
+                            isLocked && 'opacity-70 hover:opacity-100'
                           )}
-                          onClick={() => setTemplate(tpl)}
+                          onClick={() => {
+                            if (isLocked) {
+                              checkPaywall('pro', () => setTemplate(tpl));
+                            } else {
+                              setTemplate(tpl);
+                            }
+                          }}
                         >
                           {/* Thumbnail */}
                           <div className="relative bg-zinc-50 p-2 dark:bg-zinc-800/50">
@@ -210,9 +220,15 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
                               className="mx-auto h-[100px] w-[71px] shadow-sm ring-1 ring-zinc-200/50"
                             />
                             {/* Selected check */}
-                            {isSelected && (
+                            {isSelected && !isLocked && (
                               <div className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-white shadow-sm">
                                 <Check className="h-3 w-3" />
+                              </div>
+                            )}
+                            {/* Lock icon */}
+                            {isLocked && (
+                              <div className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-800/80 text-white shadow-sm backdrop-blur-sm">
+                                <Lock className="h-3 w-3" />
                               </div>
                             )}
                           </div>
@@ -305,6 +321,7 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
                     {TEMPLATES.map((tpl) => {
                       const isSelected = template === tpl;
+                      const isLocked = currentPlan === 'free' && !FREE_TEMPLATES.has(tpl);
                       return (
                         <button
                           key={tpl}
@@ -313,18 +330,30 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
                             'group/tpl relative cursor-pointer overflow-hidden rounded-xl border-2 transition-all duration-200',
                             isSelected
                               ? 'border-brand shadow-md shadow-brand/10'
-                              : 'border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600'
+                              : 'border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600',
+                            isLocked && 'opacity-70 hover:opacity-100'
                           )}
-                          onClick={() => setTemplate(tpl)}
+                          onClick={() => {
+                            if (isLocked) {
+                              checkPaywall('pro', () => setTemplate(tpl));
+                            } else {
+                              setTemplate(tpl);
+                            }
+                          }}
                         >
                           <div className="relative bg-zinc-50 p-2 dark:bg-zinc-800/50">
                             <TemplateThumbnail
                               template={tpl}
                               className="mx-auto h-[100px] w-[71px] shadow-sm ring-1 ring-zinc-200/50"
                             />
-                            {isSelected && (
+                            {isSelected && !isLocked && (
                               <div className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-white shadow-sm">
                                 <Check className="h-3 w-3" />
+                              </div>
+                            )}
+                            {isLocked && (
+                              <div className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-800/80 text-white shadow-sm backdrop-blur-sm">
+                                <Lock className="h-3 w-3" />
                               </div>
                             )}
                           </div>

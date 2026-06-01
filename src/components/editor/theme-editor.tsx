@@ -12,6 +12,7 @@ import {
   RotateCcw,
   LayoutGrid,
   Check,
+  Lock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -32,8 +33,9 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useResumeStore } from '@/stores/resume-store';
-import { TEMPLATES } from '@/lib/constants';
+import { TEMPLATES, FREE_TEMPLATES } from '@/lib/constants';
 import { templateLabelsMap } from '@/lib/template-labels';
+import { usePaywall } from '@/hooks/use-paywall';
 import { TemplateThumbnail } from '@/components/dashboard/template-thumbnail';
 import { cn } from '@/lib/utils';
 import type { ThemeConfig } from '@/types/resume';
@@ -263,6 +265,7 @@ export function ThemeEditor({ onClose }: ThemeEditorProps) {
   const t = useTranslations('themeEditor');
   const tRoot = useTranslations();
   const { currentResume } = useResumeStore();
+  const { currentPlan, checkPaywall } = usePaywall();
 
   const themeConfig: ThemeConfig = {
     ...DEFAULT_THEME,
@@ -336,6 +339,7 @@ export function ThemeEditor({ onClose }: ThemeEditorProps) {
             <div className="grid max-h-[320px] grid-cols-3 gap-2 overflow-y-auto pr-1">
               {TEMPLATES.map((tpl) => {
                 const isSelected = currentResume?.template === tpl;
+                const isLocked = currentPlan === 'free' && !FREE_TEMPLATES.has(tpl);
                 return (
                   <button
                     key={tpl}
@@ -344,18 +348,30 @@ export function ThemeEditor({ onClose }: ThemeEditorProps) {
                       'group/tpl relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200',
                       isSelected
                         ? 'border-brand shadow-sm shadow-brand/10'
-                        : 'border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600'
+                        : 'border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600',
+                      isLocked && 'opacity-70 hover:opacity-100'
                     )}
-                    onClick={() => handleTemplateSwitch(tpl)}
+                    onClick={() => {
+                      if (isLocked) {
+                        checkPaywall('pro', () => handleTemplateSwitch(tpl));
+                      } else {
+                        handleTemplateSwitch(tpl);
+                      }
+                    }}
                   >
                     <div className="relative bg-zinc-50 p-1 dark:bg-zinc-800/50">
                       <TemplateThumbnail
                         template={tpl}
                         className="mx-auto h-[56px] w-[40px] shadow-sm ring-1 ring-zinc-200/50"
                       />
-                      {isSelected && (
+                      {isSelected && !isLocked && (
                         <div className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-brand text-white shadow-sm">
                           <Check className="h-2.5 w-2.5" />
+                        </div>
+                      )}
+                      {isLocked && (
+                        <div className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-zinc-800/80 text-white shadow-sm backdrop-blur-sm">
+                          <Lock className="h-2.5 w-2.5" />
                         </div>
                       )}
                     </div>

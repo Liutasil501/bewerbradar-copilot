@@ -31,6 +31,7 @@ import { useTourStore, hasCompletedTour } from '@/stores/tour-store';
 import { cn } from '@/lib/utils';
 import { useRouter } from '@/i18n/routing';
 import type { Resume } from '@/types/resume';
+import { MAX_FREE_RESUMES } from '@/lib/constants';
 
 type SortOption = 'lastEdited' | 'created' | 'nameAsc' | 'nameDesc';
 type ViewMode = 'grid' | 'list';
@@ -83,7 +84,16 @@ export default function DashboardPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [shareResumeId, setShareResumeId] = useState<string | null>(null);
   const startTour = useTourStore((s) => s.startTour);
-  const { checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
+  const { checkPaywall, showPaywall, setShowPaywall, requiredTier, currentPlan } = usePaywall();
+
+  const handleCreateAction = <T,>(action: () => T | Promise<T>): T | Promise<T | null> => {
+    if (currentPlan === 'free' && resumes.length >= MAX_FREE_RESUMES) {
+      checkPaywall('pro', action);
+      return Promise.resolve(null);
+    } else {
+      return action();
+    }
+  };
 
   // Auto-start dashboard tour for first-time users
   useEffect(() => {
@@ -158,9 +168,11 @@ export default function DashboardPage() {
             data-tour="dash-ai-generate"
             variant="outline"
             onClick={() => {
-              checkPaywall('premium', () => {
-                openModal('generate-resume');
-              }, { allowByok: true });
+              handleCreateAction(() => {
+                checkPaywall('premium', () => {
+                  openModal('generate-resume');
+                }, { allowByok: true });
+              });
             }}
             className="cursor-pointer gap-2"
           >
@@ -169,7 +181,7 @@ export default function DashboardPage() {
           </Button>
           <Button
             variant="outline"
-            onClick={() => openModal('import')}
+            onClick={() => handleCreateAction(() => openModal('import'))}
             className="cursor-pointer gap-2"
           >
             <Upload className="h-4 w-4" />
@@ -177,7 +189,7 @@ export default function DashboardPage() {
           </Button>
           <Button
             data-tour="dash-create"
-            onClick={() => openModal('create-resume')}
+            onClick={() => handleCreateAction(() => openModal('create-resume'))}
             className="cursor-pointer gap-2 bg-brand hover:bg-brand-hover"
           >
             <Plus className="h-4 w-4" />
@@ -274,7 +286,7 @@ export default function DashboardPage() {
         <ResumeGrid
           resumes={filteredResumes}
           onDelete={deleteResume}
-          onDuplicate={duplicateResume}
+          onDuplicate={(id) => handleCreateAction(() => duplicateResume(id))}
           onRename={renameResume}
           onShare={(id) => setShareResumeId(id)}
         />
@@ -285,7 +297,7 @@ export default function DashboardPage() {
               key={resume.id}
               resume={resume}
               onDelete={() => deleteResume(resume.id)}
-              onDuplicate={() => duplicateResume(resume.id)}
+              onDuplicate={() => handleCreateAction(() => duplicateResume(resume.id))}
               onRename={(title) => renameResume(resume.id, title)}
             />
           ))}

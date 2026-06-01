@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getTranslations } from 'next-intl/server';
 import { resumeRepository } from '@/lib/db/repositories/resume.repository';
 import { resolveUser, getUserIdFromRequest } from '@/lib/auth/helpers';
-import { DEFAULT_SECTIONS } from '@/lib/constants';
+import { DEFAULT_SECTIONS, MAX_FREE_RESUMES, FREE_TEMPLATES, type Template } from '@/lib/constants';
 
 export async function GET(request: NextRequest) {
   try {
@@ -30,6 +30,19 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { title, template, language, sections, themeConfig } = body;
+
+    const requestedTemplate = (template || 'classic') as Template;
+
+    if (user.subscriptionPlan === 'free') {
+      if (!FREE_TEMPLATES.has(requestedTemplate)) {
+        return NextResponse.json({ error: 'Premium template requires Pro or Premium subscription' }, { status: 403 });
+      }
+
+      const existingResumes = await resumeRepository.findAllByUserId(user.id);
+      if (existingResumes.length >= MAX_FREE_RESUMES) {
+        return NextResponse.json({ error: `Free plan is limited to ${MAX_FREE_RESUMES} resume(s)` }, { status: 403 });
+      }
+    }
 
     const reqLanguage = language || 'de';
     // Determine default title based on locale
