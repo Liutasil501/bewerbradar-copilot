@@ -19,6 +19,10 @@ export async function POST(request: NextRequest) {
   const user = await resolveUser(fingerprint);
   if (!user) return new Response('Unauthorized', { status: 401 });
 
+  if (user.subscriptionPlan !== 'premium') {
+    return NextResponse.json({ error: 'Premium subscription required for interviews' }, { status: 403 });
+  }
+
   const body = await request.json();
   const { jobDescription, jobTitle, resumeId, interviewers } = body;
 

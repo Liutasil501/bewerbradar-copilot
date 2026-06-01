@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resumeRepository } from '@/lib/db/repositories/resume.repository';
 import { resolveUser, getUserIdFromRequest } from '@/lib/auth/helpers';
+import { MAX_FREE_RESUMES } from '@/lib/constants';
 
 export async function POST(
   request: NextRequest,
@@ -20,6 +21,13 @@ export async function POST(
     }
     if (resume.userId !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    if (user.subscriptionPlan === 'free') {
+      const existingResumes = await resumeRepository.findAllByUserId(user.id);
+      if (existingResumes.length >= MAX_FREE_RESUMES) {
+        return NextResponse.json({ error: `Free plan is limited to ${MAX_FREE_RESUMES} resume(s)` }, { status: 403 });
+      }
     }
 
     // Get translation for " (Copy)" suffix based on user locale
