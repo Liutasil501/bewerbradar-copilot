@@ -235,6 +235,7 @@ export default function TemplatesPage() {
   const [creatingTemplate, setCreatingTemplate] = useState<string | null>(null);
   const startTour = useTourStore((s) => s.startTour);
   const { checkPaywall, showPaywall, setShowPaywall, requiredTier, currentPlan } = usePaywall();
+  const isPreviewLocked = previewTemplate ? (currentPlan === 'free' && !FREE_TEMPLATES.has(previewTemplate as Template)) : false;
 
   useEffect(() => {
     if (hasCompletedTour('templates')) return;
@@ -293,6 +294,7 @@ export default function TemplatesPage() {
           const label = t(templateLabelKeys[template]);
           const isCreating = creatingTemplate === template;
           const isFirst = idx === 0;
+          const isLocked = currentPlan === 'free' && !FREE_TEMPLATES.has(template as Template);
 
           return (
             <div
@@ -354,7 +356,10 @@ export default function TemplatesPage() {
                       {t('templates.creating')}
                     </>
                   ) : (
-                    t('templates.useTemplate')
+                    <>
+                      {isLocked && <Lock className="h-3.5 w-3.5 shrink-0" />}
+                      {t('templates.useTemplate')}
+                    </>
                   )}
                 </Button>
               </div>
@@ -395,7 +400,10 @@ export default function TemplatesPage() {
                   {t('templates.creating')}
                 </>
               ) : (
-                t('templates.useTemplate')
+                <>
+                  {isPreviewLocked && <Lock className="mr-2 h-4 w-4 shrink-0" />}
+                  {t('templates.useTemplate')}
+                </>
               )}
             </Button>
           </div>
