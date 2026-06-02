@@ -12,20 +12,9 @@ export async function GET(req: NextRequest) {
       result.push({
         customerId: c.id,
         email: c.email,
-        created: new Date(c.created * 1000).toISOString(),
-        subscriptions: subs.data.map(s => ({
-          id: s.id,
-          status: s.status,
-          priceId: s.items.data[0]?.price.id,
-          currentPeriodEnd: new Date((s as any).current_period_end * 1000).toISOString(),
-        })),
-
-        invoices: invoices.data.map(inv => ({
-          id: inv.id,
-          amount: inv.amount_due / 100,
-          status: inv.status,
-          pdf: inv.invoice_pdf,
-        })),
+        rawCustomer: c,
+        subscriptions: subs.data,
+        invoices: invoices.data,
       });
     }
     return NextResponse.json({ customers: result });
