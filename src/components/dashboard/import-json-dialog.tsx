@@ -18,7 +18,18 @@ import {
   CheckCircle2,
   AlertCircle,
   FileJson,
+  FileText,
+  Image as ImageIcon,
+  Check,
+  Lock,
 } from 'lucide-react';
+import { TEMPLATES, FREE_TEMPLATES } from '@/lib/constants';
+import { cn } from '@/lib/utils';
+import { getAIHeaders } from '@/stores/settings-store';
+import { usePaywall } from '@/hooks/use-paywall';
+import { TemplateThumbnail } from './template-thumbnail';
+import { templateLabelsMap } from '@/lib/template-labels';
+import { PricingModal } from '@/components/billing/pricing-modal';
 
 interface ImportJsonDialogProps {
   open: boolean;
@@ -26,6 +37,9 @@ interface ImportJsonDialogProps {
 }
 
 type ImportState = 'idle' | 'importing' | 'success' | 'error';
+type FileType = 'json' | 'pdf' | 'image';
+
+const ACCEPTED_EXTENSIONS = '.json,.pdf,.png,.jpg,.jpeg,.webp';
 
 function getHeaders() {
   const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
@@ -37,31 +51,53 @@ function getHeaders() {
 
 export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) {
   const t = useTranslations('import');
+  const tAi = useTranslations('ai');
+  const tBilling = useTranslations('billing');
+  const tBase = useTranslations();
   const router = useRouter();
 
   const [state, setState] = useState<ImportState>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileType, setFileType] = useState<FileType | null>(null);
+  const [template, setTemplate] = useState<string>('classic');
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { currentPlan, checkPaywall, showPaywall, setShowPaywall, requiredTier, paywallDescription } = usePaywall();
 
   useEffect(() => {
     if (open) {
       setState('idle');
       setErrorMessage('');
       setSelectedFile(null);
+      setFileType(null);
+      setTemplate('classic');
     }
   }, [open]);
 
   const handleFileSelect = useCallback((file: File) => {
-    if (!file.name.endsWith('.json')) {
+    setErrorMessage('');
+    const name = file.name.toLowerCase();
+
+    if (name.endsWith('.json')) {
+      setSelectedFile(file);
+      setFileType('json');
+      setState('idle');
+    } else if (name.endsWith('.pdf')) {
+      setSelectedFile(file);
+      setFileType('pdf');
+      setState('idle');
+    } else if (['png', 'jpg', 'jpeg', 'webp'].some((ext) => name.endsWith('.' + ext))) {
+      setSelectedFile(file);
+      setFileType('image');
+      setState('idle');
+    } else {
+      setSelectedFile(null);
+      setFileType(null);
       setState('error');
       setErrorMessage(t('invalidFormat'));
-      return;
     }
-    setSelectedFile(file);
-    setState('idle');
-    setErrorMessage('');
   }, [t]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -87,153 +123,286 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
   }, [handleFileSelect]);
 
   const handleImport = useCallback(async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || !fileType) return;
 
     setState('importing');
     setErrorMessage('');
 
     try {
-      const text = await selectedFile.text();
-      const data = JSON.parse(text);
+      let newResume;
 
-      if (!Array.isArray(data.sections)) {
-        throw new Error(t('invalidFormat'));
+      if (fileType === 'json') {
+        const text = await selectedFile.text();
+        const data = JSON.parse(text);
+
+        if (!Array.isArray(data.sections)) {
+          throw new Error(t('invalidFormat'));
+        }
+
+        const res = await fetch('/api/resume', {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({
+            title: data.title || 'Imported Resume',
+            template: data.template || 'classic',
+            themeConfig: data.themeConfig,
+            sections: data.sections,
+          }),
+        });
+
+        if (!res.ok) throw new Error(t('error'));
+        newResume = await res.json();
+      } else {
+        // PDF or Image
+        const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('template', template);
+
+        const res = await fetch('/api/resume/parse', {
+          method: 'POST',
+          headers: { ...(fingerprint ? { 'x-fingerprint': fingerprint } : {}), ...getAIHeaders() },
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || 'Parse failed');
+        }
+
+        newResume = await res.json();
       }
-
-      // Create a new resume with imported data (ids are ignored server-side)
-      const res = await fetch('/api/resume', {
-        method: 'POST',
-        headers: getHeaders(),
-        body: JSON.stringify({
-          title: data.title || 'Imported Resume',
-          template: data.template || 'classic',
-          themeConfig: data.themeConfig,
-          sections: data.sections,
-        }),
-      });
-
-      if (!res.ok) throw new Error(t('error'));
-      const newResume = await res.json();
 
       setState('success');
       setTimeout(() => {
         onOpenChange(false);
         router.push(`/editor/${newResume.id}`);
       }, 1000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setState('error');
+      const message = err instanceof Error ? err.message : String(err);
       if (err instanceof SyntaxError) {
         setErrorMessage(t('invalidFormat'));
+      } else if (message === 'apiKeyMissing') {
+        setErrorMessage(`${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}`);
       } else {
-        setErrorMessage(err.message || t('error'));
+        setErrorMessage(message || t('error'));
       }
     }
-  }, [selectedFile, onOpenChange, router, t]);
+  }, [selectedFile, fileType, template, onOpenChange, router, t, tAi]);
 
   const isLoading = state === 'importing';
 
+  // Render appropriate file icon
+  const getFileIcon = () => {
+    if (fileType === 'json') return <FileJson className="mb-3 h-8 w-8 text-green-500" />;
+    if (fileType === 'pdf') return <FileText className="mb-3 h-8 w-8 text-green-500" />;
+    if (fileType === 'image') return <ImageIcon className="mb-3 h-8 w-8 text-green-500" />;
+    return <Upload className="mb-3 h-8 w-8 text-zinc-400" />;
+  };
+
+  const getFileLabel = () => {
+    if (fileType === 'json') return t('detectJson');
+    if (fileType === 'pdf') return t('detectPdf');
+    if (fileType === 'image') return t('detectImage');
+    return t('selectFile');
+  };
+
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o && !isLoading) onOpenChange(false); }}>
-      <DialogContent className="sm:max-w-lg p-0 gap-0 overflow-hidden">
-        <DialogHeader className="px-6 pt-6 pb-0">
-          <DialogTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5 text-brand" />
-            {t('title')}
-          </DialogTitle>
-          <DialogDescription>{t('dashboardDescription')}</DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={(o) => { if (!o && !isLoading) onOpenChange(false); }}>
+        <DialogContent className="sm:max-w-4xl p-0 gap-0 overflow-hidden max-h-[90vh] flex flex-col">
+          <DialogHeader className="px-6 pt-6 pb-0 flex-shrink-0">
+            <DialogTitle className="flex items-center gap-2">
+              <Upload className="h-5 w-5 text-brand" />
+              {t('title')}
+            </DialogTitle>
+            <DialogDescription>{t('dashboardDescription')}</DialogDescription>
+          </DialogHeader>
 
-        <div className="px-6 py-5">
-          {(state === 'idle' || (state === 'error' && selectedFile)) && (
-            <div
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              className={`flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
-                isDragging
-                  ? 'border-brand bg-brand-muted dark:bg-brand-muted'
-                  : selectedFile
-                    ? 'border-green-300 bg-green-50/50 dark:border-green-700 dark:bg-green-950/20'
-                    : 'border-zinc-300 hover:border-brand hover:bg-brand-muted/30 dark:border-zinc-600 dark:hover:border-brand dark:hover:bg-brand-muted/10'
-              }`}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".json"
-                onChange={handleInputChange}
-                className="hidden"
-              />
-              {selectedFile ? (
-                <>
-                  <FileJson className="mb-3 h-8 w-8 text-green-500" />
-                  <p className="max-w-full truncate text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                    {selectedFile.name}
-                  </p>
-                  <p className="mt-1 text-xs text-zinc-400">{t('dragHint')}</p>
-                </>
-              ) : (
-                <>
-                  <Upload className="mb-3 h-8 w-8 text-zinc-400" />
-                  <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                    {t('selectFile')}
-                  </p>
-                  <p className="mt-1 text-xs text-zinc-400">{t('dragHint')}</p>
-                </>
-              )}
-            </div>
-          )}
-
-          {state === 'error' && !selectedFile && (
-            <div className="flex flex-col items-center justify-center py-6 text-center">
-              <AlertCircle className="mb-3 h-8 w-8 text-red-500" />
-              <p className="text-sm font-medium text-red-600 dark:text-red-400">
-                {errorMessage || t('error')}
-              </p>
-            </div>
-          )}
-
-          {state === 'importing' && (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <Loader2 className="mb-3 h-8 w-8 animate-spin text-brand" />
-              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                {t('importing')}
-              </p>
-            </div>
-          )}
-
-          {state === 'success' && (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <CheckCircle2 className="mb-3 h-8 w-8 text-green-500" />
-              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                {t('success')}
-              </p>
-            </div>
-          )}
-        </div>
-
-        <DialogFooter className="border-t border-zinc-100 px-6 py-4 dark:border-zinc-800">
-          {(state === 'idle' || state === 'error') && (
-            <>
-              <Button
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                className="cursor-pointer"
+          <div className="px-6 py-5 overflow-y-auto flex-1 space-y-5">
+            {(state === 'idle' || (state === 'error' && selectedFile)) && (
+              <div
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={() => !selectedFile && fileInputRef.current?.click()}
+                className={cn(
+                  'flex flex-col items-center justify-center overflow-hidden rounded-lg border-2 border-dashed p-8 text-center transition-colors',
+                  selectedFile ? 'cursor-default' : 'cursor-pointer',
+                  isDragging
+                    ? 'border-brand bg-brand-muted dark:bg-brand-muted'
+                    : selectedFile
+                      ? 'border-green-300 bg-green-50/50 dark:border-green-700 dark:bg-green-950/20'
+                      : 'border-zinc-300 hover:border-brand hover:bg-brand-muted/30 dark:border-zinc-600 dark:hover:border-brand dark:hover:bg-brand-muted/10'
+                )}
               >
-                {t('cancel')}
-              </Button>
-              <Button
-                onClick={handleImport}
-                disabled={!selectedFile || isLoading}
-                className="cursor-pointer bg-brand hover:bg-brand-hover"
-              >
-                {t('importBtn')}
-              </Button>
-            </>
-          )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept={ACCEPTED_EXTENSIONS}
+                  onChange={handleInputChange}
+                  className="hidden"
+                  disabled={!!selectedFile}
+                />
+                {getFileIcon()}
+                <p className="max-w-full truncate text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  {selectedFile ? selectedFile.name : getFileLabel()}
+                </p>
+                {selectedFile ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedFile(null);
+                      setFileType(null);
+                    }}
+                    className="mt-2 text-xs font-semibold text-red-500 hover:text-red-600 cursor-pointer"
+                  >
+                    {tBase('common.delete')}
+                  </button>
+                ) : (
+                  <p className="mt-1 text-xs text-zinc-400">{t('dragHint')}</p>
+                )}
+              </div>
+            )}
+
+            {state === 'error' && (
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <AlertCircle className="mb-3 h-8 w-8 text-red-500" />
+                <p className="text-sm font-medium text-red-600 dark:text-red-400">
+                  {errorMessage || t('error')}
+                </p>
+                {selectedFile && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedFile(null);
+                      setFileType(null);
+                      setState('idle');
+                    }}
+                    className="mt-2 text-xs font-semibold text-zinc-500 hover:text-zinc-700 cursor-pointer"
+                  >
+                    {tBase('common.back')}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {state === 'importing' && (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <Loader2 className="mb-3 h-8 w-8 animate-spin text-brand" />
+                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  {fileType === 'json' ? t('importing') : t('parsing')}
+                </p>
+              </div>
+            )}
+
+            {state === 'success' && (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <CheckCircle2 className="mb-3 h-8 w-8 text-green-500" />
+                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  {t('success')}
+                </p>
+              </div>
+            )}
+
+            {/* Template Selector for PDF/Images */}
+            {state === 'idle' && selectedFile && fileType !== 'json' && (
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  {t('templateSelect')}
+                </p>
+                <div className="max-h-[260px] overflow-y-auto pr-1">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+                    {TEMPLATES.map((tpl) => {
+                      const isSelected = template === tpl;
+                      const isLocked = currentPlan === 'free' && !FREE_TEMPLATES.has(tpl);
+                      return (
+                        <button
+                          key={tpl}
+                          type="button"
+                          className={cn(
+                            'group/tpl relative cursor-pointer overflow-hidden rounded-xl border-2 transition-all duration-200',
+                            isSelected
+                              ? 'border-brand shadow-md shadow-brand/10'
+                              : 'border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600',
+                            isLocked && 'opacity-70 hover:opacity-100'
+                          )}
+                          onClick={() => {
+                            if (isLocked) {
+                              checkPaywall('pro', () => setTemplate(tpl), { description: tBilling('limitTemplatesDesc') });
+                            } else {
+                              setTemplate(tpl);
+                            }
+                          }}
+                        >
+                          <div className="relative bg-zinc-50 p-2 dark:bg-zinc-800/50">
+                            <TemplateThumbnail
+                              template={tpl}
+                              className="mx-auto h-[90px] w-[64px] shadow-sm ring-1 ring-zinc-200/50"
+                            />
+                            {isSelected && !isLocked && (
+                              <div className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-white shadow-sm">
+                                <Check className="h-3 w-3" />
+                              </div>
+                            )}
+                            {isLocked && (
+                              <div className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-800/80 text-white shadow-sm backdrop-blur-sm">
+                                <Lock className="h-3 w-3" />
+                              </div>
+                            )}
+                          </div>
+                          <div className={cn(
+                            'px-2 py-1.5 text-center text-[10px] font-medium transition-colors flex items-center justify-between gap-1 border-t border-zinc-100 dark:border-zinc-800/50',
+                            isSelected
+                              ? 'bg-brand-muted text-brand dark:bg-brand-muted dark:text-brand'
+                              : 'text-zinc-600 dark:text-zinc-400'
+                          )}>
+                            <span className="truncate flex-1 text-left">{tBase(templateLabelsMap[tpl])}</span>
+                            {FREE_TEMPLATES.has(tpl) ? (
+                              <span className="rounded bg-emerald-50 px-1 py-0.5 text-[8px] font-semibold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 shrink-0">
+                                {tBase('templates.freeBadge')}
+                              </span>
+                            ) : (
+                              <span className="rounded bg-blue-50 px-1 py-0.5 text-[8px] font-semibold text-blue-700 dark:bg-blue-950/30 dark:text-blue-400 shrink-0">
+                                {tBase('templates.proBadge')}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="border-t border-zinc-100 px-6 py-4 dark:border-zinc-800 flex-shrink-0">
+            {(state === 'idle' || state === 'error') && (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  className="cursor-pointer"
+                  disabled={isLoading}
+                >
+                  {t('cancel')}
+                </Button>
+                <Button
+                  onClick={handleImport}
+                  disabled={!selectedFile || isLoading || state === 'error'}
+                  className="cursor-pointer bg-brand hover:bg-brand-hover"
+                >
+                  {fileType === 'json' ? t('importBtn') : t('uploadAndParse')}
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <PricingModal open={showPaywall} onOpenChange={setShowPaywall} requiredTier={requiredTier} descriptionOverride={paywallDescription} />
+    </>
   );
 }

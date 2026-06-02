@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe/client';
 import { STRIPE_CONFIG } from '@/lib/stripe/config';
 import { getUserIdFromRequest, resolveUser } from '@/lib/auth/helpers';
+import { db } from '@/lib/db';
+import { users } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
+import Stripe from 'stripe';
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,17 +24,95 @@ export async function POST(req: NextRequest) {
 
     const priceId = STRIPE_CONFIG.prices[tier as 'pro' | 'premium'][plan as 'monthly' | 'yearly'];
 
-    // If user already has an active paid subscription, route them to the billing portal
-    // to prevent double-billing via creating a second concurrent subscription.
-    if (user.subscriptionPlan !== 'free' && user.stripeCustomerId) {
+    const getPlanFromPriceId = (priceId: string): 'free' | 'pro' | 'premium' => {
+      if (!priceId) return 'free';
+      if (priceId === STRIPE_CONFIG.prices.premium.monthly || priceId === STRIPE_CONFIG.prices.premium.yearly) return 'premium';
+      if (priceId === STRIPE_CONFIG.prices.pro.monthly || priceId === STRIPE_CONFIG.prices.pro.yearly) return 'pro';
+      return 'pro'; // default fallback if paid
+    };
+
+    let customerId = user.stripeCustomerId;
+    let activeSub: Stripe.Subscription | null = null;
+
+    if (user.email) {
+      // Self-healing check: fetch up to 10 customers matching the email to look for active subscriptions
+      const customers = await stripe.customers.list({
+        email: user.email,
+        limit: 10,
+      });
+
+      let activeCustomer: Stripe.Customer | null = null;
+      let fallbackCustomer: Stripe.Customer | null = null;
+
+      for (const customer of customers.data) {
+        const subscriptions = await stripe.subscriptions.list({
+          customer: customer.id,
+          limit: 10,
+        });
+
+        // Find if this customer has any active or trialing subscription
+        const activeOrTrialingSub = subscriptions.data.find(
+          (sub) => sub.status === 'active' || sub.status === 'trialing'
+        );
+
+        if (activeOrTrialingSub) {
+          activeCustomer = customer as Stripe.Customer;
+          activeSub = activeOrTrialingSub;
+          break;
+        }
+
+        if (!fallbackCustomer || customer.id === user.stripeCustomerId) {
+          fallbackCustomer = customer as Stripe.Customer;
+        }
+      }
+
+      const chosenCustomer = activeCustomer || fallbackCustomer;
+
+      if (chosenCustomer) {
+        customerId = chosenCustomer.id;
+
+        const updateData: Record<string, unknown> = {
+          stripeCustomerId: customerId,
+        };
+
+        if (activeSub) {
+          const subPriceId = activeSub.items.data[0]?.price.id;
+          updateData.stripeSubscriptionId = activeSub.id;
+          updateData.stripePriceId = subPriceId;
+          updateData.subscriptionStatus = activeSub.status;
+          updateData.subscriptionPlan = getPlanFromPriceId(subPriceId);
+          updateData.stripeCurrentPeriodEnd = new Date(((activeSub as unknown) as { current_period_end: number }).current_period_end * 1000);
+        }
+
+        const needsUpdate =
+          user.stripeCustomerId !== customerId ||
+          (activeSub && user.stripeSubscriptionId !== activeSub.id) ||
+          (activeSub && user.subscriptionPlan === 'free');
+
+        if (needsUpdate) {
+          await db
+            .update(users)
+            .set(updateData)
+            .where(eq(users.id, user.id));
+          
+          // Update local user object for subsequent checks
+          user.stripeCustomerId = customerId;
+          if (activeSub) {
+            user.subscriptionPlan = updateData.subscriptionPlan;
+          }
+        }
+      }
+    }
+
+    // If user already has an active paid subscription (either from DB or verified from self-healing),
+    // route them to the billing portal to prevent double-billing.
+    if ((user.subscriptionPlan !== 'free' || activeSub) && customerId) {
       const portalSession = await stripe.billingPortal.sessions.create({
-        customer: user.stripeCustomerId,
+        customer: customerId,
         return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard`,
       });
       return NextResponse.json({ url: portalSession.url });
     }
-
-    let customerId = user.stripeCustomerId;
 
     // Create a new customer if one doesn't exist
     if (!customerId) {
@@ -42,9 +124,14 @@ export async function POST(req: NextRequest) {
         },
       });
       customerId = customer.id;
+      // Cache customerId in the database
+      await db
+        .update(users)
+        .set({ stripeCustomerId: customerId })
+        .where(eq(users.id, user.id));
     }
 
-    const sessionData: any = {
+    const sessionData: Stripe.Checkout.SessionCreateParams = {
       mode: 'subscription',
       customer: customerId,
       line_items: [
@@ -70,7 +157,7 @@ export async function POST(req: NextRequest) {
     const session = await stripe.checkout.sessions.create(sessionData);
 
     return NextResponse.json({ url: session.url });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Stripe Checkout Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

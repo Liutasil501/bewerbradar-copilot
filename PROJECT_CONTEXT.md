@@ -49,7 +49,7 @@ KI-Tokens (LLM-Aufrufe) kosten Geld. Um Missbrauch zu verhindern und die Serverk
 - **Pro / Premium:** Schaltet tiefgreifende KI-Funktionen (wie das Mock-Interview) und Premium-Exporte (PDF/DOCX) frei. Das Modell stellt sicher, dass nur zahlende Kunden Rechenleistung verbrauchen.
 
 **Exakte UI-Integration (Die Business Logik):**
-- Wir nutzen den Hook `use-paywall.tsx`, um live zu prüfen, in welchem Tier der Nutzer ist. Gratis-Nutzer stoßen bei Premium-Aktionen auf die `PricingModal`-Komponente.
+- Wir nutzen den Hook `use-paywall.tsx`, um live zu prüfen, in welchem Tier der Nutzer is. Gratis-Nutzer stoßen bei Premium-Aktionen auf die `PricingModal`-Komponente.
 - **Eingebaute Paywall-Buttons (Locations):** Die Paywall triggert explizit und blockiert den Zugriff in folgenden UI-Dateien:
   - `export-dialog.tsx` (Blockiert PDF/DOCX Download)
   - `cover-letter-dialog.tsx` (Blockiert KI-Anschreiben)
@@ -60,11 +60,11 @@ KI-Tokens (LLM-Aufrufe) kosten Geld. Um Missbrauch zu verhindern und die Serverk
 - **Hardcodierte Preise im Frontend:** Um Ladezeiten und Stripe-API-Limits zu sparen, wurden die Pläne in allen Sprachen (`messages/de.json`, `en.json`, `zh.json`) hardcodiert. Dort haben wir Schlüssel wie `titlePro`, `titlePremium`, `descPro` und Preise hinzugefügt, sodass das UI blitzschnell auf Deutsch, Englisch oder Chinesisch reagiert.
 
 ## 5. Templates & Dummy-Daten
-- **Vorbelegte Templates:** In `src/lib/db/sample-resume.ts` und `seed.ts` wurden Dummy-Daten hinterlegt. Wenn ein User ein neues Template auswählt, startet er nicht mit einem weißen Blatt, sondern sieht direkt strukturierte Beispiel-Inhalte (wie Max Mustermann, fiktive Jobs etc.), die das BewerbRadar Copilot Layout perfekt in Szene setzen.
+- **Vorbelegte Templates:** In `src/lib/db/sample-resume.ts` and `seed.ts` wurden Dummy-Daten hinterlegt. Wenn ein User ein neues Template auswählt, startet er nicht mit einem weißen Blatt, sondern sieht direkt strukturierte Beispiel-Inhalte (wie Max Mustermann, fiktive Jobs etc.), die das BewerbRadar Copilot Layout perfekt in Szene setzen.
 
 ## 6. QA & Bugfixes (Mai 2026)
 Bei der Qualitätssicherung wurden zahlreiche Bugfixes umgesetzt:
-1. **Mock Interview Lokalisierung (Chinesische Altlasten):** Das alte System hatte harte chinesische Prompts und Namen ("Li Wen") im Code. Wir haben `src/lib/interview/interviewers.ts` und `constants.ts` komplett übersetzt und deutsche/englische HR-Personas geschaffen.
+1. **Mock Interview Lokalisierung (Chinesische Altlasten):** Das alte System hatte harte chinesische Prompts und Namen ("Li Wen") im Code. Wir haben `src/lib/interview/interviewers.ts` and `constants.ts` komplett übersetzt und deutsche/englische HR-Personas geschaffen.
 2. **KI-Locale-Erkennung:** In den API-Routen für das Cover-Letter (`src/app/api/ai/cover-letter/route.ts`) und Grammatik-Check wurde der `x-next-intl-locale` Header implementiert, damit die KI nicht versehentlich deutsche Texte ins Englische oder Chinesische umschreibt.
 3. **Radix UI Dialog Fixes:** Es gab React-Verschachtelungsfehler, weil das `PricingModal` fälschlicherweise *innerhalb* von `<DialogContent>` diverser Modale gerendert wurde. Dies wurde gefixt, indem das Modal per React Fragment `<>` neben den Hauptdialog verschoben wurde.
 4. **CSS UTF-16 Fehler:** Powershell-Pipes hatten die `globals.css` korrumpiert (invalid characters). Dies wurde durch ein Node-Skript bereinigt.
@@ -90,12 +90,20 @@ Diese Dateien werden niemals ins Repo gepusht, sondern dienen uns als lokaler An
 
 ## Changelog / Logbuch
 
+### 2. Juni 2026 (Stripe Self-Healing & Build-Korrekturen)
+- **Stripe Double-Billing & Kundenportal Fixes:** 
+  - Die Kundenportals-Route (`c:\Games\Dev\JadeAI\src\app\api\stripe\portal\route.ts`) und Checkout-Route (`c:\Games\Dev\JadeAI\src\app\api\stripe\checkout\route.ts`) wurden um eine robuste Self-Healing-Prüfung per Stripe API erweitert.
+  - Wenn ein Nutzer versucht, sein Portal zu öffnen oder ein Checkout zu starten, prüft das Backend nun in Echtzeit bis zu 10 existierende Kundenkonten in Stripe für diese E-Mail auf aktive/trialing Subscriptions.
+  - Findet es ein aktives Abo, repariert sich die lokale DB sofort selbst (Verknüpfung der korrekten Kunden-ID, Freischaltung des entsprechenden Plans und Synchronisation des Zeitraums), und leitet den Nutzer direkt in das korrekte Portal weiter. Dies repariert out-of-sync Accounts vollautomatisch.
+- **Sicherheits-Bereinigung:** Die nicht-authentifizierte Debug-Route `/api/stripe/debug-customer` wurde gelöscht, um Kundendaten zu sichern.
+- **ESLint & TS Kompilierungs-Fixes:** Alle Typfehler und Linter-Meldungen in den modifizierten Routen wurden durch typsichere Definitionen behoben (keine Verwendung von `any` mehr).
+
 ### 29. Mai 2026
 - **VPS/Docker Klärung:** Es wurde final dokumentiert, dass der Copilot intern auf Port `3001` (Container Port 3000) gemappt ist und über den Reverse Proxy auf `copilot.bewerbradar.de` läuft. Hauptprojekt (Reactive Resume) läuft auf Port `3000`.
-- **GitHub Repos getrennt:** Um Überschneidungen zu verhindern, wurde `Liutasil501/bewerbradar-copilot` als separates Repo für den Copilot etabliert, statt den Code in den `beta`-Branch des Hauptprojekts zu drücken.
+- **GitHub Repos getrennt:** Um Überschneidungen zu verhindern, wurde `Liutasil501/bewerbradar-copilot` as separates Repo für den Copilot etabliert, statt den Code in den `beta`-Branch des Hauptprojekts zu drücken.
 - **Drizzle Studio:** Subdomain `studio.bewerbradar.de` via Port `4983` als internes GUI ergänzt.
 - **Stripe & Paywall:** Exakte Integration in den Dialog-Komponenten (`export-dialog.tsx` etc.) und in der SQLite Datenbank dokumentiert.
-- **Bugfixes:** Lokalisierungsfehler (Chinesische Personas), `x-next-intl-locale` Header, Dialog-Verschachtelungs-Bugs (Radix UI) und CSS-Encoding-Fehler erfolgreich bereinigt.
+- **Bugfixes:** Lokalisierungsfehler (Chinesische Personas), `x-next-intl-locale` Header, Dialog-Verschachtelungs-Bugs (Radix UI) and CSS-Encoding-Fehler erfolgreich bereinigt.
 - **Interne Zugänge hinterlegt:** Ablageort der VPS/Hostinger Keys (`C:\Games\Dev\VPS2 NEWST 2028`) ins Log aufgenommen.
 
 
@@ -120,7 +128,7 @@ Du hast die `bewerbradar.conf` völlig richtig analysiert! Hier ist die Auflösu
 
 ### 1. Juni 2026 (Security Deep Dive & Paywall Fixes)
 - **Zombie Share Loophole (Paywall Bypass):** Es gab einen Fehler in `api/share/[token]/route.ts`. Wenn ein Pro-User seinen Plan gekündigt hat (Downgrade auf 'free'), blieben seine öffentlichen Share-Links unendlich lang aktiv. Jetzt prüft das Backend bei jedem Aufruf eines Share-Links in Echtzeit den `subscriptionPlan` des Erstellers. Ist dieser 'free', wird der Link sofort gesperrt (403 Forbidden).
-- **Singular Share Bypass:** Der globale Share-Toggle (`api/resume/[id]/share/route.ts`) wurde analog zu der Mehrzahl-Route abgesichert, sodass Free-User nicht den "public" State auf "true" erzwingen können.
+- **Singular Share Bypass:** Der globale Share-Toggle (`api/resume/[id]/share/route.ts`) wurde analog zu der mehrzahl Route abgesichert, sodass Free-User nicht den "public" State auf "true" erzwingen können.
 - **Double Billing bei Stripe Upgrade:** Ein Bug in `api/stripe/checkout/route.ts` wurde behoben. Wenn Pro-User im UI auf "Upgrade" geklickt haben, wurde eine neue Checkout-Session generiert (was zu doppelten Abos führte). Jetzt werden bestehende Abonnenten dynamisch in das Stripe Customer Portal (`/api/stripe/portal`) umgeleitet, das Upgrades und Prorations sicher verarbeitet.
 - **Template Lokalisierungs-Kollision (PDF & Live Preview):** In **188 Vorkommnissen** über alle Templates hinweg wurden hardcodierte chinesische Fallbacks (`language === 'zh' ? '至今' : 'Present'`) entfernt und auf die korrekte deutsche Lokalisierung (`language === 'de' ? 'Heute' : 'Present'`, `'Technologien'` etc.) umgeschrieben. Ohne diesen Fix wären deutsche Lebensläufe im PDF Export hartnäckig auf Englisch generiert worden.
 - **Deployment Status:** Alle Änderungen sind derzeit nur lokal im `beta`-Branch committet (`chore(security): secure share routes, fix template language fallbacks, fix upgrade billing`). Für ein Live-Deployment müssen diese kontrolliert in den `main`-Branch gemerged und gepusht werden (gemäß der "Zero-Downtime Rule").

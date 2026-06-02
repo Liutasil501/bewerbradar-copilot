@@ -4,6 +4,8 @@ import { getUserIdFromRequest, resolveUser } from '@/lib/auth/helpers';
 import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { STRIPE_CONFIG } from '@/lib/stripe/config';
+import Stripe from 'stripe';
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,21 +16,77 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const getPlanFromPriceId = (priceId: string): 'free' | 'pro' | 'premium' => {
+      if (!priceId) return 'free';
+      if (priceId === STRIPE_CONFIG.prices.premium.monthly || priceId === STRIPE_CONFIG.prices.premium.yearly) return 'premium';
+      if (priceId === STRIPE_CONFIG.prices.pro.monthly || priceId === STRIPE_CONFIG.prices.pro.yearly) return 'pro';
+      return 'pro'; // default fallback if paid
+    };
+
     let customerId = user.stripeCustomerId;
 
-    // Self-healing: if customerId is missing, look it up in Stripe by email
-    if (!customerId && user.email) {
+    if (user.email) {
+      // Fetch up to 10 customers matching the email to look for active subscriptions
       const customers = await stripe.customers.list({
         email: user.email,
-        limit: 1,
+        limit: 10,
       });
-      if (customers.data.length > 0) {
-        customerId = customers.data[0].id;
-        // Cache customerId in the database
-        await db
-          .update(users)
-          .set({ stripeCustomerId: customerId })
-          .where(eq(users.id, user.id));
+
+      let activeCustomer: Stripe.Customer | null = null;
+      let activeSub: Stripe.Subscription | null = null;
+      let fallbackCustomer: Stripe.Customer | null = null;
+
+      for (const customer of customers.data) {
+        const subscriptions = await stripe.subscriptions.list({
+          customer: customer.id,
+          limit: 10,
+        });
+
+        // Find if this customer has any active or trialing subscription
+        const activeOrTrialingSub = subscriptions.data.find(
+          (sub) => sub.status === 'active' || sub.status === 'trialing'
+        );
+
+        if (activeOrTrialingSub) {
+          activeCustomer = customer as Stripe.Customer;
+          activeSub = activeOrTrialingSub;
+          break;
+        }
+
+        if (!fallbackCustomer || customer.id === user.stripeCustomerId) {
+          fallbackCustomer = customer as Stripe.Customer;
+        }
+      }
+
+      const chosenCustomer = activeCustomer || fallbackCustomer;
+
+      if (chosenCustomer) {
+        customerId = chosenCustomer.id;
+
+        const updateData: Record<string, unknown> = {
+          stripeCustomerId: customerId,
+        };
+
+        if (activeSub) {
+          const priceId = activeSub.items.data[0]?.price.id;
+          updateData.stripeSubscriptionId = activeSub.id;
+          updateData.stripePriceId = priceId;
+          updateData.subscriptionStatus = activeSub.status;
+          updateData.subscriptionPlan = getPlanFromPriceId(priceId);
+          updateData.stripeCurrentPeriodEnd = new Date(((activeSub as unknown) as { current_period_end: number }).current_period_end * 1000);
+        }
+
+        const needsUpdate =
+          user.stripeCustomerId !== customerId ||
+          (activeSub && user.stripeSubscriptionId !== activeSub.id) ||
+          (activeSub && user.subscriptionPlan === 'free');
+
+        if (needsUpdate) {
+          await db
+            .update(users)
+            .set(updateData)
+            .where(eq(users.id, user.id));
+        }
       }
     }
 
@@ -55,7 +113,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ url: session.url });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Stripe Portal Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
