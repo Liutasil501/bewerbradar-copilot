@@ -23,7 +23,7 @@ export function extractAIConfig(request: NextRequest, user?: { subscriptionPlan?
     provider = 'gemini';
     apiKey = process.env.GEMINI_API_KEY || '';
     baseURL = ''; // Use default
-    model = 'gemini-1.5-flash';
+    model = 'gemini-2.0-flash';
     isPremiumBypass = true;
   }
 
