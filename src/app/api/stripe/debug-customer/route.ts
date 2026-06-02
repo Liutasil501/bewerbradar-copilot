@@ -17,8 +17,9 @@ export async function GET(req: NextRequest) {
           id: s.id,
           status: s.status,
           priceId: s.items.data[0]?.price.id,
-          currentPeriodEnd: new Date(s.current_period_end * 1000).toISOString(),
+          currentPeriodEnd: new Date((s as any).current_period_end * 1000).toISOString(),
         })),
+
         invoices: invoices.data.map(inv => ({
           id: inv.id,
           amount: inv.amount_due / 100,
