@@ -40,7 +40,8 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
   const [title, setTitle] = useState('');
   const [template, setTemplate] = useState<string>('classic');
   const [isCreating, setIsCreating] = useState(false);
-  const { currentPlan, checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
+  const tBilling = useTranslations('billing');
+  const { currentPlan, checkPaywall, showPaywall, setShowPaywall, requiredTier, paywallDescription } = usePaywall();
 
   // Upload state
   const [file, setFile] = useState<File | null>(null);
@@ -208,7 +209,7 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
                           )}
                           onClick={() => {
                             if (isLocked) {
-                              checkPaywall('pro', () => setTemplate(tpl));
+                              checkPaywall('pro', () => setTemplate(tpl), { description: tBilling('limitTemplatesDesc') });
                             } else {
                               setTemplate(tpl);
                             }
@@ -345,7 +346,7 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
                           )}
                           onClick={() => {
                             if (isLocked) {
-                              checkPaywall('pro', () => setTemplate(tpl));
+                              checkPaywall('pro', () => setTemplate(tpl), { description: tBilling('limitTemplatesDesc') });
                             } else {
                               setTemplate(tpl);
                             }
@@ -425,7 +426,7 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
           )}
         </div>
       </DialogContent>
-      <PricingModal open={showPaywall} onOpenChange={setShowPaywall} requiredTier={requiredTier} />
+      <PricingModal open={showPaywall} onOpenChange={setShowPaywall} requiredTier={requiredTier} descriptionOverride={paywallDescription} />
     </Dialog>
   );
 }

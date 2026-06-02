@@ -13,11 +13,12 @@ export function usePaywall() {
   const aiApiKey = useSettingsStore((s) => s.aiApiKey);
   const [showPaywall, setShowPaywall] = useState(false);
   const [requiredTier, setRequiredTier] = useState<'pro' | 'premium'>('pro');
+  const [paywallDescription, setPaywallDescription] = useState<string | undefined>(undefined);
 
   const checkPaywall = useCallback((
     tier: 'pro' | 'premium',
     onSuccess: () => void,
-    options?: PaywallOptions
+    options?: PaywallOptions & { description?: string }
   ) => {
     // Determine if the user meets the tier requirements
     const hasPro = plan === 'pro' || plan === 'premium';
@@ -34,6 +35,7 @@ export function usePaywall() {
       onSuccess();
     } else {
       setRequiredTier(tier);
+      setPaywallDescription(options?.description);
       setShowPaywall(true);
     }
   }, [plan, aiApiKey]);
@@ -42,6 +44,7 @@ export function usePaywall() {
     showPaywall,
     setShowPaywall,
     requiredTier,
+    paywallDescription,
     checkPaywall,
     isLoading,
     currentPlan: plan,

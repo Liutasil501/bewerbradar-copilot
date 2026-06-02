@@ -967,6 +967,8 @@
     "titlePro": "Lebenslauf upgraden",
     "descPremium": "Du benötigst ein Premium-Abo, um KI-Features wie Mock Interviews und Anschreiben zu nutzen.",
     "descPro": "Du benötigst ein Pro-Abo, um PDFs zu exportieren und deinen Lebenslauf öffentlich zu teilen.",
+    "limitResumesDesc": "Du hast das Limit für kostenlose Lebensläufe (1) erreicht. Hole dir Pro, um unbegrenzt viele Lebensläufe zu erstellen.",
+    "limitTemplatesDesc": "Du benötigst ein Pro-Abo, um Pro-Lebenslauf-Vorlagen zu nutzen.",
     "monthly": "Monatlich",
     "yearly": "Jährlich",
     "save20": "20% sparen",

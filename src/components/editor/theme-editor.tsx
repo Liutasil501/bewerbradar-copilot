@@ -266,7 +266,7 @@ export function ThemeEditor({ onClose }: ThemeEditorProps) {
   const t = useTranslations('themeEditor');
   const tRoot = useTranslations();
   const { currentResume } = useResumeStore();
-  const { currentPlan, checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
+  const { currentPlan, checkPaywall, showPaywall, setShowPaywall, requiredTier, paywallDescription } = usePaywall();
 
   const themeConfig: ThemeConfig = {
     ...DEFAULT_THEME,
@@ -354,7 +354,7 @@ export function ThemeEditor({ onClose }: ThemeEditorProps) {
                     )}
                     onClick={() => {
                       if (isLocked) {
-                        checkPaywall('pro', () => handleTemplateSwitch(tpl));
+                        checkPaywall('pro', () => handleTemplateSwitch(tpl), { description: tRoot('billing.limitTemplatesDesc') });
                       } else {
                         handleTemplateSwitch(tpl);
                       }
@@ -554,7 +554,7 @@ export function ThemeEditor({ onClose }: ThemeEditorProps) {
           </ThemeSection>
         </div>
       </ScrollArea>
-      <PricingModal open={showPaywall} onOpenChange={setShowPaywall} requiredTier={requiredTier} />
+      <PricingModal open={showPaywall} onOpenChange={setShowPaywall} requiredTier={requiredTier} descriptionOverride={paywallDescription} />
     </div>
   );
 }

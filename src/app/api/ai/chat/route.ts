@@ -23,9 +23,13 @@ export async function POST(request: NextRequest) {
     let resumeContext = '';
     if (resumeId) {
       const resume = await resumeRepository.findById(resumeId);
-      if (resume) {
-        resumeContext = JSON.stringify(resume.sections);
+      if (!resume) {
+        return new Response('Resume not found', { status: 404 });
       }
+      if (resume.userId !== user.id) {
+        return new Response('Forbidden', { status: 403 });
+      }
+      resumeContext = JSON.stringify(resume.sections);
     }
 
     // Save user message to DB before streaming

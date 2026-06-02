@@ -6,15 +6,15 @@ interface SubscriptionStore {
   plan: SubscriptionPlan;
   isLoading: boolean;
   isHydrated: boolean;
-  hydrate: () => Promise<void>;
+  hydrate: (force?: boolean) => Promise<void>;
 }
 
 export const useSubscriptionStore = create<SubscriptionStore>((set, get) => ({
   plan: 'free',
   isLoading: true,
   isHydrated: false,
-  hydrate: async () => {
-    if (get().isHydrated) return;
+  hydrate: async (force = false) => {
+    if (get().isHydrated && !force) return;
     set({ isLoading: true });
     try {
       const fp = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
@@ -34,6 +34,7 @@ export const useSubscriptionStore = create<SubscriptionStore>((set, get) => ({
     }
   },
 }));
+
 
 if (typeof window !== 'undefined') {
   useSubscriptionStore.getState().hydrate();

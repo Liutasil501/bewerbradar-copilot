@@ -234,7 +234,8 @@ export default function TemplatesPage() {
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
   const [creatingTemplate, setCreatingTemplate] = useState<string | null>(null);
   const startTour = useTourStore((s) => s.startTour);
-  const { checkPaywall, showPaywall, setShowPaywall, requiredTier, currentPlan } = usePaywall();
+  const tBilling = useTranslations('billing');
+  const { checkPaywall, showPaywall, setShowPaywall, requiredTier, currentPlan, paywallDescription } = usePaywall();
   const isPreviewLocked = previewTemplate ? (currentPlan === 'free' && !FREE_TEMPLATES.has(previewTemplate as Template)) : false;
 
   useEffect(() => {
@@ -247,7 +248,7 @@ export default function TemplatesPage() {
   const handleUseTemplate = async (template: string) => {
     const isPremium = !FREE_TEMPLATES.has(template as Template);
     if (isPremium && currentPlan === 'free') {
-      checkPaywall('pro', () => {});
+      checkPaywall('pro', () => {}, { description: tBilling('limitTemplatesDesc') });
       return;
     }
 
@@ -414,6 +415,7 @@ export default function TemplatesPage() {
         open={showPaywall}
         onOpenChange={setShowPaywall}
         requiredTier={requiredTier}
+        descriptionOverride={paywallDescription}
       />
     </div>
   );

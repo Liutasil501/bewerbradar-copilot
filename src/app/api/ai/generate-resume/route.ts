@@ -4,6 +4,7 @@ import { getModel, extractAIConfig, getJsonProviderOptions, AIConfigError } from
 import { resolveUser, getUserIdFromRequest } from '@/lib/auth/helpers';
 import { resumeRepository } from '@/lib/db/repositories/resume.repository';
 import { generateResumeInputSchema, type GenerateResumeOutput } from '@/lib/ai/generate-resume-schema';
+import { MAX_FREE_RESUMES } from '@/lib/constants';
 
 const SECTION_TITLES: Record<string, Record<string, string>> = {
 
@@ -63,6 +64,13 @@ export async function POST(request: NextRequest) {
     const user = await resolveUser(fingerprint);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (user.subscriptionPlan === 'free') {
+      const existingResumes = await resumeRepository.findAllByUserId(user.id);
+      if (existingResumes.length >= MAX_FREE_RESUMES) {
+        return NextResponse.json({ error: `Free plan is limited to ${MAX_FREE_RESUMES} resume(s)` }, { status: 403 });
+      }
     }
 
     const body = await request.json();

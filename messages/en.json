@@ -966,6 +966,8 @@
     "titlePro": "Upgrade your Resume",
     "descPremium": "You need a Premium subscription to use AI features like Mock Interviews and Cover Letters.",
     "descPro": "You need a Pro subscription to export PDFs and share your resume publicly.",
+    "limitResumesDesc": "You have reached the limit for free resumes (1). Upgrade to Pro to build unlimited resumes.",
+    "limitTemplatesDesc": "You need a Pro subscription to use Pro resume templates.",
     "monthly": "Monthly",
     "yearly": "Yearly",
     "save20": "Save 20%",

@@ -84,11 +84,12 @@ export default function DashboardPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [shareResumeId, setShareResumeId] = useState<string | null>(null);
   const startTour = useTourStore((s) => s.startTour);
-  const { checkPaywall, showPaywall, setShowPaywall, requiredTier, currentPlan } = usePaywall();
+  const tBilling = useTranslations('billing');
+  const { checkPaywall, showPaywall, setShowPaywall, requiredTier, currentPlan, paywallDescription } = usePaywall();
 
   const handleCreateAction = <T,>(action: () => T | Promise<T>): T | Promise<T | null> => {
     if (currentPlan === 'free' && resumes.length >= MAX_FREE_RESUMES) {
-      checkPaywall('pro', action);
+      checkPaywall('pro', action, { description: tBilling('limitResumesDesc') });
       return Promise.resolve(null);
     } else {
       return action();
@@ -327,7 +328,7 @@ export default function DashboardPage() {
         />
       )}
       <TourOverlay tourId="dashboard" steps={DASHBOARD_TOUR_STEPS} />
-      <PricingModal open={showPaywall} onOpenChange={setShowPaywall} requiredTier={requiredTier} />
+      <PricingModal open={showPaywall} onOpenChange={setShowPaywall} requiredTier={requiredTier} descriptionOverride={paywallDescription} />
     </div>
   );
 }

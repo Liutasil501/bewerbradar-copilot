@@ -50,5 +50,5 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/(en|de)/:path*', '/share/:path*', '/login'],
+  matcher: ['/((?!api|_next|.*\\..*).*)'],
 };

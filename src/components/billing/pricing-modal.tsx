@@ -14,9 +14,10 @@ interface PricingModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   requiredTier: 'pro' | 'premium';
+  descriptionOverride?: string;
 }
 
-export function PricingModal({ open, onOpenChange, requiredTier }: PricingModalProps) {
+export function PricingModal({ open, onOpenChange, requiredTier, descriptionOverride }: PricingModalProps) {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const t = useTranslations('billing');
@@ -63,7 +64,7 @@ export function PricingModal({ open, onOpenChange, requiredTier }: PricingModalP
               {requiredTier === 'premium' ? t('titlePremium') : t('titlePro')}
             </DialogTitle>
             <DialogDescription className="mt-4 text-lg text-zinc-600 dark:text-zinc-400">
-              {requiredTier === 'premium' ? t('descPremium') : t('descPro')}
+              {descriptionOverride || (requiredTier === 'premium' ? t('descPremium') : t('descPro'))}
             </DialogDescription>
           </DialogHeader>
 

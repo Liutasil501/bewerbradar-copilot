@@ -142,21 +142,21 @@ export async function seedDemoUser(db: any) {
     },
     {
       type: 'projects',
-      title: '项目经历',
+      title: 'Projekte',
       sortOrder: 5,
       content: {
         items: [
           {
             id: crypto.randomUUID(),
-            name: 'BewerbRadar Copilot 简历助手',
+            name: 'BewerbRadar Copilot - Bewerbungsassistent',
             url: 'https://copilot.bewerbradar.de',
             startDate: '2024-10',
             endDate: '2025-02',
-            description: '基于 AI 的智能简历生成与优化工具，支持多模板、实时预览和 AI 对话式编辑。',
+            description: 'KI-gestütztes Tool zur intelligenten Erstellung und Optimierung von Lebensläufen, mit Unterstützung für mehrere Vorlagen, Echtzeit-Vorschau und KI-basierten Bearbeitungsfunktionen.',
             technologies: ['Next.js', 'React 19', 'Tailwind CSS', 'Vercel AI SDK'],
             highlights: [
-              '使用 AI SDK 实现流式对话与简历内容自动填充',
-              '设计三套专业简历模板，支持实时预览与 PDF 导出',
+              'Nutzung des Vercel AI SDKs für Streaming-basierte Chats und automatische Befüllung von Lebenslaufdaten',
+              'Entwicklung von professionellen Lebenslauf-Vorlagen mit Echtzeit-Vorschau und PDF-Export',
             ],
           },
         ],
