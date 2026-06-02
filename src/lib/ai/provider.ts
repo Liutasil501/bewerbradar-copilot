@@ -18,8 +18,8 @@ export function extractAIConfig(request: NextRequest, user?: { subscriptionPlan?
   let model = request.headers.get('x-model') || 'gpt-4o';
   let isPremiumBypass = false;
 
-  // Premium Bypass: If no user-provided key, and user is premium, use Server Gemini Key
-  if (!apiKey && user?.subscriptionPlan === 'premium') {
+  // Premium/Pro Bypass: If no user-provided key, and user is pro or premium, use Server Gemini Key
+  if (!apiKey && (user?.subscriptionPlan === 'premium' || user?.subscriptionPlan === 'pro')) {
     provider = 'gemini';
     apiKey = process.env.GEMINI_API_KEY || '';
     baseURL = ''; // Use default
