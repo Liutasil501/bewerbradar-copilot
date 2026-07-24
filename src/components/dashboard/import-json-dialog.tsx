@@ -29,6 +29,7 @@ import { TEMPLATES, FREE_TEMPLATES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { getAIHeaders } from '@/stores/settings-store';
 import { usePaywall } from '@/hooks/use-paywall';
+import { useUIStore } from '@/stores/ui-store';
 import { TemplateThumbnail } from './template-thumbnail';
 import { templateLabelsMap } from '@/lib/template-labels';
 import { PricingModal } from '@/components/billing/pricing-modal';
@@ -57,6 +58,7 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
   const tBilling = useTranslations('billing');
   const tBase = useTranslations();
   const router = useRouter();
+  const openModal = useUIStore((s) => s.openModal);
 
   const [state, setState] = useState<ImportState>('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -299,7 +301,7 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
                         variant="outline"
                         onClick={() => {
                           onOpenChange(false);
-                          router.push('/settings');
+                          openModal('settings');
                         }}
                         className="w-full sm:w-auto text-xs"
                       >

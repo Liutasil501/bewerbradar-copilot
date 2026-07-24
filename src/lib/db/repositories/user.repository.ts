@@ -68,4 +68,11 @@ export const userRepository = {
     await db.update(users).set({ settings: merged, updatedAt: new Date() }).where(eq(users.id, id));
     return merged;
   },
+
+  async incrementAiImportsCount(id: string) {
+    const user = await this.findById(id);
+    const count = (user?.aiImportsCount || 0) + 1;
+    await db.update(users).set({ aiImportsCount: count, updatedAt: new Date() }).where(eq(users.id, id));
+    return count;
+  },
 };

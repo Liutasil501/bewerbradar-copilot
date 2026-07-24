@@ -4,6 +4,7 @@ import type { ModelMessage } from 'ai';
 import { getModel, extractAIConfig, getJsonProviderOptions, AIConfigError } from '@/lib/ai/provider';
 import { resolveUser, getUserIdFromRequest } from '@/lib/auth/helpers';
 import { resumeRepository } from '@/lib/db/repositories/resume.repository';
+import { userRepository } from '@/lib/db/repositories/user.repository';
 import type { ParsedResume } from '@/lib/ai/parse-schema';
 import { MAX_FREE_RESUMES } from '@/lib/constants';
 
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
     }
 
     const existingResumes = await resumeRepository.findAllByUserId(user.id);
-    const allowFreeTrial = (user.subscriptionPlan === 'free' || !user.subscriptionPlan) && existingResumes.length === 0;
+    const allowFreeTrial = (user.subscriptionPlan === 'free' || !user.subscriptionPlan) && (user.aiImportsCount || 0) < 1;
 
     if (user.subscriptionPlan === 'free' && existingResumes.length >= MAX_FREE_RESUMES && !allowFreeTrial) {
       return NextResponse.json({ error: `Free plan is limited to ${MAX_FREE_RESUMES} resume(s)` }, { status: 403 });
@@ -158,6 +159,8 @@ export async function POST(request: NextRequest) {
         content: sections[i].content,
       });
     }
+
+    await userRepository.incrementAiImportsCount(user.id);
 
     const fullResume = await resumeRepository.findById(resume.id);
     return NextResponse.json(fullResume, { status: 201 });

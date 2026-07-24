@@ -27,7 +27,7 @@ const SECTION_TITLES: Record<string, Record<string, string>> = {
 };
 
 function getSystemPrompt(language: string): string {
-  const lang = language === 'en' ? 'English' : 'Simplified Chinese';
+  const lang = language === 'en' ? 'English' : 'German';
 
   return `You are a professional resume writer. Generate a complete, realistic, and professional resume in ${lang}.
 

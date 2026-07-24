@@ -12,6 +12,6 @@ export const STRIPE_CONFIG = {
   },
   // Optional: Coupon ID for a first-month discount if you still want to offer it on Premium
   coupons: {
-    firstMonthDiscount: process.env.STRIPE_COUPON_FIRST_MONTH || 'promo_999_first_month',
+    firstMonthDiscount: process.env.STRIPE_COUPON_FIRST_MONTH || '',
   }
 };

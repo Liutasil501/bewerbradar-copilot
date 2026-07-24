@@ -16,6 +16,7 @@ export const users = sqliteTable('users', {
   stripeCurrentPeriodEnd: integer('stripe_current_period_end', { mode: 'timestamp' }),
   subscriptionStatus: text('subscription_status'),
   subscriptionPlan: text('subscription_plan', { enum: ['free', 'pro', 'premium'] }).notNull().default('free'),
+  aiImportsCount: integer('ai_imports_count').notNull().default(0),
   
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
