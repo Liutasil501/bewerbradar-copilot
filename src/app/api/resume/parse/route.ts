@@ -39,11 +39,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (user.subscriptionPlan === 'free') {
-      const existingResumes = await resumeRepository.findAllByUserId(user.id);
-      if (existingResumes.length >= MAX_FREE_RESUMES) {
-        return NextResponse.json({ error: `Free plan is limited to ${MAX_FREE_RESUMES} resume(s)` }, { status: 403 });
-      }
+    const existingResumes = await resumeRepository.findAllByUserId(user.id);
+    const allowFreeTrial = (user.subscriptionPlan === 'free' || !user.subscriptionPlan) && existingResumes.length === 0;
+
+    if (user.subscriptionPlan === 'free' && existingResumes.length >= MAX_FREE_RESUMES && !allowFreeTrial) {
+      return NextResponse.json({ error: `Free plan is limited to ${MAX_FREE_RESUMES} resume(s)` }, { status: 403 });
     }
 
     const formData = await request.formData();
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    const aiConfig = extractAIConfig(request, user);
+    const aiConfig = extractAIConfig(request, user, { allowFreeTrial });
     const model = getModel(aiConfig);
 
     // Build messages based on file type

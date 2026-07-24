@@ -22,6 +22,8 @@ import {
   Image as ImageIcon,
   Check,
   Lock,
+  Sparkles,
+  Crown,
 } from 'lucide-react';
 import { TEMPLATES, FREE_TEMPLATES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
@@ -268,11 +270,51 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
             )}
 
             {state === 'error' && (
-              <div className="flex flex-col items-center justify-center py-6 text-center">
-                <AlertCircle className="mb-3 h-8 w-8 text-red-500" />
-                <p className="text-sm font-medium text-red-600 dark:text-red-400">
-                  {errorMessage || t('error')}
-                </p>
+              <div className="flex flex-col items-center justify-center py-4 text-center">
+                {errorMessage.includes('apiKeyMissing') || errorMessage.includes('API Key') || errorMessage.includes('Free plan') || errorMessage.includes('limited') ? (
+                  <div className="w-full max-w-md mx-auto rounded-xl border border-brand/20 bg-gradient-to-br from-brand/5 via-brand/10 to-transparent p-6 text-center shadow-sm">
+                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-brand">
+                      <Sparkles className="h-6 w-6" />
+                    </div>
+                    <h4 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                      🚀 Pro & Premium KI-Import
+                    </h4>
+                    <p className="mt-1.5 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                      Du hast deinen 1 kostenlosen Test-Import genutzt. Upgrade auf Pro oder Premium für unbegrenzte KI-Importe & Vorlagen!
+                    </p>
+                    <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          onOpenChange(false);
+                          checkPaywall('pro', () => {}, { description: 'Schalte unbegrenzte KI-Lebenslauf-Importe frei!' });
+                        }}
+                        className="w-full sm:w-auto bg-brand hover:bg-brand/90 text-white font-semibold text-xs py-2 px-4 rounded-lg shadow-sm"
+                      >
+                        <Crown className="mr-1.5 h-4 w-4" />
+                        Auf Pro / Premium upgraden
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          onOpenChange(false);
+                          router.push('/settings');
+                        }}
+                        className="w-full sm:w-auto text-xs"
+                      >
+                        Eigenen API-Key eintragen
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <AlertCircle className="mb-3 h-8 w-8 text-red-500" />
+                    <p className="text-sm font-medium text-red-600 dark:text-red-400">
+                      {errorMessage || t('error')}
+                    </p>
+                  </>
+                )}
                 {selectedFile && (
                   <button
                     type="button"
@@ -281,7 +323,7 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
                       setFileType(null);
                       setState('idle');
                     }}
-                    className="mt-2 text-xs font-semibold text-zinc-500 hover:text-zinc-700 cursor-pointer"
+                    className="mt-4 text-xs font-semibold text-zinc-500 hover:text-zinc-700 cursor-pointer"
                   >
                     {tBase('common.back')}
                   </button>

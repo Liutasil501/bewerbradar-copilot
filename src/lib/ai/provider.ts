@@ -11,15 +11,24 @@ export interface AIConfig {
   isPremiumBypass?: boolean;
 }
 
-export function extractAIConfig(request: NextRequest, user?: { subscriptionPlan?: string | null } | null): AIConfig {
+export function extractAIConfig(
+  request: NextRequest,
+  user?: { subscriptionPlan?: string | null } | null,
+  options?: { allowFreeTrial?: boolean }
+): AIConfig {
   let provider = request.headers.get('x-provider') || 'openai';
   let apiKey = request.headers.get('x-api-key') || '';
   let baseURL = request.headers.get('x-base-url') || 'https://api.openai.com/v1';
   let model = request.headers.get('x-model') || 'gpt-4o';
   let isPremiumBypass = false;
 
-  // Premium/Pro Bypass: If no user-provided key, and user is pro or premium, use Server Gemini Key
-  if (!apiKey && (user?.subscriptionPlan === 'premium' || user?.subscriptionPlan === 'pro')) {
+  // Premium/Pro Bypass & Free Trial Import: If no user-provided key, and user is pro/premium OR eligible for 1 free trial import
+  const isEligibleForServerKey =
+    user?.subscriptionPlan === 'premium' ||
+    user?.subscriptionPlan === 'pro' ||
+    (options?.allowFreeTrial && user?.subscriptionPlan === 'free');
+
+  if (!apiKey && isEligibleForServerKey) {
     provider = 'gemini';
     apiKey = process.env.GEMINI_API_KEY || '';
     baseURL = ''; // Use default
