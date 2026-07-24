@@ -445,13 +445,12 @@ function mapSkills(raw: unknown): { name: string; skills: string[] }[] {
 
 function buildSections(parsed: ParsedResume, lang: string) {
   const isEn = lang === 'en';
-  const isDe = lang === 'de';
 
   const sections: { type: string; title: string; content: unknown }[] = [];
 
   sections.push({
     type: 'personal_info',
-    title: isEn ? 'Personal Info' : isDe ? 'Persönliche Daten' : '个人信息',
+    title: isEn ? 'Personal Info' : 'Persönliche Daten',
     content: {
       fullName: parsed.personalInfo?.fullName || '',
       jobTitle: parsed.personalInfo?.jobTitle || '',
@@ -476,7 +475,7 @@ function buildSections(parsed: ParsedResume, lang: string) {
   if (parsed.summary) {
     sections.push({
       type: 'summary',
-      title: isEn ? 'Summary' : isDe ? 'Profil' : '个人简介',
+      title: isEn ? 'Summary' : 'Profil',
       content: { text: parsed.summary },
     });
   }
@@ -484,7 +483,7 @@ function buildSections(parsed: ParsedResume, lang: string) {
   if (parsed.workExperience?.length) {
     sections.push({
       type: 'work_experience',
-      title: isEn ? 'Work Experience' : isDe ? 'Berufserfahrung' : '工作经历',
+      title: isEn ? 'Work Experience' : 'Berufserfahrung',
       content: {
         items: parsed.workExperience.map((w) => ({
           id: crypto.randomUUID(),
@@ -504,7 +503,7 @@ function buildSections(parsed: ParsedResume, lang: string) {
   if (parsed.education?.length) {
     sections.push({
       type: 'education',
-      title: isEn ? 'Education' : isDe ? 'Bildungsweg' : '教育背景',
+      title: isEn ? 'Education' : 'Bildungsweg',
       content: {
         items: parsed.education.map((e) => ({
           id: crypto.randomUUID(),
@@ -524,7 +523,7 @@ function buildSections(parsed: ParsedResume, lang: string) {
   if (parsed.skills?.length) {
     sections.push({
       type: 'skills',
-      title: isEn ? 'Skills' : isDe ? 'Fähigkeiten' : '技能特长',
+      title: isEn ? 'Skills' : 'Fähigkeiten',
       content: {
         categories: parsed.skills.map((s) => ({
           id: crypto.randomUUID(),
@@ -538,7 +537,7 @@ function buildSections(parsed: ParsedResume, lang: string) {
   if (parsed.projects?.length) {
     sections.push({
       type: 'projects',
-      title: isEn ? 'Projects' : isDe ? 'Projekte' : '项目经历',
+      title: isEn ? 'Projects' : 'Projekte',
       content: {
         items: parsed.projects.map((p) => ({
           id: crypto.randomUUID(),
@@ -557,7 +556,7 @@ function buildSections(parsed: ParsedResume, lang: string) {
   if (parsed.certifications?.length) {
     sections.push({
       type: 'certifications',
-      title: isEn ? 'Certifications' : '资格证书',
+      title: isEn ? 'Certifications' : 'Zertifikate',
       content: {
         items: parsed.certifications.map((c) => ({
           id: crypto.randomUUID(),
@@ -573,7 +572,7 @@ function buildSections(parsed: ParsedResume, lang: string) {
   if (parsed.languages?.length) {
     sections.push({
       type: 'languages',
-      title: isEn ? 'Languages' : '语言能力',
+      title: isEn ? 'Languages' : 'Sprachkenntnisse',
       content: {
         items: parsed.languages.map((l) => ({
           id: crypto.randomUUID(),
