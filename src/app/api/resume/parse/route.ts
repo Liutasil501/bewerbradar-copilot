@@ -165,13 +165,18 @@ export async function POST(request: NextRequest) {
     const fullResume = await resumeRepository.findById(resume.id);
     return NextResponse.json(fullResume, { status: 201 });
   } catch (error) {
-    const errStr = String(error) + (error instanceof Error ? error.message : '');
-    if (
+    const errStr = (String(error) + (error instanceof Error ? error.message : '')).toLowerCase();
+    const isApiKeyIssue =
       error instanceof AIConfigError ||
-      errStr.includes('invalid_api_key') ||
-      errStr.includes('Incorrect API key provided') ||
-      errStr.includes('401')
-    ) {
+      errStr.includes('api key') ||
+      errStr.includes('key_invalid') ||
+      errStr.includes('invalid') ||
+      errStr.includes('authentication') ||
+      errStr.includes('unauthorized') ||
+      errStr.includes('401') ||
+      errStr.includes('400');
+
+    if (isApiKeyIssue) {
       return NextResponse.json({ error: 'apiKeyMissing' }, { status: 401 });
     }
     console.error('POST /api/resume/parse error:', error);

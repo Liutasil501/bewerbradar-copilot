@@ -273,7 +273,7 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
 
             {state === 'error' && (
               <div className="flex flex-col items-center justify-center py-4 text-center">
-                {errorMessage.includes('apiKeyMissing') || errorMessage.includes('API Key') || errorMessage.includes('Free plan') || errorMessage.includes('limited') ? (
+                {errorMessage.includes('apiKeyMissing') || errorMessage.toLowerCase().includes('key') || errorMessage.toLowerCase().includes('api') || errorMessage.includes('Free plan') || errorMessage.includes('limited') ? (
                   <div className="w-full max-w-md mx-auto rounded-xl border border-brand/20 bg-gradient-to-br from-brand/5 via-brand/10 to-transparent p-6 text-center shadow-sm">
                     <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-brand">
                       <Sparkles className="h-6 w-6" />
