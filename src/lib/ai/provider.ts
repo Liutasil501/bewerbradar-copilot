@@ -22,11 +22,28 @@ export function extractAIConfig(
   let model = request.headers.get('x-model') || 'gpt-4o';
   let isPremiumBypass = false;
 
+  // Auto-detect provider if user API key format doesn't match selected provider header
+  if (apiKey) {
+    if (apiKey.startsWith('AIzaSy')) {
+      provider = 'gemini';
+      baseURL = '';
+      if (!model || model.startsWith('gpt-') || model.startsWith('claude-')) {
+        model = 'gemini-3.1-flash-lite';
+      }
+    } else if (apiKey.startsWith('sk-ant-')) {
+      provider = 'anthropic';
+      baseURL = 'https://api.anthropic.com';
+      if (!model || model.startsWith('gpt-') || model.startsWith('gemini-')) {
+        model = 'claude-sonnet-4-20250514';
+      }
+    }
+  }
+
   // Premium/Pro Bypass & Free Trial Import: If no user-provided key, and user is pro/premium OR eligible for 1 free trial import
   const isEligibleForServerKey =
     user?.subscriptionPlan === 'premium' ||
     user?.subscriptionPlan === 'pro' ||
-    (options?.allowFreeTrial && user?.subscriptionPlan === 'free');
+    (options?.allowFreeTrial && (user?.subscriptionPlan === 'free' || !user?.subscriptionPlan));
 
   if (!apiKey && isEligibleForServerKey) {
     provider = 'gemini';
