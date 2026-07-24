@@ -23,6 +23,13 @@ export class SQLiteAdapter implements DatabaseAdapter {
     } catch (e) {
       console.error('[DB] SQLite migration failed:', e);
     }
+
+    // Ensure new columns exist on existing databases
+    try {
+      this.sqlite.exec('ALTER TABLE users ADD COLUMN ai_imports_count INTEGER NOT NULL DEFAULT 0;');
+    } catch {
+      // Column already exists
+    }
   }
 
   async initialize(): Promise<void> {
