@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `ai_imports_count` integer DEFAULT 0 NOT NULL;

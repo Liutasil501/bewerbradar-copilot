@@ -71,6 +71,13 @@
       "when": 1780313234527,
       "tag": "0009_petite_bloodstrike",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1784927736972,
+      "tag": "0010_clever_senator_kelly",
+      "breakpoints": true
     }
   ]
 }
