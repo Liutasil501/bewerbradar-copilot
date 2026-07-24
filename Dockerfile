@@ -33,8 +33,10 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Drizzle migration files (for auto-migration on startup)
+# Drizzle migration files and schema (for auto-migration and Drizzle Studio)
 COPY --from=builder /app/drizzle ./drizzle
+COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
+COPY --from=builder /app/src/lib/db ./src/lib/db
 
 # Data directory for SQLite
 RUN mkdir -p /app/data
