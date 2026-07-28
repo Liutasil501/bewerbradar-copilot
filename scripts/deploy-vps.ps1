@@ -20,4 +20,5 @@ docker ps | grep jadeai
 echo "===> Deployment completed successfully!"
 '@
 
+$Commands = $Commands -replace "`r", ""
 $Commands | ssh -o StrictHostKeyChecking=no -i $SSH_KEY root@$VPS_IP "bash"
