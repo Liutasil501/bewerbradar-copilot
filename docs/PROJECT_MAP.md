@@ -19,6 +19,10 @@ It is an index, not a substitute for reading the relevant implementation.
   Short-lived coordination board for active tasks, branches, owners, review
   status, verification and next action. Verify every claim against Git.
 
+- `docs/agent-handoffs/`
+  Task-specific Gemini ↔ Codex implementation handoffs, review findings,
+  responses and ownership transfer. Start from `TEMPLATE.md`.
+
 - `ARCHITECTURE.md`
   Current technical architecture and data flows.
 

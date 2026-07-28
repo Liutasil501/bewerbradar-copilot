@@ -16,8 +16,9 @@ Before substantive work:
 1. Read this complete `AGENTS.md`.
 2. Read the complete authoritative current state in `PROJECT_CONTEXT.md`.
 3. Use `docs/PROJECT_MAP.md` to identify the affected subsystem and relevant files.
-4. Read `CURRENT_WORK.md` and verify any active branch, commit and deployment
-   claims against Git or the runtime.
+4. Read `CURRENT_WORK.md`, verify any active branch, commit and deployment
+   claims, and read the task-specific file under `docs/agent-handoffs/` for the
+   affected active task.
 5. For architecture, infrastructure or deployment work, also read:
    - `ARCHITECTURE.md`
    - `DEPLOYMENT.md`
@@ -71,6 +72,7 @@ Agents may without repeated permission:
 - run type checks, linting, builds and local smoke tests,
 - create commits,
 - push non-production branches,
+- merge and push `main` when the standing authorization in section 5 applies,
 - make small adjacent fixes required for a correct implementation,
 - update documentation affected by the change.
 
@@ -80,7 +82,9 @@ Ask the user only when:
 - scope would expand significantly beyond the request,
 - an action is destructive or difficult to reverse,
 - secrets, payments, permissions or external accounts are affected,
-- production would be changed without prior explicit authorization.
+- a required product or entitlement decision is missing,
+- the production runtime would be deployed without explicit authorization in
+  the current request.
 
 Do not stop for routine implementation decisions that can be resolved safely
 from the repository and current product context.
@@ -114,7 +118,24 @@ similar feature exists there.
 - `main` is the production source branch.
 - Do not perform development directly on `main`.
 - Do not leave uncommitted development changes on `main`.
-- Do not push or deploy `main` without explicit production authorization.
+- A push to `main` publishes source but does not deploy the VPS.
+
+Standing main-publication authorization from the user:
+
+- Codex may merge and push a low-risk, verified candidate to `main` without
+  asking again.
+- Codex may merge and push a larger Gemini implementation after independently
+  reviewing the complete candidate, resolving release blockers and issuing
+  `GO`.
+- The exact candidate diff must be understood, proportional checks must pass
+  and unrelated commits must not be included.
+- Documentation-only changes may be merged after focused documentation checks;
+  they do not require an application build.
+- A Codex-authored non-trivial application change should not be self-approved
+  as equivalent to an independent Gemini → Codex review.
+- This standing authorization does not authorize a VPS deployment, destructive
+  history changes, database restoration, secret rotation, payment-account
+  changes or unresolved product decisions.
 
 ### Integration branch
 
@@ -150,11 +171,34 @@ When Gemini and Codex work at the same time:
 - do not edit the same files concurrently without coordination,
 - never switch branches in a shared dirty working tree,
 - register each active branch in `CURRENT_WORK.md`,
+- link each non-trivial task to `docs/agent-handoffs/<task-id>.md`,
 - update only the owned task entry where practical,
-- communicate through commits, `CURRENT_WORK.md` and the handoff format below.
+- communicate through commits and the task-specific handoff file.
 
 Never force-push, rewrite shared history or rebase a branch used by another
 agent without explicit agreement.
+
+### Agent-to-agent communication
+
+`CURRENT_WORK.md` is the active-task index. It must stay concise.
+
+Detailed Gemini ↔ Codex communication belongs in the task-specific handoff file
+described by `docs/agent-handoffs/README.md`.
+
+Use a one-writer baton:
+
+1. the current owner implements or reviews,
+2. the current owner updates the handoff and `CURRENT_WORK.md`,
+3. the current owner commits and pushes,
+4. the current owner assigns the next recipient and stops editing,
+5. the recipient fetches and verifies the pushed state before continuing.
+
+Gemini normally hands `READY FOR REVIEW` work to Codex. Codex returns
+`CHANGES REQUESTED` with evidence or marks the task `APPROVED`.
+
+Do not ask the user to relay technical messages between agents. Ask the user
+only for a real decision or authority boundary. Repository files do not wake an
+idle agent; the user or an automation must still start the recipient.
 
 ## 6. Normal Agent Roles
 
@@ -190,8 +234,8 @@ Codex may:
 - return significant issues to Gemini,
 - issue `GO`, `CONDITIONAL GO` or `NO-GO`.
 
-A Codex `GO` is a technical release recommendation. It does not change
-production unless production deployment has been authorized.
+A Codex `GO` may permit main publication under the standing rules in section 5.
+It does not authorize a VPS deployment.
 
 The user may change these roles for any task.
 
@@ -381,6 +425,10 @@ Update `CURRENT_WORK.md` when:
 Keep `CURRENT_WORK.md` operational and small. Remove finished entries instead
 of turning it into a chronological log.
 
+Create and maintain `docs/agent-handoffs/<task-id>.md` for non-trivial
+cross-agent work. Remove the active file after completion; Git history preserves
+the exchange.
+
 Do not append unlimited chronological notes to authoritative documents.
 Move historical notes into a separate changelog or `docs/history/`.
 
@@ -430,10 +478,15 @@ Use exactly one:
 
 Never use `VERIFIED LIVE` without checking production.
 
-Before handoff, synchronize the corresponding `CURRENT_WORK.md` entry with the
-actual branch, status, verification, risks and next owner. The handoff commit
-SHA itself remains authoritative and does not need to be embedded recursively
-inside the same commit.
+Before handoff:
+
+1. synchronize the corresponding `CURRENT_WORK.md` entry,
+2. update the task-specific handoff with actual scope, verification, findings,
+   risks and next owner,
+3. commit and push both with the implementation or review.
+
+The pushed commit SHA remains authoritative. The commit containing a handoff
+does not need to embed its own SHA recursively.
 
 ## 15. Review Result
 
@@ -455,16 +508,25 @@ authorization, billing or deployment risks.
 
 ## 16. Production Release
 
-Before production:
+Before main publication:
 
-1. confirm explicit production authorization,
+1. confirm that the standing main-publication authorization applies to the
+   merge/push,
 2. verify the exact `main...release-candidate` diff,
 3. ensure no unrelated commits are included,
 4. verify migrations and environment requirements,
 5. establish a rollback point for risky releases,
 6. run the required quality checks.
 
-After production:
+Before VPS deployment:
+
+1. confirm explicit deployment authorization in the current request,
+2. confirm the exact authorized `main` commit,
+3. follow `DEPLOYMENT.md`.
+
+Main publication and production deployment are separate actions.
+
+After VPS deployment:
 
 1. verify the VPS Git commit,
 2. verify the container is running,

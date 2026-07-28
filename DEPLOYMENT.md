@@ -77,15 +77,19 @@ output as deployment activity, not release verification.
 
 - `main` is the production source branch.
 - Do not develop directly on `main`.
-- Do not push or deploy `main` without explicit production authorization.
+- Codex may merge and push verified candidates to `main` under the standing
+  publication authorization in `AGENTS.md`.
+- Main publication and VPS deployment are separate actions.
+- Do not deploy the VPS without explicit authorization in the current request.
 - `beta` is intended as the integration branch, but it is currently diverged
   from `main` and must not be merged blindly.
 - Until `beta` is reconciled, use a feature branch based on current `main` for
   isolated work and review.
 - Concurrent agents use separate worktrees or clones.
 
-A technical `GO` from Codex is a release recommendation. It is not permission
-to change production.
+A technical `GO` from Codex permits main publication only when the standing
+authorization conditions in `AGENTS.md` are met. It does not by itself
+authorize a VPS deployment.
 
 ## 4. Preflight
 
@@ -167,7 +171,8 @@ If a new required variable is absent on the VPS, the release is not ready.
 
 ## 5. Merge and Push
 
-After independent review and explicit production authorization:
+After independent review, when the standing main-publication authorization in
+`AGENTS.md` applies:
 
 1. update the release branch from current `main` safely,
 2. resolve conflicts on the release branch,
@@ -185,7 +190,8 @@ previous VPS commit until the deployment step runs.
 
 ### Preferred helper
 
-After the authorized release commit is present on `copilot/main`:
+After the release commit is present on `copilot/main` and VPS deployment has
+been explicitly authorized in the current request:
 
 ```powershell
 pnpm deploy

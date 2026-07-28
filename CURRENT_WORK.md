@@ -32,14 +32,18 @@ against Git or the runtime before it is trusted.
 4. The implementation owner updates their entry before work, at handoff and
    after material scope or risk changes.
 5. The reviewer updates the review result and next action.
-6. Agents working concurrently edit only their own task entry where practical.
-7. Never include secrets, credentials, API keys, production environment values,
+6. Every non-trivial cross-agent task links to a task-specific file under
+   `docs/agent-handoffs/`.
+7. Use the task-specific handoff file for Gemini ↔ Codex messages, findings,
+   responses and ownership transfer. Do not turn this board into a chat log.
+8. Agents working concurrently edit only their own task entry where practical.
+9. Never include secrets, credentials, API keys, production environment values,
    resume content or other personal data.
-8. Verify branch and commit claims with Git. If they disagree, Git wins and
+10. Verify branch and commit claims with Git. If they disagree, Git wins and
    this file must be corrected.
-9. Do not append an unlimited history. Remove an entry after it is merged and
+11. Do not append an unlimited history. Remove an entry after it is merged and
    its required deployment is verified, or after it is explicitly abandoned.
-10. Git history and implementation handoffs preserve completed work.
+12. Git history and task-specific handoffs preserve completed work.
 
 ## Status Vocabulary
 
@@ -53,6 +57,7 @@ Use exactly one status per task:
 - `READY TO DEPLOY`
 - `DEPLOYING – NOT YET VERIFIED`
 - `VERIFIED LIVE`
+- `NEEDS USER DECISION`
 - `BLOCKED`
 
 `VERIFIED LIVE` follows the production proof requirements in `AGENTS.md` and
@@ -60,51 +65,7 @@ Use exactly one status per task:
 
 ## Active Work
 
-### CW-2026-07-28-DOCS
-
-- Status: `READY FOR REVIEW`
-- Goal: Complete the shared agent documentation and add a lightweight
-  cross-agent current-work board.
-- Implementation owner: Codex
-- Reviewer: User; optional Gemini cross-check
-- Branch: `codex/docs-architecture`
-- Base: `main` at `d6436bfc`
-- Production impact: none
-- Deployment required: no
-
-In scope:
-
-- add `CURRENT_WORK.md`,
-- connect the board to session bootstrap, source-of-truth, concurrency,
-  maintenance and handoff rules in `AGENTS.md`,
-- add the board to `docs/PROJECT_MAP.md`.
-
-Out of scope:
-
-- application-code fixes,
-- `beta` reconciliation,
-- production deployment,
-- custom instructions outside the repository.
-
-Verification completed:
-
-- documentation diff checked for whitespace errors,
-- UTF-8 checked without replacement characters,
-- Markdown code fences checked for balance,
-- concrete repository references checked against the working tree,
-- production Git/container state checked read-only where needed.
-
-Known findings outside this documentation change:
-
-- AI chat-session ownership checks are incomplete,
-- some AI error/debug paths can log raw model output,
-- `beta` remains diverged and requires deliberate reconciliation.
-
-Next action:
-
-- Owner: User or independent reviewer
-- Action: Review the documentation branch and decide whether to merge it into
-  `main`.
+No active task is registered.
 
 ## New Task Template
 
@@ -117,8 +78,11 @@ Copy this section under `Active Work` and replace every placeholder.
 - Goal:
 - Implementation owner:
 - Reviewer:
+- Current owner:
+- Next recipient:
 - Branch:
 - Base:
+- Handoff file: `docs/agent-handoffs/CW-YYYY-MM-DD-SHORT-NAME.md`
 - Production impact:
 - Deployment required:
 
