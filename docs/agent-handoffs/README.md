@@ -71,12 +71,57 @@ handoff file concurrently.
 - Communicate evidence and decisions, not conversational filler.
 - Each unresolved finding gets a stable ID such as `F-001`.
 - Responses reference the finding ID and the fixing commit.
+- Either agent may challenge the other's conclusion.
 - Do not mark a finding resolved without verification.
 - Do not claim a push, merge or deployment without checking it.
 - Use `NEEDS USER DECISION` only for a real product, authority or external-state
   decision that agents cannot resolve safely.
 - Never put secrets, credentials, environment values, API keys, resume content
   or other personal data in a handoff.
+
+## Challenge and Risk Protocol
+
+Reviewer role does not make Codex automatically correct. Implementation
+ownership does not make Gemini's success claim proof.
+
+For each material finding, record:
+
+- evidence or reproduction,
+- concrete impact,
+- realistic likelihood,
+- affected data/users or blast radius,
+- relative fix effort.
+
+Likelihood:
+
+- `Low`: requires unusual timing, knowledge or conditions.
+- `Medium`: plausible in normal or moderately adversarial use.
+- `High`: likely in ordinary use or easily triggered.
+
+Relative effort:
+
+- `XS`: local, obvious change with focused verification.
+- `S`: small multi-file fix or focused test work.
+- `M`: cross-layer change requiring broader verification.
+- `L`: architectural, migration-heavy or multi-day work.
+
+Finding response status:
+
+- `ACCEPTED`
+- `DISPUTED`
+- `FIXED`
+- `DEFERRED`
+- `VERIFIED`
+- `WITHDRAWN`
+
+A `DISPUTED` response includes counter-evidence, not preference. Codex
+reproduces or checks that evidence and then confirms, downgrades or withdraws
+the finding.
+
+Risk decisions consider impact × realistic likelihood × blast radius in
+relation to fix effort. Low-impact theoretical abuse is not automatically a
+release blocker. Serious authorization, privacy, billing, secret, migration or
+data-loss impact is not dismissed merely because few attackers are expected.
 
 ## Branch Rule
 

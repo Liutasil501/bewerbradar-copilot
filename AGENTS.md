@@ -14,27 +14,29 @@ A new agent session must not assume knowledge from previous conversations.
 Before substantive work:
 
 1. Read this complete `AGENTS.md`.
-2. Read the complete authoritative current state in `PROJECT_CONTEXT.md`.
-3. Use `docs/PROJECT_MAP.md` to identify the affected subsystem and relevant files.
-4. Read `CURRENT_WORK.md`, verify any active branch, commit and deployment
+2. Read the `Session Snapshot` in `PROJECT_CONTEXT.md`.
+3. Read `CURRENT_WORK.md`, verify any active branch, commit and deployment
    claims, and read the task-specific file under `docs/agent-handoffs/` for the
    affected active task.
-5. For architecture, infrastructure or deployment work, also read:
+4. Use the relevant task-routing section in `docs/PROJECT_MAP.md` to identify
+   the affected subsystem and files.
+5. Read the task-relevant detailed sections of `PROJECT_CONTEXT.md`.
+6. For architecture, infrastructure or deployment work, also read:
    - `ARCHITECTURE.md`
    - `DEPLOYMENT.md`
-6. Inspect the current repository state:
+7. Inspect the current repository state:
    - `git status --short --branch`
    - `git log -5 --oneline --decorate`
    - `git diff`
    - `git remote -v` when branches or deployment are relevant
-7. Preserve unrelated and uncommitted user or agent changes.
-8. Trace the affected behavior end-to-end:
+8. Preserve unrelated and uncommitted user or agent changes.
+9. Trace the affected behavior end-to-end:
    page/component → store/hook → API route → domain service/provider
    → repository/database.
-9. Read only the task-specific implementation files after orientation.
-10. If documentation contradicts code, Git state or verified runtime behavior,
+10. Read only the task-specific implementation files after orientation.
+11. If documentation contradicts code, Git state or verified runtime behavior,
    investigate the discrepancy instead of guessing.
-11. Never accept another agent’s success statement, commit message or deployment
+12. Never accept another agent’s success statement, commit message or deployment
     claim as proof without independent verification.
 
 ## 2. Sources of Truth
@@ -502,6 +504,29 @@ Findings should be classified realistically:
 - Important
 - Improvement
 - Acceptable residual risk
+
+Gemini and Codex may challenge each other's findings. Neither agent is correct
+merely because of role. Code, reproducible behavior and verified runtime
+evidence decide factual disputes.
+
+Every material finding records:
+
+- evidence,
+- impact,
+- realistic likelihood,
+- affected users/data or blast radius,
+- relative fix effort: `XS`, `S`, `M` or `L`.
+
+The challenged agent may accept, dispute, fix or propose deferral. Codex must
+re-evaluate the severity after an evidenced response and may confirm, downgrade
+or withdraw the finding.
+
+Use `Release blocker` only when the reviewed release creates an unacceptable
+realistic risk such as data loss, authorization bypass, billing corruption,
+failed production migration, secret exposure or reproducible outage. A
+low-impact theoretical edge case is not a blocker merely because it is
+possible. Conversely, one cross-user privacy breach can be serious without a
+mass attack.
 
 Do not inflate theoretical edge cases, but do not minimize real data,
 authorization, billing or deployment risks.

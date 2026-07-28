@@ -67,9 +67,9 @@ Pending:
 
 - Result: `PENDING`
 
-| ID | Severity | Status | Finding and evidence | Response or fixing commit |
-| --- | --- | --- | --- | --- |
-| F-001 |  | Open |  |  |
+| ID | Severity | Likelihood | Effort | Status | Finding and evidence | Response or fixing commit |
+| --- | --- | --- | --- | --- | --- | --- |
+| F-001 |  |  |  | Open |  |  |
 
 Allowed severity:
 
@@ -77,6 +77,22 @@ Allowed severity:
 - Important
 - Improvement
 - Acceptable residual risk
+
+Allowed response status:
+
+- `ACCEPTED`
+- `DISPUTED`
+- `FIXED`
+- `DEFERRED`
+- `VERIFIED`
+- `WITHDRAWN`
+
+Relative effort:
+
+- `XS`
+- `S`
+- `M`
+- `L`
 
 ## Message Ledger
 

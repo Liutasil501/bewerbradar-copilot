@@ -11,6 +11,46 @@ For file routing, read `docs/PROJECT_MAP.md`.
 For technical flows, read `ARCHITECTURE.md`.
 For production releases, read `DEPLOYMENT.md`.
 
+## Session Snapshot
+
+Read this section at the start of every new session. Read the detailed sections
+below only when the active task touches them.
+
+- Product: BewerbRadar Copilot, derived from the open-source JadeAI project.
+- Repository: `C:\Games\Dev\JadeAI`.
+- Product remote: `copilot` → `Liutasil501/bewerbradar-copilot`.
+- Upstream remote: `origin` → `twwch/JadeAI`; do not push there without an
+  explicit request.
+- Production URL: `https://copilot.bewerbradar.de`.
+- UI languages: German and English; default is German.
+- Production authentication: Google OAuth and e-mail magic link with
+  `AUTH_ENABLED=true`.
+- Production database: SQLite at `/app/data/bewerbradar.db` in Docker volume
+  `reactive_resume_jadeai_data`.
+- PostgreSQL exists in the broader stack but is not the Copilot's active
+  production database and is not at schema parity.
+- Production source branch: `main`.
+- A push to `main` does not deploy the VPS.
+- Codex has standing authorization to publish verified candidates to `main`
+  under the conditions in `AGENTS.md`; VPS deployment remains separate.
+- Normal intended workflow: Gemini implements → Codex reviews → approved
+  candidate to `main` → optional authorized deployment.
+- `beta` was reconciled with `main` on 28 July 2026; verify ancestry before
+  every new integration cycle rather than relying on this snapshot.
+- Free plan: one resume, five templates, JSON/TXT export and no public sharing.
+- Free AI import currently depends on the one-resume limit; `aiImportsCount`
+  tracks usage but does not enforce one lifetime import.
+- BYOK keys stay in browser storage but transit the BewerbRadar backend in
+  request headers.
+- Server AI provider: Gemini where route and entitlement logic permit it.
+- Stripe synchronizes paid-plan state into the local user record.
+- GTM and denied Consent Mode defaults are live; CMP, consent updates, GA4 tag
+  and funnel events remain incomplete.
+- Known high-value follow-ups include chat-session ownership checks, raw AI
+  output logging, entitlement consistency and the missing health route.
+- Resume content is sensitive personal data and must not enter logs or
+  analytics.
+
 ## 1. Product Identity
 
 Product name:
@@ -517,19 +557,27 @@ Verified on 28 July 2026:
 - documentation-only Git/VPS divergence is expected and requires no standalone
   application deployment
 
-Current branch warning:
+Beta reconciliation on 28 July 2026:
 
-- `beta` has commits unique to both `beta` and `main`
-- current `beta` must not be merged into `main` without reconciliation
+- remote `copilot/beta` contained no commits unique to beta and was already an
+  ancestor of `main`,
+- the stale local pre-reconciliation beta ref was preserved as
+  `archive/beta-pre-reconcile-2026-07-28`,
+- beta was fast-forwarded to the reviewed workflow release without force-push,
+- future agents must still verify ancestry before using it.
 
-Query exact current branch counts instead of relying on a copied snapshot:
+Query exact branch counts instead of relying on a copied snapshot:
 
 ```bash
 git rev-list --left-right --count beta...main
 ```
 
-Before the normal Gemini → beta → Codex → main workflow begins, the branch state
-must be reconciled safely.
+Expected healthy result:
+
+- `0 0` immediately after alignment,
+- or `N 0` when beta contains reviewed candidate commits ahead of main.
+
+Any commits unique to both sides require investigation before merge.
 
 ## 16. Known Technical and Operational Debt
 
