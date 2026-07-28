@@ -29,7 +29,10 @@ export async function GET(
 
     return NextResponse.json({ session, messages, hasMore, nextCursor });
   } catch (error) {
-    console.error('GET /api/ai/chat/sessions/[id] error:', error);
+    console.error(
+      'GET /api/ai/chat/sessions/[id] error: %s',
+      error instanceof Error ? error.name : 'UnknownError'
+    );
     return new Response('Internal server error', { status: 500 });
   }
 }
@@ -55,7 +58,10 @@ export async function DELETE(
     await chatRepository.deleteSession(sessionId);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('DELETE /api/ai/chat/sessions/[id] error:', error);
+    console.error(
+      'DELETE /api/ai/chat/sessions/[id] error: %s',
+      error instanceof Error ? error.name : 'UnknownError'
+    );
     return new Response('Internal server error', { status: 500 });
   }
 }

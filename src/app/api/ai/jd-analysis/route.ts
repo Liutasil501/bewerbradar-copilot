@@ -74,8 +74,11 @@ export async function POST(request: NextRequest) {
         atsScore: analysisData.atsScore,
       });
       historyId = saved?.id;
-    } catch (e) {
-      console.error('Failed to save JD analysis history:', e);
+    } catch (error: unknown) {
+      console.error(
+        'Failed to save JD analysis history: %s',
+        error instanceof Error ? error.name : 'UnknownError'
+      );
     }
 
     return NextResponse.json({ ...analysisData, historyId });
@@ -83,7 +86,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof AIConfigError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
     }
-    console.error('POST /api/ai/jd-analysis error: %s', error instanceof Error ? error.name : String(error));
+    console.error('POST /api/ai/jd-analysis error: %s', error instanceof Error ? error.name : 'UnknownError');
     return NextResponse.json({ error: 'Failed to analyze job description match' }, { status: 500 });
   }
 }

@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
       });
       historyId = saved?.id;
     } catch (e) {
-      console.error('Failed to save grammar check history: %s', e instanceof Error ? e.name : String(e));
+      console.error('Failed to save grammar check history: %s', e instanceof Error ? e.name : 'UnknownError');
     }
 
     return NextResponse.json({ ...checkResult, historyId });
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof AIConfigError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
     }
-    console.error('POST /api/ai/grammar-check error: %s', error instanceof Error ? error.name : String(error));
+    console.error('POST /api/ai/grammar-check error: %s', error instanceof Error ? error.name : 'UnknownError');
     return NextResponse.json({ error: 'Failed to check grammar' }, { status: 500 });
   }
 }

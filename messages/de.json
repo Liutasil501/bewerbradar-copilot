@@ -150,8 +150,8 @@
       "invalidType": "Nicht unterstütztes Format. Erlaubt: PDF, PNG, JPG, WebP",
       "fileTooLarge": "Datei zu groß. Maximale Größe: 10MB",
       "parseFailed": "Fehler beim Analysieren des Lebenslaufs. Bitte versuchen Sie es erneut.",
-      "limitReachedFreeSlot": "Ihr kostenloses Guthaben reicht für 1 Lebenslauf. Löschen Sie Ihren bestehenden Lebenslauf, um den Testimport zu nutzen.",
-      "trialAlreadyUsed": "Sie haben Ihren kostenlosen KI-Testimport bereits genutzt. Führen Sie ein Upgrade auf Pro durch, um unbegrenzt zu importieren."
+      "limitReachedFreeSlot": "Im Free-Tarif können Sie einen Lebenslauf speichern. Löschen Sie den vorhandenen Lebenslauf oder upgraden Sie für weitere Lebensläufe.",
+      "trialAlreadyUsed": "Sie haben Ihren kostenlosen KI-Testimport bereits genutzt. Nutzen Sie Pro oder Premium oder hinterlegen Sie Ihren eigenen API-Schlüssel."
     },
     "emptyState": {
       "title": "Starten Sie mit Ihrem bestehenden Lebenslauf",
@@ -699,7 +699,7 @@
       "features": "Funktionen",
       "templates": "Vorlagen",
       "interview": "Probe-Interview",
-      "getStarted": "Loslegen",
+      "getStarted": "Lebenslauf importieren",
       "dashboard": "Dashboard"
     },
     "hero": {
@@ -783,10 +783,11 @@
     },
     "cta": {
       "title": "Bereit für Ihren besten Lebenslauf?",
-      "subtitle": "Erstellen Sie professionelle Lebensläufe schnell und einfach mit BewerbRadar Copilot.",
-      "button": "Lebenslauf jetzt erstellen"
+      "subtitle": "Importieren Sie Ihren bestehenden Lebenslauf und bringen Sie ihn in wenigen Minuten in eine klare, professionelle Form.",
+      "button": "Lebenslauf jetzt importieren"
     },
     "footer": {
+      "tagline": "KI-gestützter Lebenslauf-Editor für überzeugende Bewerbungen",
       "product": {
         "title": "Produkt",
         "features": "Funktionen",

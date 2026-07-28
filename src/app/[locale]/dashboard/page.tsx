@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Plus, Search, LayoutGrid, List, Sparkles, Upload, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -79,6 +80,7 @@ export default function DashboardPage() {
   const { authEnabled } = useRuntimeConfig();
 
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState<SortOption>('lastEdited');
   const [viewMode, setViewMode] = useState<ViewMode>(getInitialView);
@@ -96,22 +98,25 @@ export default function DashboardPage() {
     }
   };
 
-  const [hasImportIntent] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('action') === 'import');
+  const importIntentHandled = useRef(false);
+  const hasImportIntent = searchParams.get('action') === 'import';
 
   // Auto-trigger import dialog if arrived with ?action=import
   useEffect(() => {
-    if (hasImportIntent) {
-      openModal('import');
-      // Remove query param from URL so page refresh doesn't reopen dialog
-      const url = new URL(window.location.href);
-      url.searchParams.delete('action');
-      window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
-    }
+    if (!hasImportIntent || importIntentHandled.current) return;
+
+    importIntentHandled.current = true;
+    openModal('import');
+
+    // Remove query param so refreshes do not reopen the dialog.
+    const url = new URL(window.location.href);
+    url.searchParams.delete('action');
+    window.history.replaceState({}, '', url.pathname + url.search);
   }, [hasImportIntent, openModal]);
 
   // Auto-start dashboard tour for first-time users (skipped if import intent is active)
   useEffect(() => {
-    if (isLoading || fpLoading || hasImportIntent) return;
+    if (isLoading || fpLoading || hasImportIntent || importIntentHandled.current) return;
     if (hasCompletedTour('dashboard')) return;
     if (window.innerWidth < 768) return;
     const timer = setTimeout(() => startTour('dashboard', DASHBOARD_TOUR_STEPS.length), 800);

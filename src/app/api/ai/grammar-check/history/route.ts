@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(list);
   } catch (error) {
-    console.error('GET /api/ai/grammar-check/history error: %s', error instanceof Error ? error.name : String(error));
+    console.error('GET /api/ai/grammar-check/history error: %s', error instanceof Error ? error.name : 'UnknownError');
     return NextResponse.json({ error: 'Failed to fetch history' }, { status: 500 });
   }
 }
@@ -75,7 +75,7 @@ export async function DELETE(request: NextRequest) {
     await analysisRepository.deleteGrammarCheck(id);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('DELETE /api/ai/grammar-check/history error: %s', error instanceof Error ? error.name : String(error));
+    console.error('DELETE /api/ai/grammar-check/history error: %s', error instanceof Error ? error.name : 'UnknownError');
     return NextResponse.json({ error: 'Failed to delete' }, { status: 500 });
   }
 }

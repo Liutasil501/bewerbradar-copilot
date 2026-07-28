@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
 
     const sectionsData = allSections.map((s: { id: string; type: string; title?: string; content?: Record<string, unknown> }) => {
       const fieldsToStrip = STRIP_FIELDS[s.type];
-      let content = (s.content && typeof s.content === 'object' ? { ...s.content } : s.content) as Record<string, unknown> | undefined;
+      const content = (s.content && typeof s.content === 'object' ? { ...s.content } : s.content) as Record<string, unknown> | undefined;
 
       if (fieldsToStrip && content && typeof content === 'object') {
         const saved: Record<string, unknown> = {};
@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
         let failedCount = 0;
 
         try {
-          const results = await runWithConcurrency<typeof sectionsData[number], z.infer<typeof singleSectionSchema>>(
+          await runWithConcurrency<typeof sectionsData[number], z.infer<typeof singleSectionSchema>>(
             sectionsData,
             MAX_CONCURRENCY,
             async (section) => {
@@ -218,18 +218,16 @@ export async function POST(request: NextRequest) {
           );
 
           if (failedCount > 0) {
-            console.error(
-              'Some sections failed to translate:',
-              results
-                .filter((r) => r.status === 'rejected')
-                .map((f) => (f as PromiseRejectedResult).reason)
-            );
+            console.error('Translation failed for %d section(s)', failedCount);
           }
 
           // Update resume language
           await resumeRepository.update(targetResumeId, { language: targetLanguage });
         } catch (err) {
-          console.error('Unexpected error during translation:', err);
+          console.error(
+            'Unexpected error during translation: %s',
+            err instanceof Error ? err.name : 'UnknownError'
+          );
         }
 
         // Always send done and close — even if something above threw
@@ -248,7 +246,7 @@ export async function POST(request: NextRequest) {
             ...(newResumeId ? { newResumeId } : {}),
           });
         } catch (err) {
-          console.error('Error fetching final data: %s', err instanceof Error ? err.name : String(err));
+          console.error('Error fetching final data: %s', err instanceof Error ? err.name : 'UnknownError');
           send({ type: 'done', resumeId: targetResumeId, language: targetLanguage, sections: [], failedCount, ...(newResumeId ? { newResumeId } : {}) });
         }
 
@@ -270,7 +268,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof AIConfigError) {
       return new Response(JSON.stringify({ error: error.message }), { status: 401 });
     }
-    console.error('POST /api/ai/translate error: %s', error instanceof Error ? error.name : String(error));
+    console.error('POST /api/ai/translate error: %s', error instanceof Error ? error.name : 'UnknownError');
     return new Response(JSON.stringify({ error: 'Failed to translate resume' }), { status: 500 });
   }
 }

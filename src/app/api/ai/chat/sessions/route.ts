@@ -20,7 +20,10 @@ export async function GET(request: NextRequest) {
     const sessions = await chatRepository.findSessionsByResumeId(resumeId);
     return NextResponse.json({ sessions });
   } catch (error) {
-    console.error('GET /api/ai/chat/sessions error:', error);
+    console.error(
+      'GET /api/ai/chat/sessions error: %s',
+      error instanceof Error ? error.name : 'UnknownError'
+    );
     return new Response('Internal server error', { status: 500 });
   }
 }
@@ -47,7 +50,10 @@ export async function POST(request: NextRequest) {
     const session = await chatRepository.createSession({ resumeId, title });
     return NextResponse.json({ session });
   } catch (error) {
-    console.error('POST /api/ai/chat/sessions error:', error);
+    console.error(
+      'POST /api/ai/chat/sessions error: %s',
+      error instanceof Error ? error.name : 'UnknownError'
+    );
     return new Response('Internal server error', { status: 500 });
   }
 }

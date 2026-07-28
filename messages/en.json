@@ -150,8 +150,8 @@
       "invalidType": "Unsupported file type. Accepted: PDF, PNG, JPG, WebP",
       "fileTooLarge": "File too large. Maximum size: 10MB",
       "parseFailed": "Failed to parse resume. Please try again.",
-      "limitReachedFreeSlot": "Your Free plan is limited to 1 resume. Delete an existing resume to use your free trial import.",
-      "trialAlreadyUsed": "You have already used your free trial import. Upgrade to Pro for unlimited AI imports."
+      "limitReachedFreeSlot": "The Free plan allows you to save 1 resume. Delete the existing resume or upgrade to save more resumes.",
+      "trialAlreadyUsed": "You have already used your free AI import. Use Pro or Premium, or enter your own API key."
     },
     "emptyState": {
       "title": "Get started with your existing resume",
@@ -699,7 +699,7 @@
       "features": "Features",
       "templates": "Templates",
       "interview": "Mock Interview",
-      "getStarted": "Get Started",
+      "getStarted": "Import Resume",
       "dashboard": "Dashboard"
     },
     "hero": {
@@ -783,10 +783,11 @@
     },
     "cta": {
       "title": "Ready to Build Your Best Resume?",
-      "subtitle": "Build professional resumes quickly and easily with BewerbRadar Copilot.",
-      "button": "Create Your Resume Now"
+      "subtitle": "Import your existing resume and turn it into a clear, professional resume in minutes.",
+      "button": "Import Your Resume"
     },
     "footer": {
+      "tagline": "AI-powered resume builder for stronger applications",
       "product": {
         "title": "Product",
         "features": "Features",
@@ -803,6 +804,7 @@
       },
       "legal": {
         "title": "Legal",
+        "impressum": "Legal Notice",
         "privacy": "Privacy Policy",
         "terms": "Terms of Service",
         "cookies": "Cookie Policy"

@@ -43,28 +43,36 @@ export async function POST(request: NextRequest) {
     const existingResumes = await resumeRepository.findAllByUserId(user.id);
     const isFreePlan = user.subscriptionPlan === 'free' || !user.subscriptionPlan;
     const aiImportsCount = user.aiImportsCount || 0;
+    const hasUserApiKey = Boolean(request.headers.get('x-api-key')?.trim());
 
-    // Free trial import is allowed only if free user has zero resumes AND hasn't used their 1 free trial import yet
-    const allowFreeTrial = isFreePlan && aiImportsCount < 1 && existingResumes.length < MAX_FREE_RESUMES;
-
-    if (isFreePlan && existingResumes.length >= MAX_FREE_RESUMES && !allowFreeTrial) {
-      if (aiImportsCount >= 1) {
-        return NextResponse.json(
-          {
-            code: 'TRIAL_ALREADY_USED',
-            error: 'Trial import already used. Upgrade to Pro for unlimited AI imports.',
-          },
-          { status: 403 }
-        );
-      }
+    // A user-provided API key does not bypass the Free resume storage limit.
+    if (isFreePlan && existingResumes.length >= MAX_FREE_RESUMES) {
       return NextResponse.json(
         {
           code: 'LIMIT_REACHED_FREE_SLOT',
-          error: `Free plan is limited to ${MAX_FREE_RESUMES} resume(s). Delete existing resume to use your free trial import.`,
+          error: `Free plan is limited to ${MAX_FREE_RESUMES} resume(s). Delete the existing resume or upgrade to save more resumes.`,
         },
         { status: 403 }
       );
     }
+
+    // With a free slot but no remaining funded trial, BYOK or a paid plan is required.
+    if (isFreePlan && aiImportsCount >= 1 && !hasUserApiKey) {
+      return NextResponse.json(
+        {
+          code: 'TRIAL_ALREADY_USED',
+          error: 'Free AI import already used. Upgrade to Pro or Premium, or use your own API key.',
+        },
+        { status: 403 }
+      );
+    }
+
+    // The server-funded trial is used only when no user API key was supplied.
+    const allowFreeTrial =
+      isFreePlan &&
+      !hasUserApiKey &&
+      aiImportsCount < 1 &&
+      existingResumes.length < MAX_FREE_RESUMES;
 
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
@@ -179,8 +187,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const hasUserApiKey = Boolean(request.headers.get('x-ai-api-key'));
-    const usedServerFreeTrial = isFreePlan && allowFreeTrial && !hasUserApiKey;
+    const usedServerFreeTrial = isFreePlan && allowFreeTrial && aiConfig.isPremiumBypass === true;
     if (usedServerFreeTrial) {
       await userRepository.incrementAiImportsCount(user.id);
     }
@@ -193,7 +200,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ code: 'API_KEY_MISSING', error: 'API key missing' }, { status: 401 });
     }
     const errName = error instanceof Error ? error.name : 'UnknownError';
-    const errMessage = error instanceof Error ? error.message : String(error);
+    const errMessage = error instanceof Error ? error.message : '';
     const lower = errMessage.toLowerCase();
 
     if (
@@ -228,8 +235,11 @@ function extractPdfText(buffer: Buffer): Promise<string> {
       parts.push(page.toStructuredText('preserve-whitespace').asText());
     }
     return parts.join('\n').trim();
-  }).catch((e) => {
-    console.warn('[parse] mupdf text extraction failed:', (e as Error).message);
+  }).catch((error: unknown) => {
+    console.warn(
+      '[parse] mupdf text extraction failed: %s',
+      error instanceof Error ? error.name : 'UnknownError'
+    );
     return '';
   });
 }
@@ -275,10 +285,13 @@ function parseJsonFromText(text: string): unknown | null {
   for (const c of candidates) {
     try {
       return JSON.parse(c);
-    } catch (e) {
+    } catch (error: unknown) {
       // Log first attempt error for diagnostics
       if (c === candidates[0]) {
-        console.warn('[parse] JSON.parse error:', (e as Error).message?.slice(0, 100));
+        console.warn(
+          '[parse] JSON.parse error: %s',
+          error instanceof Error ? error.name : 'UnknownError'
+        );
       }
       // Try repair for truncated JSON
       const repaired = repairTruncatedJson(c);
