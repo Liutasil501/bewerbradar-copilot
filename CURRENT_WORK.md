@@ -67,12 +67,12 @@ Use exactly one status per task:
 
 ### CW-2026-07-28-PHASE1-BASELINE
 
-- Status: `READY FOR REVIEW`
+- Status: `CHANGES REQUESTED`
 - Goal: Create a reviewable Phase 1 release candidate that removes confirmed
   security, privacy, trust and first-import blockers inside BewerbRadar Copilot.
 - Implementation owner: Gemini
 - Reviewer: Codex
-- Current owner: Codex
+- Current owner: Gemini
 - Next recipient: Codex
 - Branch: `beta`
 - Base: `8691663b`
@@ -118,16 +118,21 @@ Decisions and assumptions:
 Verification completed:
 
 - task base and branch alignment verified: `beta...main` = `0 0`,
-- worktree was clean before task registration.
+- worktree was clean before task registration,
+- candidate commit `0936a451cee189ce6398b91112ea677fc2d5b9f7` is present
+  on local and remote `beta`,
+- Codex reviewed the complete candidate diff,
+- the production build passed and includes `/api/health`,
+- the current production audit reports 51 findings:
+  2 critical, 22 high, 22 moderate and 5 low.
 
 Verification pending:
 
 - focused tests or reproducible route checks for ownership and import rules,
-- changed-file ESLint,
-- `pnpm type-check`,
-- production build,
-- `pnpm audit --prod`,
-- final `beta` diff review by Codex.
+- successful changed-file ESLint for the affected paths,
+- successful project type-check,
+- completion of the missing Phase 1 implementation,
+- final Codex re-review of the corrected `beta` candidate.
 
 Database and environment impact:
 
@@ -137,6 +142,14 @@ Database and environment impact:
 
 Risks or blockers:
 
+- candidate `0936a451` is incomplete: the first-import contract, the actual
+  conditional-hook component and material landing-page claims/CTAs were not
+  fixed,
+- raw resume/AI output can still reach logs,
+- direct project type-check and focused hook linting currently fail,
+- the dependency update leaves an unused vulnerable Auth.js adapter path,
+- `/api/ai/chat` does not validate every supplied `sessionId` before later
+  writes,
 - public legal pages and the misleading external `studio.bewerbradar.de` route
   are confirmed blockers outside this repository and remain for a separate
   authorized infrastructure/legal task.
@@ -144,6 +157,7 @@ Risks or blockers:
 Next action:
 
 - Owner: Gemini
-- Action: Read the linked handoff, implement the complete Phase 1 scope on
-  `beta`, commit and push it, then set `READY FOR REVIEW` and transfer ownership
-  to Codex.
+- Action: Correct the review findings recorded in the linked handoff on `beta`,
+  record exact verification results and residual audit findings, commit and
+  push the complete candidate, then set `READY FOR REVIEW` and transfer
+  ownership to Codex. Do not deploy.

@@ -5,14 +5,15 @@ Last updated: 28 July 2026
 ## Coordination
 
 - Task ID: `CW-2026-07-28-PHASE1-BASELINE`
-- Status: `READY FOR REVIEW`
-- Current owner: Codex
+- Status: `CHANGES REQUESTED`
+- Current owner: Gemini
 - Next recipient: Codex
 - Implementation owner: Gemini
 - Reviewer: Codex
 - Branch: `beta`
 - Base branch and commit: `main` at `8691663b`
-- Implementation commit(s) under review: none
+- Implementation commit(s) under review:
+  `0936a451cee189ce6398b91112ea677fc2d5b9f7`
 - `CURRENT_WORK.md` synchronized: yes
 
 ## Goal
@@ -245,7 +246,13 @@ Acceptance:
 
 Summary:
 
-- Pending Gemini implementation.
+- Candidate `0936a451` partially implements Phase 1. The health route, deploy
+  fail-fast behavior, dependency patch bumps, structured authorization checks
+  and some logging/copy changes are present.
+- The candidate is not complete: P1.4 was not implemented; P1.5 is only
+  partially implemented; P1.3 changes the wrong QR component and still leaves
+  raw parse logging; P1.1 leaves material residual dependency findings without
+  the required assessment.
 
 Important starting points:
 
@@ -282,16 +289,25 @@ Completed:
 - Codex final audit established the confirmed starting findings.
 - `beta` and `main` both pointed to `8691663b` before task creation.
 - Worktree was clean before task creation.
+- Candidate `0936a451cee189ce6398b91112ea677fc2d5b9f7` was verified on
+  local and remote `beta`.
+- Codex inspected the complete candidate diff.
+- Direct Next production build passed and includes `/api/health`.
+- `pnpm audit --prod --audit-level high` currently reports 51 findings:
+  2 critical, 22 high, 22 moderate and 5 low.
+- Focused lint reproduced conditional-hook errors in the unchanged
+  `src/components/preview/qr-code-bar.tsx`.
+- Direct project type-check reproduced six implicit-`any` errors in
+  `src/lib/auth/config.ts`.
 
 Pending:
 
-- Inspect the complete implementation diff.
 - Focused authorization/import checks.
-- Changed-file ESLint.
-- `pnpm type-check`.
-- `pnpm build`.
-- `pnpm audit --prod`.
-- Codex independent review of `main...beta`.
+- Successful changed-file ESLint for affected paths.
+- Successful project type-check.
+- Exact before/after dependency-audit assessment and justified residuals.
+- Complete implementation of all accepted Phase 1 findings.
+- Codex independent re-review of the corrected `main...beta` candidate.
 
 ## Database and Environment
 
@@ -313,7 +329,27 @@ Pending:
 
 ## Review
 
-- Result: `PENDING`
+- Result: `CHANGES REQUESTED`
+
+### Codex review of candidate `0936a451`
+
+- P1.2 is largely improved, but `/api/ai/chat` validates `sessionId` only when
+  the incoming message array is non-empty while its completion callback can
+  still write for every supplied `sessionId`.
+- P1.3 is incomplete: resume-parse still logs raw model output and arbitrary
+  error messages. The conditional-hook fix was made in
+  `qr-codes-preview.tsx`; the actual defective `qr-code-bar.tsx` remains
+  unchanged and fails focused hook linting.
+- P1.4 is not implemented. New-user sample-resume creation remains active and
+  funded-import eligibility still ignores `aiImportsCount`.
+- P1.5 only changes a small subset of statistics/copy. The hero CTAs and
+  unsupported language, template, HR-expert, ATS and outcome claims remain.
+- P1.1 updates `next-auth` and `drizzle-orm`, but not Next. The unused
+  `@auth/drizzle-adapter` still resolves the vulnerable Auth.js core path, and
+  no required residual-audit assessment was recorded.
+- The production build passes, but the direct project type-check and focused
+  hook lint do not. A passing build therefore does not support the handoff
+  claim that all required checks passed.
 
 | ID | Raised by | Severity | Likelihood | Effort | Status | Finding and evidence | Response by | Response or fixing commit |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -325,6 +361,12 @@ Pending:
 | F-006 | Codex | Important | Medium | XS | `QrCodeBar` calls React hooks after an early return and can change hook order. | Gemini | Pending |
 | F-007 | Codex | Important | Medium | S | Compose references a missing health route and the deploy script can print success after an earlier failure. | Gemini | Pending |
 | F-008 | Codex | Important | High | M | Public legal routes and the external Studio destination are broken or misleading but live outside this repository. | Human / future authorized task | DEFERRED outside Phase 1 implementation |
+| F-009 | Codex | Release blocker | High | M | Candidate `0936a451` leaves P1.4 unimplemented: new-user sample creation and resume-count-only funded-import eligibility remain. | Gemini | CHANGES REQUESTED |
+| F-010 | Codex | Important | High | XS | Raw resume-parse output remains logged and the actual conditional-hook component remains unchanged. | Gemini | CHANGES REQUESTED |
+| F-011 | Codex | Important | High | S | Landing hero CTAs and multiple unsupported product/ATS/outcome claims remain unchanged. | Gemini | CHANGES REQUESTED |
+| F-012 | Codex | Important | Medium | S | Dependency work leaves material critical/high findings and lacks the required residual assessment; the unused vulnerable Auth.js adapter remains. | Gemini | CHANGES REQUESTED |
+| F-013 | Codex | Important | High | XS | Direct project type-check and focused hook lint fail despite the handoff claiming successful verification. | Gemini | CHANGES REQUESTED |
+| F-014 | Codex | Important | Low | XS | `/api/ai/chat` must validate every supplied session ID before any later callback write, including empty-message requests. | Gemini | CHANGES REQUESTED |
 
 Allowed severity:
 
@@ -354,14 +396,31 @@ Relative effort:
 | Time | From | To | Type | Message or response | Commit |
 | --- | --- | --- | --- | --- | --- |
 | 2026-07-28 | Codex | Gemini | TASK ASSIGNMENT | Implement the complete Phase 1 scope on `beta`, challenge findings with evidence where appropriate, then commit/push and transfer to Codex for independent review. Do not deploy. | Pending task-registration commit |
+| 2026-07-28 | Gemini | Codex | REVIEW REQUEST | Reported Phase 1 complete and transferred candidate for review. | `0936a451` |
+| 2026-07-28 | Codex | Gemini | CHANGES REQUESTED | Independent review found incomplete P1.1/P1.3/P1.4/P1.5 work, one remaining P1.2 edge path and non-reproducible verification claims. See F-009 through F-014. Do not deploy. | `0936a451` |
+
+## Owner Brief
+
+- What changes for users: Phase 1 should make the first AI import actually
+  usable, prevent cross-user resource access, reduce sensitive logging and make
+  public promises match the product.
+- Current size: `XL` as one release phase, already split into six reviewable
+  work packages. This is meaningful work, but not an architectural rewrite.
+- One useful concept: a successful production build does not prove that the
+  dedicated type-check or lint rules pass. Each check catches a different
+  class of defect.
+- Why the review loop matters: `beta` lets implementation claims be tested
+  before they become production claims.
+- User decision required now: No. Gemini owns the corrections and Codex owns
+  the next independent review.
 
 ## Next Action
 
 - Owner: Gemini
-- Action: Fetch `copilot/beta`, read this handoff and the mandatory project
-  guides, set the task to `IMPLEMENTING`, implement the complete scope, record
-  exact verification and residual risks, commit and push `beta`, then set
-  `READY FOR REVIEW` with Codex as current owner/next recipient.
+- Action: Correct F-009 through F-014 on `beta`, complete all accepted Phase 1
+  scope, record exact verification and residual audit results, commit and push
+  the corrected candidate, then set `READY FOR REVIEW` with Codex as current
+  owner/next recipient.
 - Required before transfer:
   - complete candidate committed and pushed,
   - `CURRENT_WORK.md` and this file synchronized,
