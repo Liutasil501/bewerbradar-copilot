@@ -508,20 +508,24 @@ Never document environment values or secrets in Git.
 
 Verified on 28 July 2026:
 
-- GitHub `copilot/main`: `d8ec95f9`
+- production source branch: `main`
 - VPS repository branch: `main`
 - live VPS/application commit: `ec39f6f4`
 - production container is running
-- documentation commits `ca8cb7dc` and `d8ec95f9` are not deployed on the
-  VPS; they do not change the application runtime and require no standalone
-  production deployment
+- GitHub `main` contains newer documentation-only commits than the live VPS
+- documentation-only Git/VPS divergence is expected and requires no standalone
+  application deployment
 
 Current branch warning:
 
-- `beta` is diverged:
-  - 5 commits only on `beta`
-  - 41 commits only on `main`
+- `beta` has commits unique to both `beta` and `main`
 - current `beta` must not be merged into `main` without reconciliation
+
+Query exact current branch counts instead of relying on a copied snapshot:
+
+```bash
+git rev-list --left-right --count beta...main
+```
 
 Before the normal Gemini → beta → Codex → main workflow begins, the branch state
 must be reconciled safely.
