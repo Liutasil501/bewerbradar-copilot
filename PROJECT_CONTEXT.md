@@ -508,40 +508,45 @@ Never document environment values or secrets in Git.
 
 Verified on 28 July 2026:
 
-- production `main`: `ec39f6f4`
+- GitHub `copilot/main`: `d8ec95f9`
 - VPS repository branch: `main`
-- VPS repository commit: `ec39f6f4`
-- production container running from the current application build
+- live VPS/application commit: `ec39f6f4`
+- production container is running
+- documentation commits `ca8cb7dc` and `d8ec95f9` are not deployed on the
+  VPS; they do not change the application runtime and require no standalone
+  production deployment
 
-Current local warning:
+Current branch warning:
 
 - `beta` is diverged:
   - 5 commits only on `beta`
-  - 39 commits only on `main`
+  - 41 commits only on `main`
 - current `beta` must not be merged into `main` without reconciliation
-- local `main` contains an uncommitted CRLF normalization change in
-  `scripts/deploy-vps.ps1`
 
 Before the normal Gemini → beta → Codex → main workflow begins, the branch state
 must be reconciled safely.
 
 ## 16. Known Technical and Operational Debt
 
-1. `ARCHITECTURE.md` is outdated and encoding-damaged until replaced.
-2. The upstream README contains outdated language and product claims.
-3. PostgreSQL schema does not fully mirror current SQLite billing fields.
-4. SQLite adapter catches migration failures and may continue startup.
-5. There is no established automated unit or end-to-end test suite.
-6. Repository `compose.yml` references `/api/health`, but no such API route
+1. The upstream README contains outdated language and product claims.
+2. PostgreSQL schema does not fully mirror current SQLite billing fields.
+3. SQLite adapter catches migration failures and may continue startup.
+4. There is no established automated unit or end-to-end test suite.
+5. Repository `compose.yml` references `/api/health`, but no such API route
    currently exists.
-7. Production Compose currently reports no health status for the Copilot.
-8. Paywall and BYOK behavior is not fully consistent across UI and API.
-9. Some Chinese error or fallback strings remain in editor code.
-10. `db.bewerbradar.de` may expose Drizzle Studio without the protection used
+6. Production Compose currently reports no health status for the Copilot.
+7. Paywall and BYOK behavior is not fully consistent across UI and API.
+8. Some Chinese error or fallback strings remain in editor code.
+9. `db.bewerbradar.de` may expose Drizzle Studio without the protection used
     by `studio.bewerbradar.de`.
-11. PostgreSQL is publicly bound on port 5432 in the broader stack and requires
+10. PostgreSQL is publicly bound on port 5432 in the broader stack and requires
     firewall and credential review.
-12. Deployment script does not fail fast and may print success after an earlier
+11. Deployment script does not fail fast and may print success after an earlier
     command failed.
-13. Two historical SQLite database names exist in the production volume.
-14. Consent Mode is present, but no user-facing consent mechanism is connected.
+12. Two historical SQLite database names exist in the production volume.
+13. Consent Mode is present, but no user-facing consent mechanism is connected.
+14. AI chat-session routes do not consistently verify that a supplied resume
+    or session belongs to the current user before listing, reading, creating or
+    deleting session data.
+15. Some AI error/debug paths log raw model output. That output may contain
+    resume content and must be removed or redacted.
