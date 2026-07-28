@@ -65,7 +65,85 @@ Use exactly one status per task:
 
 ## Active Work
 
-No active task is registered.
+### CW-2026-07-28-PHASE1-BASELINE
 
-For a new entry, copy
-`docs/agent-handoffs/CURRENT_WORK_TEMPLATE.md` under `Active Work`.
+- Status: `PLANNED`
+- Goal: Create a reviewable Phase 1 release candidate that removes confirmed
+  security, privacy, trust and first-import blockers inside BewerbRadar Copilot.
+- Implementation owner: Gemini
+- Reviewer: Codex
+- Current owner: Gemini
+- Next recipient: Codex
+- Branch: `beta`
+- Base: `8691663b`
+- Handoff file:
+  `docs/agent-handoffs/CW-2026-07-28-PHASE1-BASELINE.md`
+- Production impact: Application, authentication, AI import, public landing
+  copy and release diagnostics are affected.
+- Deployment required: Yes after independent review and separate explicit
+  authorization; no deployment is authorized by this task assignment.
+
+In scope:
+
+- patch directly relevant vulnerable production dependencies without broad
+  major-version upgrades,
+- close confirmed chat and interview ownership gaps,
+- remove raw AI/resume output from logs,
+- repair the conditional React-hook defect in the QR preview,
+- make the promised first Free AI import true for newly registered users and
+  enforce it with `aiImportsCount`,
+- remove or correct unsupported Copilot landing claims and make the template
+  CTA truthful,
+- add the missing health route and make the deploy script fail fast.
+
+Out of scope:
+
+- production deployment, main publication or VPS mutation,
+- legal-text authoring, DNS/Nginx changes, closing VPS ports or backup setup,
+- CMP/GA4/funnel-event implementation,
+- pricing-tier redesign, guest import or long-term retention features,
+- repository-wide lint cleanup or unrelated refactors.
+
+Decisions and assumptions:
+
+- new accounts must no longer receive a sample resume that consumes the only
+  Free slot,
+- an eligible Free account needs both zero resumes and
+  `aiImportsCount < 1` for the server-funded import,
+- deleting an imported resume must not restore the funded trial,
+- no concurrency-hardening project is required beyond a small obvious fix;
+  realistic proportional protection is sufficient,
+- German and English behavior and copy stay aligned.
+
+Verification completed:
+
+- task base and branch alignment verified: `beta...main` = `0 0`,
+- worktree was clean before task registration.
+
+Verification pending:
+
+- focused tests or reproducible route checks for ownership and import rules,
+- changed-file ESLint,
+- `pnpm type-check`,
+- production build,
+- `pnpm audit --prod`,
+- final `beta` diff review by Codex.
+
+Database and environment impact:
+
+- no schema change is expected,
+- no new environment variable is expected,
+- existing `ai_imports_count` must be reused.
+
+Risks or blockers:
+
+- public legal pages and the misleading external `studio.bewerbradar.de` route
+  are confirmed blockers outside this repository and remain for a separate
+  authorized infrastructure/legal task.
+
+Next action:
+
+- Owner: Gemini
+- Action: Read the linked handoff, implement the complete Phase 1 scope on
+  `beta`, commit and push it, then set `READY FOR REVIEW` and transfer ownership
+  to Codex.
