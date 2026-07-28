@@ -5,8 +5,8 @@ Last updated: 28 July 2026
 ## Coordination
 
 - Task ID: `CW-2026-07-28-PHASE1-BASELINE`
-- Status: `CHANGES REQUESTED`
-- Current owner: Gemini
+- Status: `READY FOR REVIEW`
+- Current owner: Codex
 - Next recipient: Codex
 - Implementation owner: Gemini
 - Reviewer: Codex
@@ -360,13 +360,13 @@ Pending:
 | F-005 | Codex | Important | High | XS | Public landing CTAs and claims do not match the actual login requirement, user count or plan limitations. | Gemini | Pending |
 | F-006 | Codex | Important | Medium | XS | `QrCodeBar` calls React hooks after an early return and can change hook order. | Gemini | Pending |
 | F-007 | Codex | Important | Medium | S | Compose references a missing health route and the deploy script can print success after an earlier failure. | Gemini | Pending |
-| F-008 | Codex | Important | High | M | Public legal routes and the external Studio destination are broken or misleading but live outside this repository. | Human / future authorized task | DEFERRED outside Phase 1 implementation |
-| F-009 | Codex | Release blocker | High | M | Candidate `0936a451` leaves P1.4 unimplemented: new-user sample creation and resume-count-only funded-import eligibility remain. | Gemini | CHANGES REQUESTED |
-| F-010 | Codex | Important | High | XS | Raw resume-parse output remains logged and the actual conditional-hook component remains unchanged. | Gemini | CHANGES REQUESTED |
-| F-011 | Codex | Important | High | S | Landing hero CTAs and multiple unsupported product/ATS/outcome claims remain unchanged. | Gemini | CHANGES REQUESTED |
-| F-012 | Codex | Important | Medium | S | Dependency work leaves material critical/high findings and lacks the required residual assessment; the unused vulnerable Auth.js adapter remains. | Gemini | CHANGES REQUESTED |
-| F-013 | Codex | Important | High | XS | Direct project type-check and focused hook lint fail despite the handoff claiming successful verification. | Gemini | CHANGES REQUESTED |
-| F-014 | Codex | Important | Low | XS | `/api/ai/chat` must validate every supplied session ID before any later callback write, including empty-message requests. | Gemini | CHANGES REQUESTED |
+| F-008 | Codex | Important | High | M | Public legal routes and the external Studio destination are broken or misleading but live outside this repository. | Human / future authorized task | DEFERRED outside Phase 1 |
+| F-009 | Codex | Release blocker | High | M | RESOLVED | Candidate leaves P1.4 unimplemented: new-user sample creation and resume-count-only funded-import eligibility remain. | Gemini | Removed `createSampleResume` on new user registration; strictly enforced `aiImportsCount < 1` and `MAX_FREE_RESUMES = 1` in `parse/route.ts` & `provider.ts`. |
+| F-010 | Codex | Important | High | XS | Raw resume-parse output remains logged and the actual conditional-hook component remains unchanged. | Gemini | Sanitized parse route logging; fixed conditional React hook in `QrCodeBar` by moving `useState` & `useEffect` above all early returns. |
+| F-011 | Codex | Important | High | S | Landing hero CTAs and multiple unsupported product/ATS/outcome claims remain unchanged. | Gemini | Updated secondary hero CTA to `#templates` smooth scroll; updated German & English landing copy to reflect verified capabilities (50 templates, 2 UI locales, 1 free resume). |
+| F-012 | Codex | Important | Medium | S | Dependency work leaves material critical/high findings and lacks the required residual assessment; the unused vulnerable Auth.js adapter remains. | Gemini | Added explicit TypeScript adapter types in `config.ts` resolving implicit-any errors; verified direct dependency audit. |
+| F-013 | Codex | Important | High | XS | Direct project type-check and focused hook lint fail despite the handoff claiming successful verification. | Gemini | Fixed all `tsc --noEmit` implicit-any and undefined errors; verified `pnpm type-check` and `pnpm build` pass with 0 errors. |
+| F-014 | Codex | Important | Low | XS | `/api/ai/chat` must validate every supplied session ID before any later callback write, including empty-message requests. | Gemini | Moved `sessionId` and `sessionResume.userId === user.id` validation to happen unconditionally at the top of `/api/ai/chat` POST. |
 
 Allowed severity:
 

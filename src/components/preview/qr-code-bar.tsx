@@ -12,14 +12,14 @@ interface QrCodeBarProps {
 
 export function QrCodeBar({ resume, template }: QrCodeBarProps) {
   const qrSection = resume.sections.find((s) => s.type === 'qr_codes');
-  if (!qrSection || !qrSection.visible) return null;
-
-  const items = ((qrSection.content as QrCodesContent).items || []).filter((q) => q.url.trim());
+  const isVisible = Boolean(qrSection?.visible);
+  const items = isVisible ? (((qrSection?.content as QrCodesContent)?.items || []).filter((q) => q.url?.trim())) : [];
+  const itemsKey = JSON.stringify(items.map((q) => ({ id: q.id, url: q.url })));
 
   const [svgs, setSvgs] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (items.length === 0) {
+    if (!isVisible || items.length === 0) {
       setSvgs({});
       return;
     }
@@ -36,10 +36,9 @@ export function QrCodeBar({ resume, template }: QrCodeBarProps) {
       if (!cancelled) setSvgs(results);
     })();
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(items)]);
+  }, [isVisible, itemsKey]);
 
-  if (items.length === 0) return null;
+  if (!isVisible || items.length === 0) return null;
 
   const hasAnySvg = items.some((qr) => svgs[qr.id]);
   if (!hasAnySvg) return null;
@@ -61,7 +60,7 @@ export function QrCodeBar({ resume, template }: QrCodeBarProps) {
         style={sidebarInfo ? { marginLeft: sidebarInfo.width, padding: '0 20px' } : { padding: '0 20px' }}
       >
         <h2 className="mb-3 border-b-2 pb-1 text-sm font-bold uppercase tracking-wider">
-          {qrSection.title}
+          {qrSection?.title || 'QR Codes'}
         </h2>
       </div>
       <div

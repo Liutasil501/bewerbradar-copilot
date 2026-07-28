@@ -20,6 +20,20 @@ export async function POST(request: NextRequest) {
 
     const { messages, resumeId, model: modelId, sessionId } = await request.json();
 
+    if (sessionId) {
+      const session = await chatRepository.findSession(sessionId);
+      if (!session) {
+        return new Response('Session not found', { status: 404 });
+      }
+      const sessionResume = await resumeRepository.findById(session.resumeId);
+      if (!sessionResume || sessionResume.userId !== user.id) {
+        return new Response('Not found', { status: 404 });
+      }
+      if (resumeId && session.resumeId !== resumeId) {
+        return new Response('Mismatched session and resume', { status: 400 });
+      }
+    }
+
     let resumeContext = '';
     if (resumeId) {
       const resume = await resumeRepository.findById(resumeId);
@@ -33,18 +47,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Save user message to DB before streaming
-    if (sessionId && messages.length > 0) {
-      const session = await chatRepository.findSession(sessionId);
-      if (!session) {
-        return new Response('Session not found', { status: 404 });
-      }
-      const sessionResume = await resumeRepository.findById(session.resumeId);
-      if (!sessionResume || sessionResume.userId !== user.id) {
-        return new Response('Not found', { status: 404 });
-      }
-      if (resumeId && session.resumeId !== resumeId) {
-        return new Response('Mismatched session and resume', { status: 400 });
-      }
+    if (sessionId && messages?.length > 0) {
 
       const lastMessage = messages[messages.length - 1];
       if (lastMessage.role === 'user') {

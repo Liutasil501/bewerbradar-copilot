@@ -13,7 +13,7 @@ export interface AIConfig {
 
 export function extractAIConfig(
   request: NextRequest,
-  user?: { subscriptionPlan?: string | null } | null,
+  user?: { subscriptionPlan?: string | null; aiImportsCount?: number | null } | null,
   options?: { allowFreeTrial?: boolean }
 ): AIConfig {
   let provider = request.headers.get('x-provider') || 'openai';
@@ -43,7 +43,7 @@ export function extractAIConfig(
   const isEligibleForServerKey =
     user?.subscriptionPlan === 'premium' ||
     user?.subscriptionPlan === 'pro' ||
-    (options?.allowFreeTrial && (user?.subscriptionPlan === 'free' || !user?.subscriptionPlan));
+    (options?.allowFreeTrial && (user?.subscriptionPlan === 'free' || !user?.subscriptionPlan) && (user?.aiImportsCount || 0) < 1);
 
   if (!apiKey && isEligibleForServerKey) {
     provider = 'gemini';

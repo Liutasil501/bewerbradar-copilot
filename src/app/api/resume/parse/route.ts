@@ -41,10 +41,23 @@ export async function POST(request: NextRequest) {
     }
 
     const existingResumes = await resumeRepository.findAllByUserId(user.id);
-    const allowFreeTrial = user.subscriptionPlan === 'free' || !user.subscriptionPlan;
+    const isFreePlan = user.subscriptionPlan === 'free' || !user.subscriptionPlan;
+    const aiImportsCount = user.aiImportsCount || 0;
 
-    if (user.subscriptionPlan === 'free' && existingResumes.length >= MAX_FREE_RESUMES) {
-      return NextResponse.json({ error: `Free plan is limited to ${MAX_FREE_RESUMES} resume(s)` }, { status: 403 });
+    // Free trial import is allowed only if free user has zero resumes AND hasn't used their 1 free trial import yet
+    const allowFreeTrial = isFreePlan && aiImportsCount < 1 && existingResumes.length < MAX_FREE_RESUMES;
+
+    if (isFreePlan && existingResumes.length >= MAX_FREE_RESUMES && !allowFreeTrial) {
+      if (aiImportsCount >= 1) {
+        return NextResponse.json(
+          { error: 'Trial import already used. Upgrade to Pro for unlimited AI imports.' },
+          { status: 403 }
+        );
+      }
+      return NextResponse.json(
+        { error: `Free plan is limited to ${MAX_FREE_RESUMES} resume(s). Delete existing resume to use your free trial import.` },
+        { status: 403 }
+      );
     }
 
     const formData = await request.formData();

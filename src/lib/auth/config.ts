@@ -47,10 +47,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }),
       ],
   adapter: {
-    async createVerificationToken(data: any) {
+    async createVerificationToken(data: { identifier: string; token: string; expires: Date }) {
       return await db.insert(verificationTokens).values(data).returning().get();
     },
-    async useVerificationToken({ identifier, token }: any) {
+    async useVerificationToken({ identifier, token }: { identifier: string; token: string }) {
       const result = await db.select().from(verificationTokens).where(
         and(eq(verificationTokens.identifier, identifier), eq(verificationTokens.token, token))
       ).get();
@@ -66,11 +66,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!user) return null;
       return { id: user.id, email: user.email!, emailVerified: null };
     },
-    async createUser(user: any) {
+    async createUser(user: { email: string }) {
       let dbUser = await userRepository.findByEmail(user.email);
       if (!dbUser) {
         dbUser = await userRepository.create({ email: user.email, authType: 'oauth' });
-        if (dbUser) await createSampleResume(dbUser.id);
       }
       return { id: dbUser!.id, email: dbUser!.email!, emailVerified: null };
     },
@@ -79,17 +78,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!user) return null;
       return { id: user.id, email: user.email!, emailVerified: null };
     },
-    async updateUser(user: any) {
+    async updateUser(user: { id: string }) {
       const dbUser = await userRepository.findById(user.id);
       if (dbUser) {
         return { id: dbUser.id, email: dbUser.email!, emailVerified: new Date() };
       }
       return user;
     },
-    async linkAccount(account: any) {
+    async linkAccount(account: Record<string, unknown>) {
       return account;
     },
-    async getUserByAccount(provider_providerAccountId: any) {
+    async getUserByAccount(_provider_providerAccountId: Record<string, unknown>) {
       return null;
     },
   } as any,
@@ -110,9 +109,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             avatarUrl: avatar,
             authType: 'oauth',
           });
-          if (dbUser) {
-            await createSampleResume(dbUser.id);
-          }
         }
         // Use stable DB user ID in the token
         if (dbUser) {

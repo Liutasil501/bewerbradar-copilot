@@ -697,54 +697,54 @@
       },
       "templates": {
         "title": "Professional Templates",
-        "description": "Choose from a curated collection of modern, ATS-friendly templates designed by hiring experts."
+        "description": "Choose from a carefully crafted collection of modern, well-structured templates."
       },
       "dragDrop": {
         "title": "Drag & Drop Editor",
-        "description": "Easily rearrange sections, customize layouts, and build your resume exactly the way you want."
+        "description": "Easily reorder sections, customize layouts, and build your resume exactly the way you want."
       },
       "export": {
         "title": "Import & Export",
-        "description": "Export as PDF, Smart One-Page PDF, Word, HTML, TXT, or JSON. Import a previously exported JSON to instantly restore or create a resume."
+        "description": "Export as PDF, Smart One-Page PDF, Word, HTML, TXT, or JSON. Import an exported JSON to restore a resume instantly."
       },
       "sharing": {
         "title": "One-Click Sharing",
-        "description": "Generate a shareable link to your resume with optional password protection and view tracking."
+        "description": "Generate a shareable link for your resume with optional password protection and view tracking."
       },
       "i18n": {
         "title": "Multilingual Support",
-        "description": "Create resumes in multiple languages and translate between them instantly with AI assistance."
+        "description": "Create resumes in multiple languages and translate them instantly with AI assistance."
       },
       "jdMatch": {
         "title": "JD Match Analysis",
-        "description": "Paste a job description and get an instant match score with actionable suggestions to improve your resume."
+        "description": "Paste a job description to get an instant match score and actionable improvement suggestions."
       },
       "mockInterview": {
         "title": "Mock Interview",
-        "description": "AI-powered mock interviews based on JD. 6 preset interviewer roles with smart follow-ups, detailed report and improvement plan."
+        "description": "AI-powered mock interviews tailored to job descriptions. 6 preset interviewer roles with follow-up questions and detailed reports."
       },
       "translate": {
         "title": "AI Translation",
-        "description": "Translate your entire resume between languages with one click. AI preserves professional tone and formatting."
+        "description": "Translate your entire resume with one click while preserving tone and formatting."
       },
       "coverLetter": {
         "title": "Cover Letter Generator",
-        "description": "Generate tailored cover letters based on your resume and the target job description — formal, friendly, or confident."
+        "description": "Generate tailored cover letters based on your resume and job description — formal, friendly, or confident."
       },
       "grammarCheck": {
-        "title": "Grammar Check",
-        "description": "Detect grammar errors, weak verbs, and vague descriptions. Get a writing quality score with fix suggestions."
+        "title": "Grammar Checker",
+        "description": "Detect grammar errors, weak verbs, and vague descriptions with quality scores and suggestions."
       }
     },
     "templates": {
       "title": "Beautiful Templates to Get You Started",
-      "subtitle": "Professionally designed templates that pass ATS systems and impress recruiters",
+      "subtitle": "Professionally designed templates for your perfect resume",
       "viewAll": "View All Templates"
     },
     "stats": {
-      "title": "Trusted by Job Seekers Worldwide",
+      "title": "Features at a Glance",
       "templates": {
-        "value": "50+",
+        "value": "50",
         "label": "Templates"
       },
       "exportFormats": {
@@ -752,8 +752,8 @@
         "label": "Export Formats"
       },
       "languages": {
-        "value": "10+",
-        "label": "Languages"
+        "value": "2",
+        "label": "UI Locales (DE / EN)"
       },
       "free": {
         "value": "1",

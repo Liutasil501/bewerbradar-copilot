@@ -58,7 +58,7 @@ export function HeroSection() {
             variant="outline"
             className="h-12 w-full cursor-pointer rounded-xl border-zinc-300 px-8 text-base font-semibold transition-all hover:-translate-y-0.5 dark:border-zinc-700 sm:h-11 sm:w-auto sm:px-6 sm:text-sm"
           >
-            <Link href="/templates">{t('secondaryCta')}</Link>
+            <a href="#templates">{t('secondaryCta')}</a>
           </Button>
         </div>
 

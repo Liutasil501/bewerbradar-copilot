@@ -697,7 +697,7 @@
       },
       "templates": {
         "title": "Professionelle Vorlagen",
-        "description": "Wählen Sie aus einer sorgfältig zusammengestellten Sammlung moderner, ATS-freundlicher Vorlagen, entworfen von HR-Experten."
+        "description": "Wählen Sie aus einer sorgfältig zusammengestellten Sammlung moderner, strukturierter Vorlagen."
       },
       "dragDrop": {
         "title": "Drag & Drop Editor",
@@ -729,7 +729,7 @@
       },
       "coverLetter": {
         "title": "Anschreiben-Generator",
-        "description": "Erstellen Sie maßgeschneiderzte Anschreiben basierend auf Ihrem Lebenslauf und der Stellenbeschreibung — formell, freundlich oder selbstbewusst."
+        "description": "Erstellen Sie maßgeschneiderte Anschreiben basierend auf Ihrem Lebenslauf und der Stellenbeschreibung — formell, freundlich oder selbstbewusst."
       },
       "grammarCheck": {
         "title": "Grammatikprüfung",
@@ -738,13 +738,13 @@
     },
     "templates": {
       "title": "Wunderschöne Vorlagen für den Start",
-      "subtitle": "Professionell gestaltete Vorlagen, die ATS-Systeme passieren und Recruiter beeindrucken",
+      "subtitle": "Professionell gestaltete Vorlagen für Ihren perfekten Lebenslauf",
       "viewAll": "Alle Vorlagen ansehen"
     },
     "stats": {
-      "title": "Weltweit von Bewerbern vertraut",
+      "title": "Funktionen auf einen Blick",
       "templates": {
-        "value": "50+",
+        "value": "50",
         "label": "Vorlagen"
       },
       "exportFormats": {
@@ -752,8 +752,8 @@
         "label": "Exportformate"
       },
       "languages": {
-        "value": "10+",
-        "label": "Sprachen"
+        "value": "2",
+        "label": "Sprachen (DE / EN)"
       },
       "free": {
         "value": "1",

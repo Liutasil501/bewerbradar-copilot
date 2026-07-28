@@ -98,15 +98,18 @@ function TemplateCard({ template, label, tm, ts }: { template: string; label: st
       <div className="relative h-[320px] overflow-hidden bg-zinc-50 dark:bg-zinc-950">
         <div
           className="absolute left-1/2 top-1/2"
-          style={{ width: '794px', transform: 'translate(-50%, -50%) scale(0.28)', transformOrigin: 'center center' }}
+          style={{
+            transform: 'translate(-50%, -50%) scale(0.38)',
+            width: '210mm',
+            height: '297mm',
+          }}
         >
           <ResumePreview resume={mockResume} />
         </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
       </div>
-      <div className="border-t border-zinc-100 px-4 py-3 dark:border-zinc-700">
-        <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-          {label}
-        </p>
+      <div className="flex items-center justify-between p-4">
+        <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{label}</span>
       </div>
     </div>
   );
@@ -114,15 +117,12 @@ function TemplateCard({ template, label, tm, ts }: { template: string; label: st
 
 export function TemplateShowcaseSection() {
   const t = useTranslations('landing.templates');
-  const tGlobal = useTranslations();
   const tm = useTranslations('mockResume');
   const ts = useTranslations('sections');
+  const tGlobal = useTranslations();
 
   return (
-    <section
-      id="templates"
-      className="bg-zinc-50 px-4 py-24 sm:px-6 sm:py-32 lg:px-8 dark:bg-zinc-900/50"
-    >
+    <section id="templates" className="bg-zinc-50 px-4 py-24 sm:px-6 sm:py-32 lg:px-8 dark:bg-zinc-900/50">
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto mb-12 max-w-2xl text-center sm:mb-16">
           <h2 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-100">
