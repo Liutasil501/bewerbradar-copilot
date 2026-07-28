@@ -540,15 +540,15 @@ Never document environment values or secrets in Git.
 
 ## 15. Current Git and Release State
 
-Verified on 28 July 2026:
+Verified on 29 July 2026:
 
 - production source branch: `main`
 - VPS repository branch: `main`
-- live VPS/application commit: `ec39f6f4`
-- production container is running
-- GitHub `main` contains newer documentation-only commits than the live VPS
-- documentation-only Git/VPS divergence is expected and requires no standalone
-  application deployment
+- deployed Phase 1 release commit: `1f8368364a2aeb143aacd68901ef0fe4e9ce932d`
+- production container is running Next.js `16.2.12`
+- live `/api/health` returns `200`
+- German and English public landing pages return `200`
+- import-first CTAs and the ATS-focused hero copy are live
 
 Beta reconciliation on 28 July 2026:
 
@@ -578,8 +578,8 @@ Any commits unique to both sides require investigation before merge.
 2. PostgreSQL schema does not fully mirror current SQLite billing fields.
 3. SQLite adapter catches migration failures and may continue startup.
 4. There is no established automated unit or end-to-end test suite.
-5. Production Compose health status must be reverified after the Phase 1
-   release containing `/api/health` is deployed.
+5. The health endpoint is live, but production observability remains limited
+   to container state, logs and endpoint checks.
 6. Paywall and BYOK behavior is not fully consistent across every AI feature.
 7. Some Chinese error or fallback strings remain in editor code.
 8. `db.bewerbradar.de` may expose Drizzle Studio without the protection used

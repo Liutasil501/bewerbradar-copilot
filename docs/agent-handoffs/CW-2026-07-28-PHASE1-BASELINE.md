@@ -5,12 +5,12 @@ Last updated: 29 July 2026
 ## Coordination
 
 - Task ID: `CW-2026-07-28-PHASE1-BASELINE`
-- Status: `READY TO DEPLOY`
-- Current owner: Codex
-- Next recipient: Production deployment
+- Status: `VERIFIED LIVE`
+- Current owner: None; task complete
+- Next recipient: None
 - Implementation owner: Gemini
 - Reviewer: Codex
-- Branch: `beta`
+- Branch: `main` and aligned `beta`
 - Base branch and commit: `main` at `8691663b`
 - Implementation commit(s) under review:
   - `0936a451cee189ce6398b91112ea677fc2d5b9f7`
@@ -18,6 +18,8 @@ Last updated: 29 July 2026
   - `e4b06d8a`
   - `4913d3eb`
   - `f3621309687e4af3e2c0d90659a55cb14552034a`
+- Production release commit:
+  - `1f8368364a2aeb143aacd68901ef0fe4e9ce932d`
 - `CURRENT_WORK.md` synchronized: yes
 
 ## Goal
@@ -339,15 +341,18 @@ Completed:
 
 Pending:
 
-- publication to `copilot/main`,
-- authorized VPS deployment and live verification.
+- none for Phase 1.
 
 ## Database and Environment
 
 - Migrations: none expected.
 - New or changed variable names: none expected.
-- Production preparation: ordinary dependency/image rebuild and application
-  deployment are required and were explicitly authorized on 29 July 2026.
+- Production deployment completed on 29 July 2026.
+- VPS repository and deployed application release:
+  `1f8368364a2aeb143aacd68901ef0fe4e9ce932d`.
+- No schema migration or new environment variable was required.
+- Container startup logs were clean, `/api/health` returned `200`, and the
+  public German and English landing pages returned `200`.
 
 ## Risks and Limitations
 
@@ -490,16 +495,15 @@ Result: 20 total vulnerabilities (1 critical, 9 high, 8 moderate, 2 low).
 | 2026-07-28 | Gemini | Codex | REVIEW REQUEST | Completed F-016 through F-020: updated hero & CTAs, import-intent handling, activation card, machine-readable error codes, PII-safe logging across AI routes, updated Next/eslint-config-next to 16.2.12, passed 0 type-check errors, 0 ESLint errors/warnings, clean production build, and full production audit assessment. Pushed candidate to `copilot/beta`. Transferring to Codex for review. Do not deploy. | Release Candidate Commit |
 | 2026-07-29 | Codex | Gemini | NO-GO | Independent review found the dashboard import intent still SSR-unsafe, the counter matrix could consume or block the wrong path, sensitive error details remained, and the residual audit rationale overstated non-reachability. | `4913d3eb` |
 | 2026-07-29 | Codex | Release | FIXED / APPROVED | Corrected the targeted remainder, passed type-check, focused ESLint, production build and DE/EN browser smoke tests, and approved Phase 1 for the user-authorized production release. | `f3621309` |
+| 2026-07-29 | Codex | Production | VERIFIED LIVE | Fast-forwarded and pushed `main`, built and recreated the production container, verified the exact VPS SHA, clean startup logs, local and public health `200`, and public DE/EN landing `200` with the new hero and import CTA. | `1f836836` |
 
 ## Owner Brief
 
 - What changes for users: Phase 1 makes the first AI import usable and smooth, enforces exact free trial counters without penalizing BYOK/paid users, fixes copy & CTAs, removes raw PII log output, and updates core framework dependencies safely.
 - Current size: `XL` as one release phase.
-- User decision required now: No. The user explicitly authorized the production
-  deployment on 29 July 2026.
+- User decision required now: No. Phase 1 is complete and verified live.
 
 ## Next Action
 
-- Owner: Codex
-- Action: Publish the reviewed candidate to `main`, deploy to the VPS and
-  complete exact-commit, container, log, health and public-flow verification.
+- Owner: None
+- Action: Start a new task entry for the next product phase when selected.
