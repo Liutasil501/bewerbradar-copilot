@@ -1,5 +1,11 @@
 # Project Context: BewerbRadar Copilot (ehemals JadeAI)
 
+## Analytics-Stand (28. Juli 2026)
+- Der Google-Tag-Manager-Webcontainer `GTM-55XL7PR4` ist im globalen Next.js Root-Layout eingebunden und gilt damit für alle Copilot-Routen.
+- Die öffentliche Container-ID kann optional über `NEXT_PUBLIC_GTM_ID` überschrieben werden; ohne Variable wird `GTM-55XL7PR4` verwendet.
+- Consent Mode v2 wird vor GTM mit `analytics_storage`, `ad_storage`, `ad_user_data` und `ad_personalization` auf `denied` initialisiert.
+- Noch offen sind die CMP-/Cookie-Banner-Anbindung, das Google-Tag mit der GA4-Mess-ID, Funnel-Events und die Veröffentlichung der getesteten GTM-Container-Version.
+
 > **WICHTIGER HINWEIS FÜR KI-AGENTEN:** Lese diese Datei immer zuerst, um den architektonischen und historischen Kontext des Projekts zu verstehen! Nimm niemals Kontext weg, sondern ergänze ihn nur.
 
 ## 1. Systemarchitektur, Ports & Interne Zugänge
