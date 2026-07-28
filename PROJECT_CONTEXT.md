@@ -6,6 +6,7 @@ This file describes the authoritative current product and production state.
 It is not a historical changelog.
 
 For operating rules, read `AGENTS.md`.
+For active tasks, ownership and handoffs, read `CURRENT_WORK.md`.
 For file routing, read `docs/PROJECT_MAP.md`.
 For technical flows, read `ARCHITECTURE.md`.
 For production releases, read `DEPLOYMENT.md`.

@@ -15,6 +15,10 @@ It is an index, not a substitute for reading the relevant implementation.
 - `PROJECT_CONTEXT.md`
   Current product, billing, production and infrastructure state.
 
+- `CURRENT_WORK.md`
+  Short-lived coordination board for active tasks, branches, owners, review
+  status, verification and next action. Verify every claim against Git.
+
 - `ARCHITECTURE.md`
   Current technical architecture and data flows.
 

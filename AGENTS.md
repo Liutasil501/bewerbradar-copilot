@@ -16,22 +16,24 @@ Before substantive work:
 1. Read this complete `AGENTS.md`.
 2. Read the complete authoritative current state in `PROJECT_CONTEXT.md`.
 3. Use `docs/PROJECT_MAP.md` to identify the affected subsystem and relevant files.
-4. For architecture, infrastructure or deployment work, also read:
+4. Read `CURRENT_WORK.md` and verify any active branch, commit and deployment
+   claims against Git or the runtime.
+5. For architecture, infrastructure or deployment work, also read:
    - `ARCHITECTURE.md`
    - `DEPLOYMENT.md`
-5. Inspect the current repository state:
+6. Inspect the current repository state:
    - `git status --short --branch`
    - `git log -5 --oneline --decorate`
    - `git diff`
    - `git remote -v` when branches or deployment are relevant
-6. Preserve unrelated and uncommitted user or agent changes.
-7. Trace the affected behavior end-to-end:
+7. Preserve unrelated and uncommitted user or agent changes.
+8. Trace the affected behavior end-to-end:
    page/component → store/hook → API route → domain service/provider
    → repository/database.
-8. Read only the task-specific implementation files after orientation.
-9. If documentation contradicts code, Git state or verified runtime behavior,
+9. Read only the task-specific implementation files after orientation.
+10. If documentation contradicts code, Git state or verified runtime behavior,
    investigate the discrepancy instead of guessing.
-10. Never accept another agent’s success statement, commit message or deployment
+11. Never accept another agent’s success statement, commit message or deployment
     claim as proof without independent verification.
 
 ## 2. Sources of Truth
@@ -43,9 +45,14 @@ Use the following precedence:
 3. This `AGENTS.md`
 4. Verified code, Git state and runtime behavior
 5. `PROJECT_CONTEXT.md`
-6. `ARCHITECTURE.md`, `DEPLOYMENT.md` and `docs/PROJECT_MAP.md`
-7. Feature specifications explicitly marked as active
-8. Historical plans, changelogs and the upstream README
+6. `CURRENT_WORK.md` for active coordination only
+7. `ARCHITECTURE.md`, `DEPLOYMENT.md` and `docs/PROJECT_MAP.md`
+8. Feature specifications explicitly marked as active
+9. Historical plans, changelogs and the upstream README
+
+`CURRENT_WORK.md` never overrides Git, verified runtime behavior or durable
+project documentation. It may be stale and must be corrected when evidence
+disagrees.
 
 The existing `README.md`, `README.zh-CN.md`, old plans and historical log entries
 may describe upstream JadeAI behavior. They are not authoritative for current
@@ -142,7 +149,9 @@ When Gemini and Codex work at the same time:
 - use separate branches,
 - do not edit the same files concurrently without coordination,
 - never switch branches in a shared dirty working tree,
-- communicate through commits and the handoff format below.
+- register each active branch in `CURRENT_WORK.md`,
+- update only the owned task entry where practical,
+- communicate through commits, `CURRENT_WORK.md` and the handoff format below.
 
 Never force-push, rewrite shared history or rebase a branch used by another
 agent without explicit agreement.
@@ -360,6 +369,18 @@ Update `DEPLOYMENT.md` for:
 
 Update `docs/PROJECT_MAP.md` when important files or subsystems move.
 
+Update `CURRENT_WORK.md` when:
+
+- an active task starts,
+- ownership, branch, scope or status changes,
+- work becomes ready for review,
+- review requests changes or approves the candidate,
+- deployment starts or is verified,
+- an active entry is completed or abandoned.
+
+Keep `CURRENT_WORK.md` operational and small. Remove finished entries instead
+of turning it into a chronological log.
+
 Do not append unlimited chronological notes to authoritative documents.
 Move historical notes into a separate changelog or `docs/history/`.
 
@@ -408,6 +429,11 @@ Use exactly one:
 - `VERIFIED LIVE`
 
 Never use `VERIFIED LIVE` without checking production.
+
+Before handoff, synchronize the corresponding `CURRENT_WORK.md` entry with the
+actual branch, status, verification, risks and next owner. The handoff commit
+SHA itself remains authoritative and does not need to be embedded recursively
+inside the same commit.
 
 ## 15. Review Result
 
