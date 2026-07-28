@@ -41,9 +41,9 @@ export async function POST(request: NextRequest) {
     }
 
     const existingResumes = await resumeRepository.findAllByUserId(user.id);
-    const allowFreeTrial = (user.subscriptionPlan === 'free' || !user.subscriptionPlan) && (user.aiImportsCount || 0) < 1;
+    const allowFreeTrial = user.subscriptionPlan === 'free' || !user.subscriptionPlan;
 
-    if (user.subscriptionPlan === 'free' && existingResumes.length >= MAX_FREE_RESUMES && !allowFreeTrial) {
+    if (user.subscriptionPlan === 'free' && existingResumes.length >= MAX_FREE_RESUMES) {
       return NextResponse.json({ error: `Free plan is limited to ${MAX_FREE_RESUMES} resume(s)` }, { status: 403 });
     }
 
