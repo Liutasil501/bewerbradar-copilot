@@ -188,6 +188,6 @@ export function extractJson<T>(text: string, schema: ZodType<T>): T {
     } catch {}
   }
 
-  console.error('[extractJson] FULL failed text:\n', cleaned);
+  console.error(`[extractJson] Failed to extract valid JSON from AI response (length=${text.length})`);
   throw new Error(`Failed to extract valid JSON from AI response (length=${text.length})`);
 }

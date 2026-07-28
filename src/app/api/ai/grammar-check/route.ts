@@ -87,7 +87,6 @@ export async function POST(request: NextRequest) {
       providerOptions: getJsonProviderOptions(aiConfig),
     });
 
-    console.log('[grammar-check] raw response:\n', result.text);
     const checkResult = extractJson(result.text, grammarCheckOutputSchema);
 
     // Persist to database

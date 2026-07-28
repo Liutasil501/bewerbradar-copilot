@@ -179,7 +179,8 @@ export async function POST(request: NextRequest) {
     if (isApiKeyIssue) {
       return NextResponse.json({ error: 'apiKeyMissing' }, { status: 401 });
     }
-    console.error('POST /api/resume/parse error:', error);
+    const errSummary = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+    console.error('POST /api/resume/parse error:', errSummary);
     return NextResponse.json({ error: 'Failed to parse resume' }, { status: 500 });
   }
 }

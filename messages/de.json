@@ -756,13 +756,13 @@
         "label": "Sprachen"
       },
       "free": {
-        "value": "100%",
-        "label": "Kostenlos"
+        "value": "1",
+        "label": "Kostenloser Lebenslauf"
       }
     },
     "cta": {
       "title": "Bereit für Ihren besten Lebenslauf?",
-      "subtitle": "Schließen Sie sich tausenden Bewerbern an, die mit BewerbRadar Copilot Interviews gelandet haben. Keine Anmeldung erforderlich.",
+      "subtitle": "Erstellen Sie professionelle Lebensläufe schnell und einfach mit BewerbRadar Copilot.",
       "button": "Lebenslauf jetzt erstellen"
     },
     "footer": {

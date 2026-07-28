@@ -24,6 +24,7 @@ function isValidUrl(str: string): boolean {
 export function QrCodesPreview({ items }: QrCodesPreviewProps) {
   const filtered = items.filter((q) => isValidUrl(q.url));
   const [svgs, setSvgs] = useState<Record<string, string>>({});
+  const itemsKey = JSON.stringify(filtered.map((q) => ({ id: q.id, url: q.url })));
 
   useEffect(() => {
     if (filtered.length === 0) {
@@ -43,8 +44,7 @@ export function QrCodesPreview({ items }: QrCodesPreviewProps) {
       if (!cancelled) setSvgs(results);
     })();
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(filtered)]);
+  }, [itemsKey]);
 
   if (filtered.length === 0) return null;
   const hasAnySvg = filtered.some((qr) => svgs[qr.id]);

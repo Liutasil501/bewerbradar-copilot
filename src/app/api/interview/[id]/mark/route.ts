@@ -16,6 +16,22 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 
   const { messageId, marked } = await request.json();
+  if (!messageId) {
+    return NextResponse.json({ error: 'Missing messageId' }, { status: 400 });
+  }
+
+  const rounds = await interviewRepository.findRoundsBySessionId(sessionId);
+  const roundIds = new Set(rounds.map((r: { id: string }) => r.id));
+
+  const roundsWithMessages = await interviewRepository.findAllMessagesBySessionId(sessionId);
+  const messageFound = roundsWithMessages.some(({ round, messages }) =>
+    roundIds.has(round.id) && messages.some((m: { id: string }) => m.id === messageId)
+  );
+
+  if (!messageFound) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
   await interviewRepository.updateMessageMetadata(messageId, { marked });
 
   return NextResponse.json({ success: true });

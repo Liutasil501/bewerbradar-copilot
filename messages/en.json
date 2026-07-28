@@ -756,13 +756,13 @@
         "label": "Languages"
       },
       "free": {
-        "value": "100%",
-        "label": "Free"
+        "value": "1",
+        "label": "Free Resume"
       }
     },
     "cta": {
       "title": "Ready to Build Your Best Resume?",
-      "subtitle": "Join thousands of job seekers who have landed interviews with BewerbRadar Copilot. No sign-up required.",
+      "subtitle": "Build professional resumes quickly and easily with BewerbRadar Copilot.",
       "button": "Create Your Resume Now"
     },
     "footer": {

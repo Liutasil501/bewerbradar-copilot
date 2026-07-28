@@ -5,6 +5,7 @@ $SSH_KEY = "C:\Games\Dev\VPS2 NEWST 2028\id_ed25519"
 $VPS_IP = "147.93.121.183"
 
 $Commands = @'
+set -e
 echo "===> 1. Pulling latest code changes..."
 cd /var/www/jadeai
 git pull
@@ -22,3 +23,7 @@ echo "===> Deployment completed successfully!"
 
 $Commands = $Commands -replace "`r", ""
 $Commands | ssh -o StrictHostKeyChecking=no -i $SSH_KEY root@$VPS_IP "bash"
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Deployment failed with exit code $LASTEXITCODE"
+    exit $LASTEXITCODE
+}

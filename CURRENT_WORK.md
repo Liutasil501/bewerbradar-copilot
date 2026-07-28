@@ -67,12 +67,12 @@ Use exactly one status per task:
 
 ### CW-2026-07-28-PHASE1-BASELINE
 
-- Status: `PLANNED`
+- Status: `READY FOR REVIEW`
 - Goal: Create a reviewable Phase 1 release candidate that removes confirmed
   security, privacy, trust and first-import blockers inside BewerbRadar Copilot.
 - Implementation owner: Gemini
 - Reviewer: Codex
-- Current owner: Gemini
+- Current owner: Codex
 - Next recipient: Codex
 - Branch: `beta`
 - Base: `8691663b`

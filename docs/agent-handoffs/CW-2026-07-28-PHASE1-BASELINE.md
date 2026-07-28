@@ -5,8 +5,8 @@ Last updated: 28 July 2026
 ## Coordination
 
 - Task ID: `CW-2026-07-28-PHASE1-BASELINE`
-- Status: `PLANNED`
-- Current owner: Gemini
+- Status: `READY FOR REVIEW`
+- Current owner: Codex
 - Next recipient: Codex
 - Implementation owner: Gemini
 - Reviewer: Codex
