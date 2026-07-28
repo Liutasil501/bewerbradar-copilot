@@ -67,7 +67,7 @@ Use exactly one status per task:
 
 ### CW-2026-07-28-WORKFLOW
 
-- Status: `IMPLEMENTING`
+- Status: `APPROVED`
 - Goal: Make cross-agent review more evidence-based and efficient, reduce
   mandatory session context without deleting knowledge, and reconcile `beta`
   safely with current `main`.
@@ -97,58 +97,8 @@ Out of scope:
 Next action:
 
 - Owner: Codex
-- Action: Update the workflow documents, audit beta-only commits and build a
-  verified reconciliation candidate.
+- Action: Publish the verified documentation candidate to `main`, fast-forward
+  `beta` to that commit and then close this temporary task entry.
 
-## New Task Template
-
-Copy this section under `Active Work` and replace every placeholder.
-
-```markdown
-### CW-YYYY-MM-DD-SHORT-NAME
-
-- Status: `PLANNED`
-- Goal:
-- Implementation owner:
-- Reviewer:
-- Current owner:
-- Next recipient:
-- Branch:
-- Base:
-- Handoff file: `docs/agent-handoffs/CW-YYYY-MM-DD-SHORT-NAME.md`
-- Production impact:
-- Deployment required:
-
-In scope:
-
--
-
-Out of scope:
-
--
-
-Decisions and assumptions:
-
--
-
-Verification completed:
-
--
-
-Verification pending:
-
--
-
-Database and environment impact:
-
--
-
-Risks or blockers:
-
--
-
-Next action:
-
-- Owner:
-- Action:
-```
+For a new entry, copy
+`docs/agent-handoffs/CURRENT_WORK_TEMPLATE.md` under `Active Work`.

@@ -1,563 +1,240 @@
 # BewerbRadar Copilot – Shared Agent Rules
 
-These rules apply to every AI agent working in this repository.
-
-They define the project bootstrap, autonomy boundaries, Git workflow, quality
-requirements, collaboration model and production release process.
-
-Platform and system safety rules always take precedence.
+These rules apply to every AI agent working in this repository. They define the
+mandatory shared context, autonomy boundaries, Git workflow, collaboration and
+release safety. Platform and system rules always take precedence.
 
 ## 1. New Session Bootstrap
 
-A new agent session must not assume knowledge from previous conversations.
+A new session must not assume knowledge from earlier conversations.
 
 Before substantive work:
 
 1. Read this complete `AGENTS.md`.
-2. Read the `Session Snapshot` in `PROJECT_CONTEXT.md`.
-3. Read `CURRENT_WORK.md`, verify any active branch, commit and deployment
-   claims, and read the task-specific file under `docs/agent-handoffs/` for the
-   affected active task.
-4. Use the relevant task-routing section in `docs/PROJECT_MAP.md` to identify
-   the affected subsystem and files.
-5. Read the task-relevant detailed sections of `PROJECT_CONTEXT.md`.
-6. For architecture, infrastructure or deployment work, also read:
-   - `ARCHITECTURE.md`
-   - `DEPLOYMENT.md`
-7. Inspect the current repository state:
+2. Read only the `Session Snapshot` in `PROJECT_CONTEXT.md`.
+3. Read `CURRENT_WORK.md`; verify relevant branch, commit and deployment claims.
+4. If the task is active, read its linked file under `docs/agent-handoffs/`.
+5. Read the relevant task-routing section in `docs/PROJECT_MAP.md`.
+6. Read only the task-relevant detailed sections of `PROJECT_CONTEXT.md`.
+7. Load specialist guidance when triggered:
+   - application, data, security, billing, AI or analytics changes:
+     `docs/agent-guides/ENGINEERING.md`
+   - review, handoff, main publication or documentation maintenance:
+     `docs/agent-guides/REVIEW_AND_RELEASE.md`
+   - cross-agent work: `docs/agent-handoffs/README.md`
+   - architecture/infrastructure: `ARCHITECTURE.md`
+   - VPS deployment: `DEPLOYMENT.md`
+8. Inspect current evidence:
    - `git status --short --branch`
    - `git log -5 --oneline --decorate`
    - `git diff`
-   - `git remote -v` when branches or deployment are relevant
-8. Preserve unrelated and uncommitted user or agent changes.
-9. Trace the affected behavior end-to-end:
-   page/component → store/hook → API route → domain service/provider
-   → repository/database.
-10. Read only the task-specific implementation files after orientation.
-11. If documentation contradicts code, Git state or verified runtime behavior,
-   investigate the discrepancy instead of guessing.
-12. Never accept another agent’s success statement, commit message or deployment
-    claim as proof without independent verification.
+   - `git remote -v` when branches or deployment matter
+9. Preserve unrelated or uncommitted user and agent changes.
+10. Trace affected behavior end-to-end when implementation is involved.
+11. If docs contradict code, Git or verified runtime behavior, investigate.
+12. Never accept another agent's success or deployment claim as proof.
 
 ## 2. Sources of Truth
 
-Use the following precedence:
+Use this precedence:
 
 1. Current user request and explicit product decisions
 2. Platform and system safety requirements
-3. This `AGENTS.md`
+3. This `AGENTS.md` and triggered specialist guide
 4. Verified code, Git state and runtime behavior
 5. `PROJECT_CONTEXT.md`
 6. `CURRENT_WORK.md` for active coordination only
 7. `ARCHITECTURE.md`, `DEPLOYMENT.md` and `docs/PROJECT_MAP.md`
-8. Feature specifications explicitly marked as active
-9. Historical plans, changelogs and the upstream README
+8. Feature specifications explicitly marked active
+9. Historical plans, changelogs and upstream README files
 
-`CURRENT_WORK.md` never overrides Git, verified runtime behavior or durable
-project documentation. It may be stale and must be corrected when evidence
-disagrees.
+`CURRENT_WORK.md` may be stale and never overrides verified evidence.
 
-The existing `README.md`, `README.zh-CN.md`, old plans and historical log entries
-may describe upstream JadeAI behavior. They are not authoritative for current
-BewerbRadar product rules, billing or deployment.
+`README.md`, `README.zh-CN.md`, old plans and historical logs may describe
+upstream JadeAI. They are not authoritative for current BewerbRadar product
+rules, billing or deployment.
 
-## 3. Operating Principle and Autonomy
+## 3. Autonomy
 
 Act autonomously within the requested scope.
 
 Agents may without repeated permission:
 
-- inspect repository files and Git history,
+- inspect files, Git history and runtime evidence,
 - run read-only diagnostics,
 - modify relevant project files,
 - add proportional tests and diagnostics,
-- run type checks, linting, builds and local smoke tests,
+- run type checks, lint, builds and local smoke tests,
 - create commits,
 - push non-production branches,
-- merge and push `main` when the standing authorization in section 5 applies,
-- make small adjacent fixes required for a correct implementation,
+- merge and push `main` when section 5 permits it,
+- make small adjacent fixes needed for correctness,
 - update documentation affected by the change.
 
 Ask the user only when:
 
 - a missing product decision materially changes the outcome,
-- scope would expand significantly beyond the request,
+- scope would expand significantly,
 - an action is destructive or difficult to reverse,
 - secrets, payments, permissions or external accounts are affected,
-- a required product or entitlement decision is missing,
-- the production runtime would be deployed without explicit authorization in
-  the current request.
+- a required entitlement decision is missing,
+- the production runtime would be deployed without authorization in the
+  current request.
 
-Do not stop for routine implementation decisions that can be resolved safely
-from the repository and current product context.
-
-If the user explicitly authorizes implementation and production deployment
-after successful verification in the same request, no second deployment
-confirmation is required.
+If implementation and production deployment are explicitly authorized in one
+request, no second confirmation is required after successful verification.
 
 ## 4. Repository and Remotes
 
-Primary repository:
-
-- Local workspace: `C:\Games\Dev\JadeAI`
+- Workspace: `C:\Games\Dev\JadeAI`
 - Product remote: `copilot`
 - Product repository: `Liutasil501/bewerbradar-copilot`
-
-Other remotes:
-
-- `origin`: upstream open-source JadeAI repository
+- `origin`: upstream open-source JadeAI
 - `bewerbradar`: separate BewerbRadar repository
 
-Do not push to `origin` or `bewerbradar` unless the user explicitly requests it.
+Do not push to `origin` or `bewerbradar` unless explicitly requested. Do not
+copy changes into the separate BewerbRadar repository merely because a similar
+feature exists there.
 
-Do not copy changes into the separate BewerbRadar repository merely because a
-similar feature exists there.
+## 5. Git and Publication
 
-## 5. Branch and Collaboration Model
-
-### Production branch
+### Main
 
 - `main` is the production source branch.
-- Do not perform development directly on `main`.
-- Do not leave uncommitted development changes on `main`.
-- A push to `main` publishes source but does not deploy the VPS.
+- Do not develop directly on `main` or leave uncommitted work there.
+- A push to `main` publishes source; it does not deploy the VPS.
 
-Standing main-publication authorization from the user:
+Standing authorization:
 
-- Codex may merge and push a low-risk, verified candidate to `main` without
-  asking again.
-- Codex may merge and push a larger Gemini implementation after independently
-  reviewing the complete candidate, resolving release blockers and issuing
-  `GO`.
+- Codex may merge and push a low-risk verified candidate to `main`.
+- Codex may merge and push a larger Gemini implementation after independent
+  complete review, resolution of release blockers and a `GO`.
 - The exact candidate diff must be understood, proportional checks must pass
   and unrelated commits must not be included.
-- Documentation-only changes may be merged after focused documentation checks;
-  they do not require an application build.
-- A Codex-authored non-trivial application change should not be self-approved
-  as equivalent to an independent Gemini → Codex review.
-- This standing authorization does not authorize a VPS deployment, destructive
-  history changes, database restoration, secret rotation, payment-account
-  changes or unresolved product decisions.
+- Documentation-only changes need focused documentation checks, not an
+  application build.
+- A non-trivial Codex application change is not self-approved as equivalent to
+  an independent Gemini → Codex review.
 
-### Integration branch
+This authorization excludes VPS deployment, destructive history changes,
+database restoration, secret rotation, payment-account changes and unresolved
+product decisions.
+
+### Beta and feature branches
 
 - `beta` is the shared non-production integration and review branch.
 - Gemini may implement, test, commit and push to `beta`.
-- Codex independently reviews the complete release candidate on `beta`.
-- Before using `beta`, verify that it is based on the current production history.
-- If `beta` is behind or diverged from `main`, do not merge it blindly.
-  Report the divergence and create a safe reconciliation plan.
+- Codex independently reviews the complete candidate on `beta`.
+- Verify that `beta` is based on current production history before using it.
+- If `beta` is behind or diverged, do not merge blindly; reconcile safely.
 
-### Feature branches
+Feature branches are encouraged for large, concurrent or risky work. Suggested
+names: `gemini/<task>`, `codex/<task>`, `fix/<task>`, `feature/<task>`.
 
-Feature branches based on a healthy `beta` are allowed and encouraged when:
+For concurrent work:
 
-- work is large,
-- multiple agents work concurrently,
-- the change spans risky systems,
-- a clean rollback boundary is useful.
-
-Suggested naming:
-
-- `gemini/<task>`
-- `codex/<task>`
-- `fix/<task>`
-- `feature/<task>`
-
-### Concurrent work
-
-When Gemini and Codex work at the same time:
-
-- use separate Git worktrees or separate repository clones,
-- use separate branches,
+- use separate worktrees or clones and separate branches,
 - do not edit the same files concurrently without coordination,
-- never switch branches in a shared dirty working tree,
-- register each active branch in `CURRENT_WORK.md`,
-- link each non-trivial task to `docs/agent-handoffs/<task-id>.md`,
-- update only the owned task entry where practical,
-- communicate through commits and the task-specific handoff file.
+- never switch branches in a shared dirty worktree,
+- register active branches in `CURRENT_WORK.md`,
+- link non-trivial tasks to `docs/agent-handoffs/<task-id>.md`,
+- communicate through committed and pushed handoff state.
 
-Never force-push, rewrite shared history or rebase a branch used by another
-agent without explicit agreement.
+Never force-push, rewrite shared history or rebase a branch another agent uses
+without explicit agreement.
 
-### Agent-to-agent communication
+## 6. Roles and Agent Communication
 
-`CURRENT_WORK.md` is the active-task index. It must stay concise.
+Gemini/Antigravity is normally the implementation and visual-iteration agent.
+Codex is normally the independent reviewer and release gate. The user may
+change these roles for any task.
 
-Detailed Gemini ↔ Codex communication belongs in the task-specific handoff file
-described by `docs/agent-handoffs/README.md`.
+Gemini must not declare its own work production-ready without independent
+review, claim code is live without runtime proof, or use unsupported statements
+such as “100% perfect.”
+
+Codex reviews the complete candidate, runs proportional checks, may make small
+unambiguous fixes on a non-production branch and returns `GO`, `CONDITIONAL GO`
+or `NO-GO`. A Codex `GO` can authorize source publication under section 5, not
+VPS deployment.
+
+`CURRENT_WORK.md` is the concise task index. Detailed Gemini ↔ Codex messages
+belong in the linked handoff file.
 
 Use a one-writer baton:
 
-1. the current owner implements or reviews,
-2. the current owner updates the handoff and `CURRENT_WORK.md`,
-3. the current owner commits and pushes,
-4. the current owner assigns the next recipient and stops editing,
-5. the recipient fetches and verifies the pushed state before continuing.
+1. current owner implements or reviews,
+2. owner updates the board and handoff,
+3. owner commits and pushes,
+4. owner assigns the next recipient and stops editing,
+5. recipient fetches and verifies before continuing.
 
-Gemini normally hands `READY FOR REVIEW` work to Codex. Codex returns
-`CHANGES REQUESTED` with evidence or marks the task `APPROVED`.
+Do not make the user relay technical messages. Repository files do not wake an
+idle agent; a user action or automation still has to start the recipient.
 
-Do not ask the user to relay technical messages between agents. Ask the user
-only for a real decision or authority boundary. Repository files do not wake an
-idle agent; the user or an automation must still start the recipient.
+Either agent may challenge the other's finding. Role does not decide facts.
+Evidence, impact, realistic likelihood, blast radius and relative effort do.
+Read `docs/agent-handoffs/README.md` for the complete challenge protocol.
 
-## 6. Normal Agent Roles
+## 7. Global Product and Safety Invariants
 
-### Gemini / Antigravity
+For application work, `docs/agent-guides/ENGINEERING.md` is mandatory.
 
-Gemini is normally the primary implementation agent.
+Always preserve these invariants:
 
-Gemini may:
+- production currently uses SQLite,
+- schema changes require a checked-in migration and upgrade review,
+- production authentication is enabled,
+- protected routes require server-side authentication and ownership checks,
+- UI paywalls are not security boundaries,
+- German and English localization must remain intact,
+- user API keys, secrets, resumes and other PII must never enter logs,
+  analytics, commits or documentation,
+- resume uploads remain in memory unless persistence is explicitly required,
+- do not silently change pricing or subscription entitlements,
+- do not assume PostgreSQL parity.
 
-- explore and implement the requested feature,
-- perform visual and browser-based iteration,
-- run proportional tests,
-- commit and push non-production changes,
-- prepare the implementation handoff.
+## 8. Quality, Documentation and Handoffs
 
-Gemini must not:
+Verification is proportional to risk. Stronger checks apply to authentication,
+authorization, database migrations, billing, AI access, import/export, sharing,
+deployment and analytics consent. A styling or documentation change does not
+need the full application suite.
 
-- declare its own work production-ready without independent review,
-- push or deploy `main` without authorization,
-- claim that code is live without verifying production,
-- use unsupported phrases such as “100% perfect” or invent conversion results.
+Inspect the final diff and report exact checks. Do not imply that automated
+tests passed when only type-checking or a build ran; no established automated
+unit or end-to-end suite currently exists.
 
-### Codex
+Durable behavior changes require matching documentation updates. Keep
+`CURRENT_WORK.md` small, remove completed entries and rely on Git history.
+Documentation must be UTF-8 and contain no secrets or personal data.
 
-Codex is normally the independent reviewer and release-gate agent.
+For reviews, handoffs, documentation maintenance and release work, read
+`docs/agent-guides/REVIEW_AND_RELEASE.md`.
 
-Codex may:
+Every implementation handoff reports:
 
-- inspect the complete release diff,
-- run additional tests and browser checks,
-- audit architecture, security, privacy, billing and migrations,
-- make small unambiguous fixes on a non-production branch,
-- return significant issues to Gemini,
-- issue `GO`, `CONDITIONAL GO` or `NO-GO`.
+- goal,
+- branch and pushed commit,
+- important files,
+- exact verification,
+- migrations and environment impact,
+- risks and limitations,
+- one deployment status: `NOT DEPLOYED`,
+  `DEPLOYING – NOT YET VERIFIED` or `VERIFIED LIVE`.
 
-A Codex `GO` may permit main publication under the standing rules in section 5.
-It does not authorize a VPS deployment.
+Never use `VERIFIED LIVE` without production evidence.
 
-The user may change these roles for any task.
+## 9. Release Boundary
 
-## 7. Implementation Standards
+Main publication and VPS deployment are separate actions.
 
-Agents have freedom to choose implementation details, but must preserve the
-project’s architectural boundaries.
+Before publishing `main`, confirm the standing authorization, review the exact
+candidate diff, exclude unrelated commits, check migrations/environment needs
+and complete proportional verification.
 
-General rules:
+Before VPS deployment, require explicit authorization in the current request,
+confirm the exact authorized `main` commit and follow `DEPLOYMENT.md`.
 
-- Keep product logic out of low-level `src/components/ui/`.
-- Keep database access in repositories where practical.
-- Enforce authentication, ownership and plan restrictions server-side.
-- UI paywalls are user experience, not security boundaries.
-- Preserve German and English localization.
-- Do not reintroduce untranslated Chinese UI or fallback strings.
-- Avoid unnecessary new dependencies.
-- Reuse established stores, repositories, schemas and components.
-- Keep changes focused and explain meaningful adjacent refactors.
-- Do not silently change subscription entitlements or pricing.
-- Do not log complete resumes, uploaded document contents, API keys or PII.
-
-## 8. Database Rules
-
-Production currently uses SQLite.
-
-Relevant files:
-
-- `src/lib/db/schema.ts`
-- `src/lib/db/adapters/sqlite.ts`
-- `src/lib/db/repositories/`
-- `drizzle/migrations/`
-
-A database schema change is incomplete without:
-
-1. schema update,
-2. checked-in Drizzle migration,
-3. compatibility review for existing production data,
-4. adapter review,
-5. Docker/runtime packaging review,
-6. verification against an upgraded existing database when risk warrants it.
-
-Do not assume PostgreSQL parity. The PostgreSQL schema and migrations currently
-lag behind the production SQLite schema and require explicit review.
-
-Do not delete, replace or recreate a production database as a migration shortcut.
-
-## 9. Authentication and Authorization Rules
-
-Production has `AUTH_ENABLED=true`.
-
-Supported production authentication:
-
-- Google OAuth
-- E-mail magic link via Nodemailer
-
-When OAuth is disabled locally, fingerprint mode is used.
-
-For authenticated data:
-
-- verify the current user in every protected API route,
-- verify resource ownership,
-- enforce plan restrictions server-side,
-- do not rely only on middleware or client UI,
-- do not expose user data through debug routes.
-
-Public routes and shared resumes require special scrutiny because they bypass
-normal authenticated navigation.
-
-## 10. AI and User API Keys
-
-Supported providers:
-
-- OpenAI-compatible
-- Anthropic
-- Google Gemini
-
-User-provided API keys:
-
-- are stored in browser `localStorage`,
-- are not persisted in the application database,
-- are transmitted to the BewerbRadar backend in request headers for AI calls,
-- must never be logged, added to analytics or committed.
-
-The server-side Gemini key is used only for plan/feature paths allowed by the
-current provider and entitlement logic.
-
-Changes to AI access must review both:
-
-- client-side paywall behavior,
-- server-side provider and entitlement behavior.
-
-## 11. Quality Requirements
-
-Verification must be proportional to risk.
-
-Typical checks:
-
-- `pnpm type-check`
-- ESLint for changed files or `pnpm lint`
-- `pnpm build`
-- focused browser or API smoke tests
-- inspection of the final Git diff
-- database migration verification
-- production verification after deployment
-
-Not every text or styling change requires the full suite.
-
-Stronger verification is required for:
-
-- authentication,
-- authorization,
-- database schema and migrations,
-- Stripe and subscriptions,
-- AI-provider access,
-- resume import and export,
-- sharing,
-- deployment and Docker,
-- analytics and consent.
-
-There is currently no established automated unit or end-to-end test suite.
-Do not imply that automated tests passed when only type-checking or a build ran.
-
-## 12. Privacy and Sensitive Data
-
-Resume content is sensitive personal data.
-
-Never send resume content, filenames, e-mail addresses, phone numbers, uploaded
-documents or user identifiers to analytics.
-
-Never expose or print:
-
-- API keys,
-- OAuth secrets,
-- Stripe secrets,
-- SMTP credentials,
-- SSH private keys,
-- production environment files,
-- complete database contents.
-
-Do not add secret values to documentation. Document variable names only.
-
-Uploaded resume files should remain in memory unless persistent storage is an
-explicit product requirement.
-
-## 13. Documentation Maintenance
-
-Update documentation when durable behavior changes.
-
-Update `PROJECT_CONTEXT.md` for:
-
-- product entitlements,
-- authentication behavior,
-- database/runtime choices,
-- external integrations,
-- analytics state,
-- production topology,
-- important known constraints.
-
-Update `ARCHITECTURE.md` for:
-
-- data flows,
-- module boundaries,
-- storage architecture,
-- authentication architecture,
-- AI-provider architecture.
-
-Update `DEPLOYMENT.md` for:
-
-- branches,
-- server directories,
-- commands,
-- environment requirements,
-- verification or rollback procedures.
-
-Update `docs/PROJECT_MAP.md` when important files or subsystems move.
-
-Update `CURRENT_WORK.md` when:
-
-- an active task starts,
-- ownership, branch, scope or status changes,
-- work becomes ready for review,
-- review requests changes or approves the candidate,
-- deployment starts or is verified,
-- an active entry is completed or abandoned.
-
-Keep `CURRENT_WORK.md` operational and small. Remove finished entries instead
-of turning it into a chronological log.
-
-Create and maintain `docs/agent-handoffs/<task-id>.md` for non-trivial
-cross-agent work. Remove the active file after completion; Git history preserves
-the exchange.
-
-Do not append unlimited chronological notes to authoritative documents.
-Move historical notes into a separate changelog or `docs/history/`.
-
-All documentation must be UTF-8.
-
-## 14. Implementation Handoff
-
-Every implementation handoff must include:
-
-### Goal
-
-What was requested and implemented?
-
-### Branch and Commit
-
-- branch
-- commit SHA
-- remote pushed to
-
-### Files
-
-Important files changed.
-
-### Verification
-
-Exact commands and results.
-
-### Database and Environment
-
-- migrations
-- environment-variable additions
-- production preparation required
-
-### Risks
-
-- known limitations
-- untested behavior
-- follow-up decisions
-
-### Deployment Status
-
-Use exactly one:
-
-- `NOT DEPLOYED`
-- `DEPLOYING – NOT YET VERIFIED`
-- `VERIFIED LIVE`
-
-Never use `VERIFIED LIVE` without checking production.
-
-Before handoff:
-
-1. synchronize the corresponding `CURRENT_WORK.md` entry,
-2. update the task-specific handoff with actual scope, verification, findings,
-   risks and next owner,
-3. commit and push both with the implementation or review.
-
-The pushed commit SHA remains authoritative. The commit containing a handoff
-does not need to embed its own SHA recursively.
-
-## 15. Review Result
-
-Codex review ends with one result:
-
-- `GO`: technically ready for the reviewed release scope
-- `CONDITIONAL GO`: ready only when listed conditions are met
-- `NO-GO`: release blockers remain
-
-Findings should be classified realistically:
-
-- Release blocker
-- Important
-- Improvement
-- Acceptable residual risk
-
-Gemini and Codex may challenge each other's findings. Neither agent is correct
-merely because of role. Code, reproducible behavior and verified runtime
-evidence decide factual disputes.
-
-Every material finding records:
-
-- evidence,
-- impact,
-- realistic likelihood,
-- affected users/data or blast radius,
-- relative fix effort: `XS`, `S`, `M` or `L`.
-
-The challenged agent may accept, dispute, fix or propose deferral. Codex must
-re-evaluate the severity after an evidenced response and may confirm, downgrade
-or withdraw the finding.
-
-Use `Release blocker` only when the reviewed release creates an unacceptable
-realistic risk such as data loss, authorization bypass, billing corruption,
-failed production migration, secret exposure or reproducible outage. A
-low-impact theoretical edge case is not a blocker merely because it is
-possible. Conversely, one cross-user privacy breach can be serious without a
-mass attack.
-
-Do not inflate theoretical edge cases, but do not minimize real data,
-authorization, billing or deployment risks.
-
-## 16. Production Release
-
-Before main publication:
-
-1. confirm that the standing main-publication authorization applies to the
-   merge/push,
-2. verify the exact `main...release-candidate` diff,
-3. ensure no unrelated commits are included,
-4. verify migrations and environment requirements,
-5. establish a rollback point for risky releases,
-6. run the required quality checks.
-
-Before VPS deployment:
-
-1. confirm explicit deployment authorization in the current request,
-2. confirm the exact authorized `main` commit,
-3. follow `DEPLOYMENT.md`.
-
-Main publication and production deployment are separate actions.
-
-After VPS deployment:
-
-1. verify the VPS Git commit,
-2. verify the container is running,
-3. inspect focused logs,
-4. verify the public application,
-5. test the changed behavior,
-6. report the release as live only after those checks.
-
-Follow `DEPLOYMENT.md` for the concrete runbook.
+After deployment, verify the VPS commit, container, focused logs, public
+application and changed behavior before reporting `VERIFIED LIVE`.

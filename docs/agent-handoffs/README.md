@@ -40,7 +40,7 @@ handoff file concurrently.
 ## Normal Workflow
 
 1. The implementer creates or selects a non-production branch.
-2. The implementer adds an entry to `CURRENT_WORK.md`.
+2. The implementer copies `CURRENT_WORK_TEMPLATE.md` into `CURRENT_WORK.md`.
 3. The implementer copies `TEMPLATE.md` to
    `docs/agent-handoffs/<task-id>.md`.
 4. The implementer records scope, decisions, files, verification and risks.

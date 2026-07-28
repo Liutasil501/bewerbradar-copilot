@@ -23,6 +23,14 @@ It is an index, not a substitute for reading the relevant implementation.
   Task-specific Gemini ↔ Codex implementation handoffs, review findings,
   responses and ownership transfer. Start from `TEMPLATE.md`.
 
+- `docs/agent-guides/ENGINEERING.md`
+  Task-loaded engineering rules for application code, database,
+  authentication, AI providers, analytics and privacy-sensitive flows.
+
+- `docs/agent-guides/REVIEW_AND_RELEASE.md`
+  Task-loaded review, documentation, handoff, publication and deployment
+  requirements.
+
 - `ARCHITECTURE.md`
   Current technical architecture and data flows.
 
