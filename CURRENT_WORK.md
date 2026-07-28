@@ -67,12 +67,12 @@ Use exactly one status per task:
 
 ### CW-2026-07-28-PHASE1-BASELINE
 
-- Status: `READY FOR REVIEW`
+- Status: `CHANGES REQUESTED`
 - Goal: Create a reviewable Phase 1 release candidate that removes confirmed
   security, privacy, trust and first-import blockers inside BewerbRadar Copilot.
 - Implementation owner: Gemini
 - Reviewer: Codex
-- Current owner: Codex
+- Current owner: Gemini
 - Next recipient: Codex
 - Branch: `beta`
 - Base: `8691663b`
@@ -117,21 +117,26 @@ Decisions and assumptions:
 
 Verification completed:
 
-- task base and branch alignment verified: `beta...main` = `0 0`,
+- branch graph verified: `main...beta` = `0 4` with no main-only commits,
 - worktree was clean before task registration,
-- candidate commit `0936a451cee189ce6398b91112ea677fc2d5b9f7` is present
+- candidate commits through
+  `29495949c2d60ec90fb2d6b23c31227a0027deaa` are present
   on local and remote `beta`,
-- Codex reviewed the complete candidate diff,
-- the production build passed and includes `/api/health`,
-- the current production audit reports 51 findings:
-  2 critical, 22 high, 22 moderate and 5 low.
+- Codex reviewed the complete `main...beta` candidate diff,
+- direct `tsc --noEmit` passed,
+- the production build passed,
+- local `/api/health` smoke test returned `200`,
+- chat and interview ownership checks were inspected end-to-end,
+- the production audit still reports 51 findings:
+  2 critical, 22 high, 22 moderate and 5 low,
+- changed-file ESLint currently reports 11 errors and 6 warnings; the original
+  conditional-hook-order error is fixed.
 
 Verification pending:
 
-- focused tests or reproducible route checks for ownership and import rules,
-- successful changed-file ESLint for the affected paths,
-- successful project type-check,
-- completion of the missing Phase 1 implementation,
+- correction of the remaining F-009 through F-012 scope,
+- removal of newly introduced lint issues and an honest residual-lint record,
+- updated dependency audit and residual-risk assessment,
 - final Codex re-review of the corrected `beta` candidate.
 
 Database and environment impact:
@@ -142,14 +147,16 @@ Database and environment impact:
 
 Risks or blockers:
 
-- candidate `0936a451` is incomplete: the first-import contract, the actual
-  conditional-hook component and material landing-page claims/CTAs were not
-  fixed,
-- raw resume/AI output can still reach logs,
-- direct project type-check and focused hook linting currently fail,
-- the dependency update leaves an unused vulnerable Auth.js adapter path,
-- `/api/ai/chat` does not validate every supplied `sessionId` before later
-  writes,
+- candidate `29495949` fixes the sample-resume blocker, hook order, type-check,
+  health route and remaining chat-session binding,
+- raw AI output is still logged by resume parsing,
+- import errors are not machine-readable and the UI can still claim the trial
+  was used when an existing resume is the actual blocker,
+- the primary landing CTA is not import-focused and unsupported ATS/outcome
+  claims remain,
+- Next remains at vulnerable `16.1.6`; the unused
+  `@auth/drizzle-adapter` still brings a vulnerable Auth.js path and the audit
+  residuals were not assessed,
 - public legal pages and the misleading external `studio.bewerbradar.de` route
   are confirmed blockers outside this repository and remain for a separate
   authorized infrastructure/legal task.
@@ -157,7 +164,7 @@ Risks or blockers:
 Next action:
 
 - Owner: Gemini
-- Action: Correct the review findings recorded in the linked handoff on `beta`,
-  record exact verification results and residual audit findings, commit and
-  push the complete candidate, then set `READY FOR REVIEW` and transfer
-  ownership to Codex. Do not deploy.
+- Action: Correct the remaining targeted items in F-009 through F-012 and the
+  small new lint residue recorded in the linked handoff. Re-run exact checks,
+  record residual audit findings, commit and push `beta`, then set
+  `READY FOR REVIEW` and transfer ownership to Codex. Do not deploy.
