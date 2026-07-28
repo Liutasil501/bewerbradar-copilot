@@ -47,7 +47,7 @@ A push to GitHub `main` does not automatically deploy the application.
 The repository command:
 
 ```powershell
-pnpm deploy
+pnpm run deploy
 ```
 
 runs `scripts/deploy-vps.ps1`. The script:
@@ -194,7 +194,7 @@ After the release commit is present on `copilot/main` and VPS deployment has
 been explicitly authorized in the current request:
 
 ```powershell
-pnpm deploy
+pnpm run deploy
 ```
 
 Do not stop at the script's success text. Continue with every applicable
