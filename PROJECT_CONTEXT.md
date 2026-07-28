@@ -1,144 +1,547 @@
-# Project Context: BewerbRadar Copilot (ehemals JadeAI)
+# BewerbRadar Copilot – Current Project Context
 
-## Analytics-Stand (28. Juli 2026)
-- Der Google-Tag-Manager-Webcontainer `GTM-55XL7PR4` ist im globalen Next.js Root-Layout eingebunden und gilt damit für alle Copilot-Routen.
-- Die öffentliche Container-ID kann optional über `NEXT_PUBLIC_GTM_ID` überschrieben werden; ohne Variable wird `GTM-55XL7PR4` verwendet.
-- Consent Mode v2 wird vor GTM mit `analytics_storage`, `ad_storage`, `ad_user_data` und `ad_personalization` auf `denied` initialisiert.
-- Noch offen sind die CMP-/Cookie-Banner-Anbindung, das Google-Tag mit der GA4-Mess-ID, Funnel-Events und die Veröffentlichung der getesteten GTM-Container-Version.
+Last verified: 28 July 2026
 
-> **WICHTIGER HINWEIS FÜR KI-AGENTEN:** Lese diese Datei immer zuerst, um den architektonischen und historischen Kontext des Projekts zu verstehen! Nimm niemals Kontext weg, sondern ergänze ihn nur.
+This file describes the authoritative current product and production state.
+It is not a historical changelog.
 
-## 1. Systemarchitektur, Ports & Interne Zugänge
-Dieses Repository (`C:\Games\Dev\JadeAI` lokal) ist der **BewerbRadar Copilot**. Er existiert parallel zum Hauptprojekt auf dem gleichen Server.
-Auf dem VPS laufen drei wesentliche Projekte/Dienste via Docker (`docker-compose`), die wir intern wie folgt gemappt haben:
+For operating rules, read `AGENTS.md`.
+For file routing, read `docs/PROJECT_MAP.md`.
+For technical flows, read `ARCHITECTURE.md`.
+For production releases, read `DEPLOYMENT.md`.
 
-1. **BewerbRadar (Hauptprojekt):** 
-   - Das Reactive Resume Turborepo (`C:\Games\Dev\BewerbRadar`).
-   - Läuft intern auf **Port 3000**.
-   - Wird über den Reverse Proxy auf die Haupt-Domain geroutet.
-2. **BewerbRadar Copilot (Dieses Projekt hier):**
-   - Basiert auf "JadeAI".
-   - Läuft intern auf **Port 3001** (Container Port 3000 wird auf Host Port 3001 gemappt).
-   - Wird über den Reverse Proxy auf `https://copilot.bewerbradar.de` gemappt.
-3. **Drizzle Studio (Datenbank-GUI):**
-   - Läuft intern typischerweise auf **Port 4983** (`pnpm db:studio`).
-   - Geplant als Zugang über eine eigene Subdomain (`studio.bewerbradar.de`), um die Nutzer und Tiers visuell zu managen.
-   - *(Zusatz-Ports auf dem VPS: Postgres DB auf 5432, SeaweedFS Storage auf 8333).*
+## 1. Product Identity
 
-## 2. GitHub Architektur & Branching-Strategie (Going Forward)
-Um Konflikte zwischen der Landingpage/Haupt-App und dem Copilot zu vermeiden, fahren wir ab sofort folgende strikte Repository- und Branch-Strategie:
+Product name:
 
-- **Zwei getrennte Repositories:** 
-  1. `Liutasil501/bewerbradar`: Nur für die Haupt-App (Reactive Resume) & Landingpage.
-  2. `Liutasil501/bewerbradar-copilot`: Exklusiv für diesen KI-Copilot (JadeAI-Basis).
-- **Die Branch-Logik (Zero-Downtime Rule):**
-  - **`main`:** Ist der **Live-Branch** (Production). Der Hostinger VPS lauscht *ausschließlich* auf den `main`-Branch und zieht sich via Auto-Deploy den Code. **Jeder Push auf `main` startet den Server neu!** Daher darf hier **niemals** direkt gearbeitet werden, um aktive User nicht rauszuwerfen.
-  - **`beta`:** Dient als unser **lokaler Arbeits- und Test-Branch**. 100% der Entwicklung (auch kleine Fixes) finden hier statt.
-  - **Controlled Deployments:** Erst wenn wir sicher sind, mergen wir von `beta` nach `main` – idealerweise zu Randzeiten, um den Server bewusst neu zu starten.
-- **Semantic Versioning (Git Tags):** 
-  Um stets den Überblick zu behalten, arbeiten wir mit Tags (z.B. `v1.0.0`). Jeder Push auf `main`, der ein neues Feature oder einen kritischen Bugfix enthält, bekommt einen sauberen Release-Tag. Damit können wir im Notfall sofort auf eine alte Version zurückrollen.
-- **Warum Stripe-Keys nicht in GitHub dürfen:** Die Datei `.env` (die unsere Stripe Secret Keys enthält) steht aus Sicherheitsgründen in der `.gitignore`. Sie wird *niemals* auf GitHub hochgeladen. Da Hostinger den Code von GitHub zieht, fehlt die `.env` dort logischerweise. **Deshalb müssen die Stripe Keys manuell in die `.env` Datei direkt auf dem VPS eingetragen werden.**
+- BewerbRadar Copilot
 
-## 3. Datenbank-Felder (Stripe Integration)
-Wir haben das Schema in `src/lib/db/schema.ts` um folgende Stripe-spezifische Felder in der `users`-Tabelle erweitert, die über Stripe Webhooks (`checkout.session.completed`, `customer.subscription.updated/deleted`) auf `/api/stripe/webhook` befüllt werden:
+Origin:
+
+- Forked from the open-source JadeAI project
+- Adapted for BewerbRadar
+- German translation and productization are ongoing
+- Upstream Chinese and English assumptions may still exist in older files
+
+Primary application:
+
+- `https://copilot.bewerbradar.de`
+
+Local repository:
+
+- `C:\Games\Dev\JadeAI`
+
+Primary GitHub repository:
+
+- `Liutasil501/bewerbradar-copilot`
+- local remote name: `copilot`
+
+Related repositories:
+
+- `Liutasil501/bewerbradar`: separate BewerbRadar project
+- `twwch/JadeAI`: upstream open-source project, remote name `origin`
+
+Do not treat the upstream README as authoritative for BewerbRadar billing,
+localization, deployment or production behavior.
+
+## 2. Current Product Capabilities
+
+The Copilot currently provides:
+
+- resume dashboard,
+- drag-and-drop resume editor,
+- 50 visual templates,
+- live resume preview,
+- configurable theme and layout,
+- automatic saving,
+- undo and redo,
+- PDF, DOCX, HTML, TXT and JSON export,
+- public resume sharing with optional password,
+- PDF and image resume import,
+- JSON backup import,
+- AI resume generation,
+- AI resume chat with executable editing tools,
+- cover-letter generation,
+- grammar and writing analysis,
+- job-description match analysis,
+- resume translation,
+- mock interview simulation and reports,
+- AI LinkedIn/professional photo generation,
+- German and English UI,
+- Google and e-mail authentication,
+- Stripe subscription management.
+
+## 3. Localization
+
+Supported UI locales:
+
+- `de`
+- `en`
+
+Default locale:
+
+- `de` through `.env.example`
+- application routing falls back to the configured default locale
+
+Translation files:
+
+- `messages/de.json`
+- `messages/en.json`
+
+Chinese is not a supported current UI locale.
+
+Older code, README content, plans and fallback strings may still contain
+Chinese text. New work must not reintroduce untranslated Chinese UI.
+
+## 4. Production Authentication
+
+Production configuration:
+
+- `AUTH_ENABLED=true`
+
+Production login methods:
+
+- Google OAuth
+- E-mail magic link using Nodemailer and Hostinger SMTP
+
+Local fallback mode:
+
+- When `AUTH_ENABLED=false`, browser fingerprint authentication is used.
+
+Middleware behavior:
+
+Public page paths:
+
+- landing page
+- login
+- public share links
+
+Protected page paths include:
+
+- dashboard
+- templates
+- editor
+- interview
+- LinkedIn photo
+- authenticated preview routes
+
+API routes are not protected by middleware. Every API route must perform its
+own user, ownership and plan checks.
+
+New OAuth or e-mail users receive a prebuilt sample resume through
+`createSampleResume()`.
+
+## 5. Production Data Storage
+
+The Copilot uses SQLite in production.
+
+Reason:
+
+- `DB_TYPE` is not set in the production container
+- application default is SQLite
+- `SQLITE_PATH` is not set
+- application runtime default is `./data/bewerbradar.db`
+
+Active production database:
+
+- container path: `/app/data/bewerbradar.db`
+- Docker volume: `reactive_resume_jadeai_data`
+- mount path: `/app/data`
+
+The volume also contains older `jade.db` files. They must not be deleted until
+their history and relevance have been explicitly confirmed.
+
+SQLite behavior:
+
+- WAL mode
+- foreign keys enabled
+- migrations run from `drizzle/migrations`
+- application data survives container rebuilds through the Docker volume
+
+The PostgreSQL service running in the broader stack is not the Copilot’s active
+production database.
+
+PostgreSQL support exists in code but is not currently at full schema parity
+with SQLite. It must not be described as production-ready without a dedicated
+review.
+
+## 6. Main Data Model
+
+Important SQLite tables:
+
+- `users`
+- `auth_accounts`
+- `verification_tokens`
+- `resumes`
+- `resume_sections`
+- `chat_sessions`
+- `chat_messages`
+- `resume_shares`
+- `jd_analyses`
+- `grammar_checks`
+- `interview_sessions`
+- `interview_rounds`
+- `interview_messages`
+- `interview_reports`
+
+Important user billing fields:
+
 - `stripeCustomerId`
 - `stripeSubscriptionId`
 - `stripePriceId`
 - `stripeCurrentPeriodEnd`
 - `subscriptionStatus`
-- `subscriptionPlan` (Enum: `'free', 'pro', 'premium'`)
+- `subscriptionPlan`
+- `aiImportsCount`
 
-## 4. Stripe Paywall & Freemium-Modell (Warum & Wofür?)
-**Wieso ein Freemium-Modell (Free, Pro, Premium)?**
-KI-Tokens (LLM-Aufrufe) kosten Geld. Um Missbrauch zu verhindern und die Serverkosten zu decken, wurde eine harte Stripe-Paywall implementiert. 
-- **Free:** Erlaubt Nutzern, die App kennenzulernen (Basis-Editor), schließt aber alle KI- und Export-Features aus.
-- **Pro / Premium:** Schaltet tiefgreifende KI-Funktionen (wie das Mock-Interview) und Premium-Exporte (PDF/DOCX) frei. Das Modell stellt sicher, dass nur zahlende Kunden Rechenleistung verbrauchen.
+Current subscription plans:
 
-**Exakte UI-Integration (Die Business Logik):**
-- Wir nutzen den Hook `use-paywall.tsx`, um live zu prüfen, in welchem Tier der Nutzer is. Gratis-Nutzer stoßen bei Premium-Aktionen auf die `PricingModal`-Komponente.
-- **Eingebaute Paywall-Buttons (Locations):** Die Paywall triggert explizit und blockiert den Zugriff in folgenden UI-Dateien:
-  - `export-dialog.tsx` (Blockiert PDF/DOCX Download)
-  - `cover-letter-dialog.tsx` (Blockiert KI-Anschreiben)
-  - `interview-lobby.tsx` (Blockiert den Zugang zum Mock-Interview)
-  - `grammar-check-dialog.tsx` (Blockiert Grammatik-Korrektur)
-  - `jd-analysis-dialog.tsx` (Blockiert Job-Analyse)
-  - `translate-dialog.tsx` (Blockiert den CV-Übersetzer)
-- **Hardcodierte Preise im Frontend:** Um Ladezeiten und Stripe-API-Limits zu sparen, wurden die Pläne in allen Sprachen (`messages/de.json`, `en.json`, `zh.json`) hardcodiert. Dort haben wir Schlüssel wie `titlePro`, `titlePremium`, `descPro` und Preise hinzugefügt, sodass das UI blitzschnell auf Deutsch, Englisch oder Chinesisch reagiert.
+- `free`
+- `pro`
+- `premium`
 
-## 5. Templates & Dummy-Daten
-- **Vorbelegte Templates:** In `src/lib/db/sample-resume.ts` and `seed.ts` wurden Dummy-Daten hinterlegt. Wenn ein User ein neues Template auswählt, startet er nicht mit einem weißen Blatt, sondern sieht direkt strukturierte Beispiel-Inhalte (wie Max Mustermann, fiktive Jobs etc.), die das BewerbRadar Copilot Layout perfekt in Szene setzen.
+## 7. Current Freemium and Paywall Behavior
 
-## 6. QA & Bugfixes (Mai 2026)
-Bei der Qualitätssicherung wurden zahlreiche Bugfixes umgesetzt:
-1. **Mock Interview Lokalisierung (Chinesische Altlasten):** Das alte System hatte harte chinesische Prompts und Namen ("Li Wen") im Code. Wir haben `src/lib/interview/interviewers.ts` and `constants.ts` komplett übersetzt und deutsche/englische HR-Personas geschaffen.
-2. **KI-Locale-Erkennung:** In den API-Routen für das Cover-Letter (`src/app/api/ai/cover-letter/route.ts`) und Grammatik-Check wurde der `x-next-intl-locale` Header implementiert, damit die KI nicht versehentlich deutsche Texte ins Englische oder Chinesische umschreibt.
-3. **Radix UI Dialog Fixes:** Es gab React-Verschachtelungsfehler, weil das `PricingModal` fälschlicherweise *innerhalb* von `<DialogContent>` diverser Modale gerendert wurde. Dies wurde gefixt, indem das Modal per React Fragment `<>` neben den Hauptdialog verschoben wurde.
-4. **CSS UTF-16 Fehler:** Powershell-Pipes hatten die `globals.css` korrumpiert (invalid characters). Dies wurde durch ein Node-Skript bereinigt.
+This section describes the currently implemented behavior, including known
+inconsistencies.
 
-## 7. Offene To-Do's für den Live-Betrieb
-1. **VPS Docker `.env`:** Auf dem VPS (im Verzeichnis des Copilot Docker-Containers) müssen in der `.env` die Live-Stripe-Keys (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`) sowie `NEXT_PUBLIC_APP_URL` (`https://copilot.bewerbradar.de`) manuell hinterlegt werden.
-2. **Stripe Dashboard:** Im Stripe-Dashboard muss die Webhook-URL `https://copilot.bewerbradar.de/api/stripe/webhook` für Live-Events eingetragen werden.
-3. **Logo austauschen:** Die Datei `public/logo.svg` muss manuell durch das echte BewerbRadar-Logo ersetzt werden.
+### Free
 
+Current enforced limits:
 
-## 8. Server-Zugänge & Keys (Internes Access Management)
-Die internen Zugänge und Keys zum VPS und den Hostinger-APIs liegen sicher im lokalen Verzeichnis:
-`C:\Games\Dev\VPS2 NEWST 2028`
-- `HOSTINGER API 26-05.txt` (Hostinger API Zugänge)
-- `GITHUB_05_2026_OpenClaw.txt` (GitHub Tokens)
-- `id_ed25519` / `id_ed25519.pub` (SSH Keys für den direkten VPS Zugang)
-- `known_hosts` (SSH Known Hosts zur Verifizierung der VPS Identität)
-- `MS Portfolio Brand/` (Marken-Assets und Logos)
+- maximum 1 resume,
+- access to 5 free templates:
+  - classic
+  - modern
+  - minimal
+  - professional
+  - two-column
+- JSON and TXT export,
+- no public sharing,
+- no PDF, DOCX or HTML export through normal API enforcement.
 
-Diese Dateien werden niemals ins Repo gepusht, sondern dienen uns als lokaler Anker für manuelle SSH-Verbindungen oder API-Verwaltungen.
+AI resume import:
 
----
+- PDF, PNG, JPG and WebP up to 10 MB,
+- server Gemini key can be used for Free users,
+- import is allowed while the user has fewer than 1 resume,
+- `aiImportsCount` is incremented after successful AI import,
+- the counter currently tracks usage but does not enforce a one-time limit.
 
-## Changelog / Logbuch
+Because new users receive a sample resume, the sample currently consumes the
+single Free resume slot. A Free user must delete or otherwise replace it before
+creating/importing another resume.
 
-### 2. Juni 2026 (Stripe Self-Healing & Build-Korrekturen)
-- **Stripe Double-Billing & Kundenportal Fixes:** 
-  - Die Kundenportals-Route (`c:\Games\Dev\JadeAI\src\app\api\stripe\portal\route.ts`) und Checkout-Route (`c:\Games\Dev\JadeAI\src\app\api\stripe\checkout\route.ts`) wurden um eine robuste Self-Healing-Prüfung per Stripe API erweitert.
-  - Wenn ein Nutzer versucht, sein Portal zu öffnen oder ein Checkout zu starten, prüft das Backend nun in Echtzeit bis zu 10 existierende Kundenkonten in Stripe für diese E-Mail auf aktive/trialing Subscriptions.
-  - Findet es ein aktives Abo, repariert sich die lokale DB sofort selbst (Verknüpfung der korrekten Kunden-ID, Freischaltung des entsprechenden Plans und Synchronisation des Zeitraums), und leitet den Nutzer direkt in das korrekte Portal weiter. Dies repariert out-of-sync Accounts vollautomatisch.
-- **Sicherheits-Bereinigung:** Die nicht-authentifizierte Debug-Route `/api/stripe/debug-customer` wurde gelöscht, um Kundendaten zu sichern.
-- **ESLint & TS Kompilierungs-Fixes:** Alle Typfehler und Linter-Meldungen in den modifizierten Routen wurden durch typsichere Definitionen behoben (keine Verwendung von `any` mehr).
+### Pro
 
-### 29. Mai 2026
-- **VPS/Docker Klärung:** Es wurde final dokumentiert, dass der Copilot intern auf Port `3001` (Container Port 3000) gemappt ist und über den Reverse Proxy auf `copilot.bewerbradar.de` läuft. Hauptprojekt (Reactive Resume) läuft auf Port `3000`.
-- **GitHub Repos getrennt:** Um Überschneidungen zu verhindern, wurde `Liutasil501/bewerbradar-copilot` as separates Repo für den Copilot etabliert, statt den Code in den `beta`-Branch des Hauptprojekts zu drücken.
-- **Drizzle Studio:** Subdomain `studio.bewerbradar.de` via Port `4983` als internes GUI ergänzt.
-- **Stripe & Paywall:** Exakte Integration in den Dialog-Komponenten (`export-dialog.tsx` etc.) und in der SQLite Datenbank dokumentiert.
-- **Bugfixes:** Lokalisierungsfehler (Chinesische Personas), `x-next-intl-locale` Header, Dialog-Verschachtelungs-Bugs (Radix UI) and CSS-Encoding-Fehler erfolgreich bereinigt.
-- **Interne Zugänge hinterlegt:** Ablageort der VPS/Hostinger Keys (`C:\Games\Dev\VPS2 NEWST 2028`) ins Log aufgenommen.
+Current intended and implemented core benefits:
 
+- unlimited resumes,
+- all templates,
+- PDF, DOCX and HTML export,
+- public sharing,
+- server Gemini key eligibility in the shared AI provider layer.
 
-### 26. Mai 2026 (Architektur-Kickoff & VPS Setup)
-- **Deployment Strategie:** Entscheidung gegen GitHub Actions für das Deployment. Stattdessen zieht sich der Hostinger VPS den Code direkt vom `beta`-Branch.
-- **SSH & Env-Setup:** Da die `.env`-Datei (mit den sensiblen Stripe Keys) nicht auf GitHub darf, wurde sie manuell per SSH-Zugriff (`147.93.121.183`) auf dem VPS im Docker-Verzeichnis angelegt.
-- **MCP & IDE:** Ersteinrichtung der MCP-Server in der lokalen IDE, Vergabe von Berechtigungen für das GitHub-Repository.
+Some AI feature UIs still explicitly request Premium even though the shared
+server provider accepts Pro. This is a known inconsistency.
 
-### 27. Mai 2026 (Hauptprojekt & Fehleranalyse)
-- **Minimalinvasive Umbauten ("Option B"):** Diskussion über schonende Eingriffe in das Hauptprojekt (Reactive Resume), um zukünftige Updates nicht zu blockieren.
-- **Lokalisierung (Templates):** Fokus auf Deutsch als Standard-Sprache für alle CV-Templates gesetzt.
-- **Dashboard Bugfixes:** Bereinigung diverser UI-Bugs in der `sidebar.tsx` und im Billing-Bereich.
+### Premium
 
----
+Current intended benefits:
 
-## 9. Nginx-Routing Klärung (Port 3000 vs 4983)
-Du hast die `bewerbradar.conf` völlig richtig analysiert! Hier ist die Auflösung, warum `studio` auf Port 3000 gemappt ist:
-- **`bewerbradar.de` (Hauptdomain):** Liefert nur das reine, statische Frontend (Landingpage) aus `/var/www/bewerbradar-landing`. Es nutzt keinen Node-Port.
-- **`studio.bewerbradar.de`:** Das ist in eurer Konfiguration das **tatsächliche Hauptprojekt (Reactive Resume)**! Deshalb leitet Nginx hier auf **Port 3000** weiter (den Node-Server des Hauptprojekts).
-- **Port 4983:** Das ist ausschließlich Drizzle Studio (die reine Datenbank-GUI). Diese wurde ursprünglich für `studio` angedacht, aber das Nginx-Routing beweist, dass unter "Studio" bei euch die Haupt-Applikation läuft!
-- **`copilot.bewerbradar.de`:** Ist korrekt auf **Port 3001** geroutet (unser JadeAI Projekt).
+- everything in Pro,
+- AI cover letters,
+- AI grammar analysis,
+- AI job-match analysis,
+- AI translation,
+- AI resume generation,
+- mock interview,
+- AI LinkedIn/professional photo,
+- server Gemini key without user BYOK requirement.
 
-### 28. Juli 2026 (Unbegrenzte KI-Importe für Free-User, Auto-Provider Detection, SQLite Migrations & Drizzle 0010)
-- **Freischaltung KI-Importe für Free-User:** Auf Nutzer-Feedback hin wurde die künstliche 1-Import-Sperre für Free-User aufgehoben. Free-User können ihre Lebensläufe ab sofort beliebig oft per KI importieren, solange sie das 1-Lebenslauf-Limit im Free-Tarif einhalten.
-- **DB-Usage-Tracking (`ai_imports_count`):** Das Datenbank-Feld `ai_imports_count` in der `users`-Tabelle bleibt erhalten und zählt weiterhin jeden KI-Import in SQLite hoch (`+1`). Damit lässt sich die Nutzung in `studio.bewerbradar.de` visuell auswerten.
-- **Offizielle Drizzle Migration 0010:** Drizzle-Kit Migration `0010_clever_senator_kelly.sql` generiert und unter `drizzle/migrations/` eingecheckt. `SQLiteAdapter` um automatische Spalten-Migration erweitert, sodass Alt-Datenbanken ohne Datenverlust aktualisiert werden.
-- **Auto-Provider-Erkennung (`provider.ts`):** Das System erkennt den KI-Anbieter ab sofort automatisch anhand des API-Key-Präfix (`AIzaSy...` -> Gemini, `sk-ant-` -> Anthropic), selbst wenn im Client-Dropdown versehentlich ein abweichender Provider eingestellt war.
-- **Paywall Upgrade Card Fix:** Sämtliche API-Key-Fehler (inkl. Google HTTP 400 `API_KEY_INVALID`) fangen nun sauber ab und blenden im Import-Dialog zuverlässig die Pro & Premium Upgrade Card (`👑 Auf Pro / Premium upgraden`) ein, anstatt eine 500er Fehlermeldung auszugeben.
-- **KI-Generator Sprache:** System-Prompt in `app/api/ai/generate-resume/route.ts` von chinesischen Altlasten bereinigt; Lebensläufe werden nun sauber auf Deutsch oder Englisch generiert.
-- **Settings-Link Fix:** Der Button "Eigenen API-Key eintragen" im Import-Dialog öffnet nun direkt das `settings`-Modal per `useUIStore` statt einer veralteten 404-Route (`/settings`).
-- **Stripe Coupon Fix:** Der unzulässige Coupon-Fallback `promo_999_first_month` in `src/lib/stripe/config.ts` wurde entfernt, um Checkout-Fehler im Stripe-Portal zu verhindern.
+### BYOK
 
+Users may configure their own:
+
+- OpenAI-compatible key and base URL,
+- Anthropic key,
+- Gemini key.
+
+Keys are:
+
+- stored in browser `localStorage`,
+- cached separately for each provider,
+- not stored in the database,
+- transmitted to the BewerbRadar backend through AI request headers.
+
+## 8. Known Entitlement Inconsistencies
+
+The following must be resolved before treating the plan matrix as final:
+
+1. The import paywall copy still says “1 kostenloser Test-Import”, although
+   current server logic allows repeated Free imports as long as the user remains
+   under the one-resume limit.
+
+2. The Free sample resume consumes the only resume slot and therefore blocks an
+   immediate first import until it is deleted.
+
+3. Several Premium AI dialogs enforce Premium only in the UI, while their API
+   routes primarily rely on AI-key availability rather than an explicit
+   Premium plan check.
+
+4. The shared AI provider allows Pro users to use the server Gemini key, but
+   some client dialogs still block Pro users behind a Premium paywall.
+
+5. Interview UI offers a BYOK override, but the interview creation API requires
+   `subscriptionPlan === premium`.
+
+6. Client and server entitlement behavior must be unified before marketing
+   claims are finalized.
+
+## 9. Stripe
+
+Stripe endpoints:
+
+- `/api/stripe/checkout`
+- `/api/stripe/portal`
+- `/api/stripe/webhook`
+
+Supported paid tiers:
+
+- Pro monthly/yearly
+- Premium monthly/yearly
+
+Displayed prices:
+
+- Pro monthly: €9.99
+- Pro annual equivalent: €8.33/month
+- Premium monthly: €19.99
+- Premium annual equivalent: €16.66/month
+
+Price IDs may be overridden by environment variables. Checked-in fallback IDs
+currently exist and must be verified when Stripe products change.
+
+Stripe self-healing behavior:
+
+- checkout and portal search Stripe customers by user e-mail,
+- active/trialing subscriptions may repair local customer and subscription
+  fields,
+- paid users are redirected to the billing portal instead of creating a second
+  subscription.
+
+The webhook synchronizes checkout completion and subscription changes.
+
+Required production variables include:
+
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+
+Optional Stripe variables:
+
+- `STRIPE_PRICE_ID_PRO_MONTHLY`
+- `STRIPE_PRICE_ID_PRO_YEARLY`
+- `STRIPE_PRICE_ID_PREMIUM_MONTHLY`
+- `STRIPE_PRICE_ID_PREMIUM_YEARLY`
+- `STRIPE_COUPON_FIRST_MONTH`
+
+## 10. AI Architecture
+
+Supported providers:
+
+- OpenAI-compatible
+- Anthropic
+- Gemini
+
+User keys are automatically detected where possible:
+
+- `AIzaSy...` → Gemini
+- `sk-ant-...` → Anthropic
+
+Server-key model:
+
+- Gemini
+- current server bypass model: `gemini-3.1-flash-lite`
+
+Server Gemini key is supplied through:
+
+- `GEMINI_API_KEY`
+
+Resume parsing behavior:
+
+- text PDFs are extracted with MuPDF,
+- scanned PDFs are rendered page-by-page into images,
+- images are sent to the selected model,
+- generated data is mapped into the resume section schema,
+- uploaded files are handled in memory and are not intentionally persisted.
+
+## 11. Analytics
+
+Google Tag Manager container:
+
+- `GTM-55XL7PR4`
+
+Implementation:
+
+- loaded globally through `src/app/layout.tsx`,
+- Consent Mode v2 defaults are set before GTM,
+- initial defaults:
+  - `analytics_storage: denied`
+  - `ad_storage: denied`
+  - `ad_user_data: denied`
+  - `ad_personalization: denied`
+
+Verified production state on 28 July 2026:
+
+- GTM container ID is present in live HTML,
+- consent defaults are present in live HTML.
+
+Still required:
+
+- Consent Management Platform or custom cookie banner,
+- consent updates after user choice,
+- GA4 measurement ID and Google Tag inside GTM,
+- funnel event definitions,
+- Tag Assistant validation,
+- GA4 DebugView validation,
+- privacy review of event parameters.
+
+Resume content, filenames, e-mail addresses and other PII must never be sent to
+analytics.
+
+## 12. Production Topology
+
+Verified domains:
+
+### `bewerbradar.de`
+
+- static landing site,
+- served from `/var/www/bewerbradar-landing`.
+
+### `copilot.bewerbradar.de`
+
+- this application,
+- Nginx proxies to `127.0.0.1:3001`,
+- Docker maps `127.0.0.1:3001` to container port `3000`.
+
+### `studio.bewerbradar.de`
+
+- Drizzle Studio,
+- Nginx proxies to port `4983`,
+- protected by HTTP Basic Authentication.
+
+### `db.bewerbradar.de`
+
+An additional Nginx configuration proxies to port `4983` over HTTP without the
+same visible Basic Authentication block.
+
+This is not an approved public interface. Verify DNS and either secure or
+remove the route.
+
+Broader running services include:
+
+- PostgreSQL
+- Redis
+- SeaweedFS
+
+The Copilot does not currently use PostgreSQL, Redis or SeaweedFS for its main
+application data.
+
+## 13. Docker Runtime
+
+Production service:
+
+- Compose service: `jadeai`
+- Container: `reactive_resume-jadeai-1`
+- Image: locally built `reactive_resume-jadeai`
+- Restart policy: `unless-stopped`
+- volume: `reactive_resume_jadeai_data:/app/data`
+
+Build context:
+
+- `/var/www/jadeai`
+
+Central Compose project:
+
+- `/var/www/bewerbradar/compose.yml`
+
+Application repository on VPS:
+
+- `/var/www/jadeai`
+
+Production branch:
+
+- `main`
+
+## 14. Production Environment Contract
+
+Required or production-relevant variables:
+
+- `AUTH_SECRET`
+- `AUTH_ENABLED`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `NEXT_PUBLIC_APP_URL`
+- `NEXTAUTH_URL`
+- `EMAIL_SERVER_HOST`
+- `EMAIL_SERVER_PORT`
+- `EMAIL_SERVER_USER`
+- `EMAIL_SERVER_PASSWORD`
+- `EMAIL_FROM`
+- `GEMINI_API_KEY`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+
+Optional:
+
+- `APP_NAME`
+- `DEFAULT_LOCALE`
+- `NEXT_PUBLIC_GTM_ID`
+- Stripe price variables
+- Stripe coupon variable
+- `DB_TYPE`
+- `SQLITE_PATH`
+- `DATABASE_URL`
+
+Never document environment values or secrets in Git.
+
+## 15. Current Git and Release State
+
+Verified on 28 July 2026:
+
+- production `main`: `ec39f6f4`
+- VPS repository branch: `main`
+- VPS repository commit: `ec39f6f4`
+- production container running from the current application build
+
+Current local warning:
+
+- `beta` is diverged:
+  - 5 commits only on `beta`
+  - 39 commits only on `main`
+- current `beta` must not be merged into `main` without reconciliation
+- local `main` contains an uncommitted CRLF normalization change in
+  `scripts/deploy-vps.ps1`
+
+Before the normal Gemini → beta → Codex → main workflow begins, the branch state
+must be reconciled safely.
+
+## 16. Known Technical and Operational Debt
+
+1. `ARCHITECTURE.md` is outdated and encoding-damaged until replaced.
+2. The upstream README contains outdated language and product claims.
+3. PostgreSQL schema does not fully mirror current SQLite billing fields.
+4. SQLite adapter catches migration failures and may continue startup.
+5. There is no established automated unit or end-to-end test suite.
+6. Repository `compose.yml` references `/api/health`, but no such API route
+   currently exists.
+7. Production Compose currently reports no health status for the Copilot.
+8. Paywall and BYOK behavior is not fully consistent across UI and API.
+9. Some Chinese error or fallback strings remain in editor code.
+10. `db.bewerbradar.de` may expose Drizzle Studio without the protection used
+    by `studio.bewerbradar.de`.
+11. PostgreSQL is publicly bound on port 5432 in the broader stack and requires
+    firewall and credential review.
+12. Deployment script does not fail fast and may print success after an earlier
+    command failed.
+13. Two historical SQLite database names exist in the production volume.
+14. Consent Mode is present, but no user-facing consent mechanism is connected.
