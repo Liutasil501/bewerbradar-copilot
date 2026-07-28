@@ -69,9 +69,9 @@ The script does not:
 - perform a feature smoke test,
 - roll back on failure.
 
-The current script also does not use a fail-fast remote shell. An earlier
-command can fail while a later success message is still printed. Treat its
-output as deployment activity, not release verification.
+The current script uses remote `set -e` and propagates a non-zero SSH exit code.
+Treat its success output as completed deployment activity, but not as complete
+release verification.
 
 ## 3. Branch and Authorization Rules
 
@@ -81,10 +81,8 @@ output as deployment activity, not release verification.
   publication authorization in `AGENTS.md`.
 - Main publication and VPS deployment are separate actions.
 - Do not deploy the VPS without explicit authorization in the current request.
-- `beta` is intended as the integration branch, but it is currently diverged
-  from `main` and must not be merged blindly.
-- Until `beta` is reconciled, use a feature branch based on current `main` for
-  isolated work and review.
+- `beta` is the integration branch. Verify its ancestry against `main` before
+  every merge and never merge it blindly.
 - Concurrent agents use separate worktrees or clones.
 
 A technical `GO` from Codex permits main publication only when the standing
@@ -257,10 +255,9 @@ Check for:
 - repeated restarts,
 - new runtime exceptions.
 
-The current production service has no useful Docker health status. The
-repository Compose file references `/api/health`, but that route does not
-currently exist. Do not report healthcheck success unless the route and the
-active production Compose definition have been corrected.
+The repository contains `/api/health`. Do not report healthcheck success until
+the active production Compose definition and the live endpoint have both been
+verified for the deployed release.
 
 ### 7.3 Public smoke test
 

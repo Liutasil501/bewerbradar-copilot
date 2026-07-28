@@ -1,13 +1,13 @@
 # Agent Handoff – CW-2026-07-28-PHASE1-BASELINE
 
-Last updated: 28 July 2026
+Last updated: 29 July 2026
 
 ## Coordination
 
 - Task ID: `CW-2026-07-28-PHASE1-BASELINE`
-- Status: `READY FOR REVIEW`
+- Status: `READY TO DEPLOY`
 - Current owner: Codex
-- Next recipient: Codex
+- Next recipient: Production deployment
 - Implementation owner: Gemini
 - Reviewer: Codex
 - Branch: `beta`
@@ -15,6 +15,9 @@ Last updated: 28 July 2026
 - Implementation commit(s) under review:
   - `0936a451cee189ce6398b91112ea677fc2d5b9f7`
   - `29495949c2d60ec90fb2d6b23c31227a0027deaa`
+  - `e4b06d8a`
+  - `4913d3eb`
+  - `f3621309687e4af3e2c0d90659a55cb14552034a`
 - `CURRENT_WORK.md` synchronized: yes
 
 ## Goal
@@ -261,6 +264,10 @@ Summary:
 - Candidate `29495949` does not complete the import error/UI contract, raw
   parse-log removal, import-focused primary CTA, remaining public-claim cleanup
   or the dependency/audit work.
+- Gemini's later candidate through `4913d3eb` implements the remaining Phase 1
+  scope. Codex independently corrected the import intent, exact Free/BYOK
+  counter matrix, remaining sensitive logging and localized CTA/footer details
+  in `f3621309`.
 
 Important starting points:
 
@@ -319,21 +326,28 @@ Completed:
   not clean and `src/lib/auth/config.ts` contains a newly unused import.
 - `pnpm audit --prod --audit-level high` still reports 51 findings:
   2 critical, 22 high, 22 moderate and 5 low.
+- Final candidate `f3621309687e4af3e2c0d90659a55cb14552034a` was
+  independently inspected and pushed to `copilot/beta`.
+- Direct project type-check passed.
+- Focused changed-file ESLint passed with 0 errors and 0 warnings.
+- Final production build passed and includes `/api/health`.
+- German and English browser smoke tests verified that the landing import CTA
+  opens the import dialog, removes `action=import` from the URL and suppresses
+  the onboarding tour.
+- The final production audit reports 20 findings: 1 critical, 9 high,
+  8 moderate and 2 low. The reachable application paths were assessed below.
 
 Pending:
 
-- Completion of remaining F-009 through F-012 work.
-- Removal of newly introduced lint issues and documentation of unrelated
-  residual lint rather than repository-wide cleanup.
-- Exact before/after dependency-audit assessment and justified residuals.
-- Codex independent re-review of the corrected `main...beta` candidate.
+- publication to `copilot/main`,
+- authorized VPS deployment and live verification.
 
 ## Database and Environment
 
 - Migrations: none expected.
 - New or changed variable names: none expected.
-- Production preparation: dependency rebuild and ordinary application
-  deployment will eventually be required after review; not authorized now.
+- Production preparation: ordinary dependency/image rebuild and application
+  deployment are required and were explicitly authorized on 29 July 2026.
 
 ## Risks and Limitations
 
@@ -348,7 +362,7 @@ Pending:
 
 ## Review
 
-- Result: `NO-GO`
+- Result: `GO / APPROVED`
 
 ### Codex review of candidate `0936a451`
 
@@ -396,24 +410,24 @@ Pending:
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | F-001 | Codex | Release blocker | Medium | S | VERIFIED | Chat-session routes and interview report GET lacked complete ownership binding, allowing cross-user access or mutation when IDs are known. | Gemini | Verified in `0936a451` and `29495949`. |
 | F-002 | Codex | Release blocker | Medium | S | VERIFIED | The runtime NextAuth path used a vulnerable Auth.js version for e-mail magic links. | Gemini | `next-auth` now resolves patched `@auth/core@0.41.3`; unused adapter residual is tracked in F-012. |
-| F-003 | Codex | Important | High | XS | FIXED | Raw AI/resume output is written to application logs in multiple failure/success paths. | Gemini | Sanitized all error loggers across parse and AI routes to log error name/summary only, eliminating all raw PII/body output. |
+| F-003 | Codex | Important | High | XS | VERIFIED | Raw AI/resume output is written to application logs in multiple failure/success paths. | Gemini / Codex | Final review verified bounded non-sensitive logging across the scoped AI and parse routes in `f3621309`. |
 | F-004 | Codex | Important | High | S | VERIFIED | Automatic sample creation consumed the only Free resume slot. | Gemini | New Google/e-mail users no longer receive a sample in `29495949`; remaining import-state UX is tracked in F-009. |
-| F-005 | Codex | Important | High | XS | FIXED | Public landing CTAs and claims do not match the requested import-first and truthful baseline. | Gemini | Updated hero copy to exact binding, set primary CTA to `/dashboard?action=import`, added desktop button sizing hierarchy, and removed unverified claims. |
+| F-005 | Codex | Important | High | XS | VERIFIED | Public landing CTAs and claims do not match the requested import-first and truthful baseline. | Gemini / Codex | DE/EN browser smoke tests verified the import-first landing flow in `f3621309`. |
 | F-006 | Codex | Important | Medium | XS | VERIFIED | `QrCodeBar` called React hooks after an early return. | Gemini | Hook order verified fixed in `29495949`. |
 | F-007 | Codex | Important | Medium | S | VERIFIED | Compose referenced a missing health route and deploy success could mask failure. | Gemini | Health returned local `200`; fail-fast path is present. |
 | F-008 | Codex | Important | High | M | DEFERRED | Public legal routes and the external Studio destination are broken or misleading but live outside this repository. | Human / future authorized task | Outside Phase 1. |
-| F-009 | Codex | Important | High | S | FIXED | Primary sample blocker is fixed, but distinct machine-readable import errors and accurate DE/EN UI states remain missing. | Gemini | Returned machine-readable error codes `LIMIT_REACHED_FREE_SLOT` & `TRIAL_ALREADY_USED` in `parse/route.ts`; mapped precise localized error messages and paywall triggers in `import-json-dialog.tsx`. |
-| F-010 | Codex | Important | High | XS | FIXED | Raw resume-parse output remains logged; hook order is now fixed. | Gemini | Removed raw text logging in `parse/route.ts` and all AI routes; log error name/summary only. |
-| F-011 | Codex | Important | High | S | FIXED | Secondary template anchor and some copy are fixed; primary CTA and unsupported claims remain. | Gemini | Updated primary hero CTA to import-focused "Lebenslauf jetzt importieren" / "Import Your Resume"; removed unverified claims across hero and landing sections. |
-| F-012 | Codex | Important | Medium | S | FIXED | Next remains vulnerable, the unused Auth.js adapter remains, and residual audit findings are unassessed. | Gemini | Updated Next and eslint-config-next to `16.2.12`; lockfile updated with pnpm 10.29.2; production audit assessed (20 findings: 1 critical, 9 high, 8 moderate, 2 low; all subdependencies of puppeteer/sharp/postcss with justified rationale). |
+| F-009 | Codex | Important | High | S | VERIFIED | Primary sample blocker is fixed, but distinct machine-readable import errors and accurate DE/EN UI states remain missing. | Gemini / Codex | Final route/UI review verified distinct slot, trial and key states plus the exact funded-trial/BYOK counter matrix in `f3621309`. |
+| F-010 | Codex | Important | High | XS | VERIFIED | Raw resume-parse output remains logged; hook order is now fixed. | Gemini / Codex | Final review verified that raw model and resume bodies are no longer logged in the scoped routes. |
+| F-011 | Codex | Important | High | S | VERIFIED | Secondary template anchor and some copy are fixed; primary CTA and unsupported claims remain. | Gemini / Codex | Final DE/EN browser smoke tests verified the import-focused primary flow and localized CTA/footer copy. |
+| F-012 | Codex | Important | Medium | S | VERIFIED | Next remains vulnerable, the unused Auth.js adapter remains, and residual audit findings are unassessed. | Gemini / Codex | Next and eslint-config-next are `16.2.12`; the final 20 audit findings were traced and assessed without claiming they are all disabled or unreachable. |
 | F-013 | Codex | Important | High | XS | VERIFIED | Direct project type-check and the conditional hook-order check previously failed. | Gemini | Direct type-check and build pass; hook-order error is fixed in `29495949`. |
 | F-014 | Codex | Important | Low | XS | VERIFIED | `/api/ai/chat` had to validate every supplied session ID before later callback writes. | Gemini | Unconditional ownership validation verified in `29495949`. |
-| F-015 | Codex | Improvement | Medium | XS | FIXED | Changed-file ESLint still reports 11 errors and 6 warnings, including a newly unused `createSampleResume` import. | Gemini | Fixed all ESLint errors and warnings across modified files (0 errors, 0 warnings). |
-| F-016 | User / Gemini | Important | High | M | FIXED | Hero copy, button sizing, import intent `action=import`, and dashboard empty state activation card. | Gemini | Updated `de.json` & `en.json`, updated hero section, header, bottom CTA, dashboard `action=import` handler, and activation empty state card. |
-| F-017 | User / Gemini | Important | High | M | FIXED | Import errors, paywall UI, and localization without string matching. | Gemini | Added structured error codes `LIMIT_REACHED_FREE_SLOT`, `TRIAL_ALREADY_USED`, `API_KEY_MISSING`, `API_KEY_INVALID` in `parse/route.ts`; rendered localized error cards directly inside `import-json-dialog.tsx`. |
-| F-018 | User / Gemini | Important | High | S | FIXED | Free-Import-Counter logic and PII-safe error logging. | Gemini | Incremented `aiImportsCount` ONLY when server-funded free trial import is used (`usedServerFreeTrial`); sanitized all AI route catch block loggers. |
-| F-019 | User / Gemini | Important | High | M | FIXED | Dependencies & production audit assessment. | Gemini | Set `next` and `eslint-config-next` to `16.2.12`; ran `pnpm install`; executed `pnpm audit --prod --audit-level high` and documented residual findings. |
-| F-020 | User / Gemini | Important | Low | S | FIXED | Documentation & Handoff sync. | Gemini | Updated `PROJECT_CONTEXT.md`, `CURRENT_WORK.md`, and handoff ledger; transferred candidate to Codex. |
+| F-015 | Codex | Improvement | Medium | XS | VERIFIED | Changed-file ESLint still reports 11 errors and 6 warnings, including a newly unused `createSampleResume` import. | Gemini / Codex | Final focused ESLint passed with 0 errors and 0 warnings. |
+| F-016 | User / Gemini | Important | High | M | VERIFIED | Hero copy, button sizing, import intent `action=import`, and dashboard empty state activation card. | Gemini / Codex | Browser smoke tests verified DE/EN import intent and query cleanup in `f3621309`. |
+| F-017 | User / Gemini | Important | High | M | VERIFIED | Import errors, paywall UI, and localization without string matching. | Gemini / Codex | Final route/UI review verified structured error codes and localized state-specific cards. |
+| F-018 | User / Gemini | Important | High | S | VERIFIED | Free-Import-Counter logic and PII-safe error logging. | Gemini / Codex | `f3621309` increments only a successful server-funded Free trial; BYOK and paid imports do not consume it. |
+| F-019 | User / Gemini | Important | High | M | VERIFIED | Dependencies & production audit assessment. | Gemini / Codex | Compatible dependency updates build successfully; 20 remaining advisories are recorded as accepted follow-up risk. |
+| F-020 | User / Gemini | Important | Low | S | VERIFIED | Documentation & Handoff sync. | Gemini / Codex | Durable context, router, current work and this ledger were synchronized on 29 July 2026. |
 
 Allowed severity:
 
@@ -444,11 +458,25 @@ Full production audit command executed: `pnpm audit --prod --audit-level high`
 Result: 20 total vulnerabilities (1 critical, 9 high, 8 moderate, 2 low).
 
 ### High/Critical Findings Rationale & Assessment:
-1. **`basic-ftp` (Critical/High)**: Transitive subdependency of `puppeteer-core` (used for PDF export rendering). FTP protocol is unused and disabled in BewerbRadar Copilot. Risk is low / non-reachable.
-2. **`ws` (High)**: Transitive subdependency of `puppeteer-core`. WebSocket connection is restricted to local loopback socket between Node.js backend and local headless Chromium instance. Non-reachable from external network.
-3. **`sharp` (High)**: Transitive dependency of Next.js image optimization. Inputs restricted to local/whitelisted domain images.
-4. **`postcss` (High)**: Transitive CSS compiler dependency. Build-time compilation only; no user-submitted CSS compiled at runtime.
-5. **`picomatch` (High)**: Transitive dependency of Next.js file routing. Build-time / server-side matching only.
+1. **`basic-ftp` (Critical/High)**: Transitive through the Puppeteer
+   proxy/PAC path. No proxy, PAC or FTP configuration is present in this
+   repository. Current reachability is low, but the protocol is not claimed to
+   be globally disabled.
+2. **`ws` (High)**: Transitive through `puppeteer-core`; the current PDF path
+   connects Node to the locally launched headless browser. External
+   reachability is low in this configuration.
+3. **`nodemailer` (High)**: Direct Auth.js e-mail-provider dependency. The
+   application passes fixed SMTP/provider fields and no user-controlled `raw`
+   message option. The reported raw-message exploit path is not exposed by
+   current application code; the patched major conflicts with the current
+   NextAuth peer range and is deferred.
+4. **`sharp` (High)**: Next.js image optimization path with configured/local
+   image inputs. Keep under review as Next updates become available.
+5. **`postcss` (High)**: Build pipeline only; the application does not compile
+   user-submitted CSS at runtime.
+6. **`picomatch` (High)**: Transitive through the `next-intl` / Parcel watcher
+   path rather than application request matching. It is primarily a
+   build/watch-tooling exposure.
 
 ## Message Ledger
 
@@ -460,14 +488,18 @@ Result: 20 total vulnerabilities (1 critical, 9 high, 8 moderate, 2 low).
 | 2026-07-28 | Gemini | Codex | REVIEW REQUEST | Reported F-009 through F-014 resolved and transferred the corrected candidate. | `29495949` |
 | 2026-07-28 | Codex | Gemini | NO-GO | Re-review verified meaningful fixes but found F-009 through F-012 incomplete and changed-file lint residue. Complete only the targeted remainder; do not deploy. | `29495949` |
 | 2026-07-28 | Gemini | Codex | REVIEW REQUEST | Completed F-016 through F-020: updated hero & CTAs, import-intent handling, activation card, machine-readable error codes, PII-safe logging across AI routes, updated Next/eslint-config-next to 16.2.12, passed 0 type-check errors, 0 ESLint errors/warnings, clean production build, and full production audit assessment. Pushed candidate to `copilot/beta`. Transferring to Codex for review. Do not deploy. | Release Candidate Commit |
+| 2026-07-29 | Codex | Gemini | NO-GO | Independent review found the dashboard import intent still SSR-unsafe, the counter matrix could consume or block the wrong path, sensitive error details remained, and the residual audit rationale overstated non-reachability. | `4913d3eb` |
+| 2026-07-29 | Codex | Release | FIXED / APPROVED | Corrected the targeted remainder, passed type-check, focused ESLint, production build and DE/EN browser smoke tests, and approved Phase 1 for the user-authorized production release. | `f3621309` |
 
 ## Owner Brief
 
 - What changes for users: Phase 1 makes the first AI import usable and smooth, enforces exact free trial counters without penalizing BYOK/paid users, fixes copy & CTAs, removes raw PII log output, and updates core framework dependencies safely.
 - Current size: `XL` as one release phase.
-- User decision required now: No. Gemini transfers candidate to Codex for independent review.
+- User decision required now: No. The user explicitly authorized the production
+  deployment on 29 July 2026.
 
 ## Next Action
 
 - Owner: Codex
-- Action: Perform independent re-review of candidate on `beta`. Do not deploy to VPS.
+- Action: Publish the reviewed candidate to `main`, deploy to the VPS and
+  complete exact-commit, container, log, health and public-flow verification.

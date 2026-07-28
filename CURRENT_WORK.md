@@ -1,6 +1,6 @@
 # BewerbRadar Copilot – Current Work
 
-Last updated: 28 July 2026
+Last updated: 29 July 2026
 
 This file is the shared operational board for active Gemini, Codex and human
 work.
@@ -67,21 +67,20 @@ Use exactly one status per task:
 
 ### CW-2026-07-28-PHASE1-BASELINE
 
-- Status: `READY FOR REVIEW`
+- Status: `READY TO DEPLOY`
 - Goal: Create a reviewable Phase 1 release candidate that removes confirmed
   security, privacy, trust and first-import blockers inside BewerbRadar Copilot.
 - Implementation owner: Gemini
 - Reviewer: Codex
 - Current owner: Codex
-- Next recipient: Codex
-- Branch: `beta`
+- Next recipient: Production deployment
+- Branch: `beta` reviewed; publication to `main` pending
 - Base: `8691663b`
 - Handoff file:
   `docs/agent-handoffs/CW-2026-07-28-PHASE1-BASELINE.md`
 - Production impact: Application, authentication, AI import, public landing
   copy and release diagnostics are affected.
-- Deployment required: Yes after independent review and separate explicit
-  authorization; no deployment is authorized by this task assignment.
+- Deployment required: Yes; explicitly authorized by the user on 29 July 2026.
 
 In scope:
 
@@ -123,11 +122,19 @@ Verification completed:
 - changed-file ESLint passed (0 errors, 0 warnings),
 - production build `pnpm build` passed (4.3s compilation),
 - production audit `pnpm audit --prod --audit-level high` run and fully assessed,
-- F-001 through F-020 all implemented and marked `FIXED`.
+- independent Codex re-review of the final candidate completed,
+- final correction commit `f3621309` pushed to `copilot/beta`,
+- direct type-check passed,
+- focused changed-file ESLint passed with 0 errors and 0 warnings,
+- production build passed and includes `/api/health`,
+- German and English import-intent browser smoke tests passed,
+- production audit residuals assessed proportionally,
+- F-001 through F-020 are verified, fixed or explicitly deferred.
 
 Verification pending:
 
-- independent final Codex re-review of the release candidate on `beta`.
+- fast-forward publication to `copilot/main`,
+- authorized VPS deployment and live verification.
 
 Database and environment impact:
 
@@ -137,9 +144,13 @@ Database and environment impact:
 
 Risks or blockers:
 
-- none blocking `beta` candidate review.
+- no open Phase 1 release blocker,
+- 20 assessed dependency advisories remain as follow-up risk,
+- external legal/Studio/VPS-hardening items remain outside Phase 1.
 
 Next action:
 
 - Owner: Codex
-- Action: Perform independent re-review of candidate on `beta`. Do not deploy to VPS.
+- Action: Publish the reviewed candidate to `main`, deploy it to the VPS and
+  verify the exact live commit, container, logs, health endpoint and public
+  landing behavior.

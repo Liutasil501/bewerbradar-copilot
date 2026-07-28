@@ -1,6 +1,6 @@
 # BewerbRadar Copilot – Current Project Context
 
-Last verified: 28 July 2026
+Last verified: 29 July 2026
 
 This file describes the authoritative current product and production state.
 It is not a historical changelog.
@@ -45,8 +45,8 @@ below only when the active task touches them.
 - Stripe synchronizes paid-plan state into the local user record.
 - GTM and denied Consent Mode defaults are live; CMP, consent updates, GA4 tag
   and funnel events remain incomplete.
-- Known high-value follow-ups include chat-session ownership checks, raw AI
-  output logging, entitlement consistency and the missing health route.
+- Known high-value follow-ups include CMP/GA4 funnel instrumentation, legal
+  routes, external Studio exposure and the remaining dependency advisories.
 - Resume content is sensitive personal data and must not enter logs or
   analytics.
 
@@ -168,8 +168,9 @@ Protected page paths include:
 API routes are not protected by middleware. Every API route must perform its
 own user, ownership and plan checks.
 
-New OAuth or e-mail users receive a prebuilt sample resume through
-`createSampleResume()`.
+New OAuth or e-mail users start with an empty dashboard so the first Free AI
+import can use the single Free resume slot. The sample-resume helper remains
+only in the local fingerprint/demo fallback.
 
 ## 5. Production Data Storage
 
@@ -242,8 +243,7 @@ Current subscription plans:
 
 ## 7. Current Freemium and Paywall Behavior
 
-This section describes the currently implemented behavior, including known
-inconsistencies.
+This section describes the currently implemented behavior.
 
 ### Free
 
@@ -263,14 +263,14 @@ Current enforced limits:
 AI resume import:
 
 - PDF, PNG, JPG and WebP up to 10 MB,
-- server Gemini key can be used for Free users,
-- import is allowed while the user has fewer than 1 resume,
-- `aiImportsCount` is incremented after successful AI import,
-- the counter currently tracks usage but does not enforce a one-time limit.
-
-Because new users receive a sample resume, the sample currently consumes the
-single Free resume slot. A Free user must delete or otherwise replace it before
-creating/importing another resume.
+- a Free user always needs an unused resume slot,
+- a Free user with `aiImportsCount < 1` and no BYOK key receives one
+  server-funded Gemini import,
+- `aiImportsCount` increments only after a successful server-funded trial
+  import,
+- deleting the imported resume does not restore the funded trial,
+- a Free user with an unused slot may continue importing with BYOK,
+- BYOK, Pro and Premium imports do not consume the Free trial counter.
 
 ### Pro
 
@@ -316,26 +316,20 @@ Keys are:
 
 ## 8. Known Entitlement Inconsistencies
 
-The following must be resolved before treating the plan matrix as final:
+The following remaining differences must be resolved before treating the
+overall plan matrix as final:
 
-1. The import paywall copy still says “1 kostenloser Test-Import”, although
-   current server logic allows repeated Free imports as long as the user remains
-   under the one-resume limit.
-
-2. The Free sample resume consumes the only resume slot and therefore blocks an
-   immediate first import until it is deleted.
-
-3. Several Premium AI dialogs enforce Premium only in the UI, while their API
+1. Several Premium AI dialogs enforce Premium only in the UI, while their API
    routes primarily rely on AI-key availability rather than an explicit
    Premium plan check.
 
-4. The shared AI provider allows Pro users to use the server Gemini key, but
+2. The shared AI provider allows Pro users to use the server Gemini key, but
    some client dialogs still block Pro users behind a Premium paywall.
 
-5. Interview UI offers a BYOK override, but the interview creation API requires
+3. Interview UI offers a BYOK override, but the interview creation API requires
    `subscriptionPlan === premium`.
 
-6. Client and server entitlement behavior must be unified before marketing
+4. Client and server entitlement behavior must be unified before marketing
    claims are finalized.
 
 ## 9. Stripe
@@ -584,21 +578,15 @@ Any commits unique to both sides require investigation before merge.
 2. PostgreSQL schema does not fully mirror current SQLite billing fields.
 3. SQLite adapter catches migration failures and may continue startup.
 4. There is no established automated unit or end-to-end test suite.
-5. Repository `compose.yml` references `/api/health`, but no such API route
-   currently exists.
-6. Production Compose currently reports no health status for the Copilot.
-7. Paywall and BYOK behavior is not fully consistent across UI and API.
-8. Some Chinese error or fallback strings remain in editor code.
-9. `db.bewerbradar.de` may expose Drizzle Studio without the protection used
+5. Production Compose health status must be reverified after the Phase 1
+   release containing `/api/health` is deployed.
+6. Paywall and BYOK behavior is not fully consistent across every AI feature.
+7. Some Chinese error or fallback strings remain in editor code.
+8. `db.bewerbradar.de` may expose Drizzle Studio without the protection used
     by `studio.bewerbradar.de`.
-10. PostgreSQL is publicly bound on port 5432 in the broader stack and requires
+9. PostgreSQL is publicly bound on port 5432 in the broader stack and requires
     firewall and credential review.
-11. Deployment script does not fail fast and may print success after an earlier
-    command failed.
-12. Two historical SQLite database names exist in the production volume.
-13. Consent Mode is present, but no user-facing consent mechanism is connected.
-14. AI chat-session routes do not consistently verify that a supplied resume
-    or session belongs to the current user before listing, reading, creating or
-    deleting session data.
-15. Some AI error/debug paths log raw model output. That output may contain
-    resume content and must be removed or redacted.
+10. Two historical SQLite database names exist in the production volume.
+11. Consent Mode is present, but no user-facing consent mechanism is connected.
+12. The production dependency audit retains assessed transitive advisories in
+    browser/PDF, image and build tooling; upgrades remain follow-up work.

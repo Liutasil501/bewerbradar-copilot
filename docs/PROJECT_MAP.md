@@ -529,7 +529,8 @@ Repositories:
   translation-key mapping for templates.
 
 - `src/lib/db/sample-resume.ts`
-  sample resume created for new users.
+  sample resume helper for local fingerprint/demo fallback; production
+  OAuth/e-mail users start empty.
 
 ## 8. Localization
 
@@ -582,7 +583,7 @@ Inspect:
 6. parse schema and mapping
 7. user and resume repositories
 8. `MAX_FREE_RESUMES`
-9. Free sample resume behavior
+9. production-auth versus local fingerprint/demo first-use behavior
 10. import copy and paywall copy
 11. privacy and upload size/type handling
 
@@ -678,7 +679,7 @@ Inspect:
 6. public routes
 7. share routes
 8. session and callback behavior
-9. user creation and sample resume
+9. user creation and fingerprint/demo sample fallback
 10. sensitive logs
 
 ### Export
