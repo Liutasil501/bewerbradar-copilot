@@ -67,9 +67,9 @@ Pending:
 
 - Result: `PENDING`
 
-| ID | Severity | Likelihood | Effort | Status | Finding and evidence | Response or fixing commit |
-| --- | --- | --- | --- | --- | --- | --- |
-| F-001 |  |  |  | Open |  |  |
+| ID | Raised by | Severity | Likelihood | Effort | Status | Finding and evidence | Response by | Response or fixing commit |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| F-001 |  |  |  |  | Open |  |  |  |
 
 Allowed severity:
 

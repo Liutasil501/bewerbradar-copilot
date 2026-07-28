@@ -70,6 +70,8 @@ handoff file concurrently.
 
 - Communicate evidence and decisions, not conversational filler.
 - Each unresolved finding gets a stable ID such as `F-001`.
+- Record the finding author in `Raised by` and the responding agent or human in
+  `Response by`.
 - Responses reference the finding ID and the fixing commit.
 - Either agent may challenge the other's conclusion.
 - Do not mark a finding resolved without verification.
