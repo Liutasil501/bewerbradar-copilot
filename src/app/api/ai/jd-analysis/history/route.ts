@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     // List all
     const analyses = await analysisRepository.findJdAnalysesByResumeId(resumeId);
 
-    const list = analyses.map((a: any) => ({
+    const list = analyses.map((a: { id: string; overallScore?: number; atsScore?: number; jobDescription: string; createdAt: Date | string }) => ({
       id: a.id,
       overallScore: a.overallScore,
       atsScore: a.atsScore,
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(list);
   } catch (error) {
-    console.error('GET /api/ai/jd-analysis/history error:', error);
+    console.error('GET /api/ai/jd-analysis/history error: %s', error instanceof Error ? error.name : String(error));
     return NextResponse.json({ error: 'Failed to fetch history' }, { status: 500 });
   }
 }
@@ -64,7 +64,6 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'id is required' }, { status: 400 });
     }
 
-    // Verify ownership via the analysis record
     const analysis = await analysisRepository.findJdAnalysisById(id);
     if (!analysis) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -77,7 +76,7 @@ export async function DELETE(request: NextRequest) {
     await analysisRepository.deleteJdAnalysis(id);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('DELETE /api/ai/jd-analysis/history error:', error);
+    console.error('DELETE /api/ai/jd-analysis/history error: %s', error instanceof Error ? error.name : String(error));
     return NextResponse.json({ error: 'Failed to delete' }, { status: 500 });
   }
 }

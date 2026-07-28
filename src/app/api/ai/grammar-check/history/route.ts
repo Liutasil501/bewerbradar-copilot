@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     // List all
     const checks = await analysisRepository.findGrammarChecksByResumeId(resumeId);
 
-    const list = checks.map((c: any) => ({
+    const list = checks.map((c: { id: string; score?: number; issueCount?: number; createdAt: Date | string }) => ({
       id: c.id,
       score: c.score,
       issueCount: c.issueCount,
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(list);
   } catch (error) {
-    console.error('GET /api/ai/grammar-check/history error:', error);
+    console.error('GET /api/ai/grammar-check/history error: %s', error instanceof Error ? error.name : String(error));
     return NextResponse.json({ error: 'Failed to fetch history' }, { status: 500 });
   }
 }
@@ -75,7 +75,7 @@ export async function DELETE(request: NextRequest) {
     await analysisRepository.deleteGrammarCheck(id);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('DELETE /api/ai/grammar-check/history error:', error);
+    console.error('DELETE /api/ai/grammar-check/history error: %s', error instanceof Error ? error.name : String(error));
     return NextResponse.json({ error: 'Failed to delete' }, { status: 500 });
   }
 }

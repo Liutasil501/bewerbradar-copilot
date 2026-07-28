@@ -38,8 +38,7 @@ below only when the active task touches them.
 - `beta` was reconciled with `main` on 28 July 2026; verify ancestry before
   every new integration cycle rather than relying on this snapshot.
 - Free plan: one resume, five templates, JSON/TXT export and no public sharing.
-- Free AI import currently depends on the one-resume limit; `aiImportsCount`
-  tracks usage but does not enforce one lifetime import.
+- Free plan users receive 1 server-funded free trial AI import tracked via `aiImportsCount`. BYOK, Pro, and Premium users perform AI imports without consuming the free trial import counter.
 - BYOK keys stay in browser storage but transit the BewerbRadar backend in
   request headers.
 - Server AI provider: Gemini where route and entitlement logic permit it.

@@ -40,9 +40,17 @@ interface ImportJsonDialogProps {
 }
 
 type ImportState = 'idle' | 'importing' | 'success' | 'error';
+type ImportErrorCode =
+  | 'LIMIT_REACHED_FREE_SLOT'
+  | 'TRIAL_ALREADY_USED'
+  | 'API_KEY_MISSING'
+  | 'API_KEY_INVALID'
+  | 'PARSE_FAILED'
+  | null;
 type FileType = 'json' | 'pdf' | 'image';
 
 const ACCEPTED_EXTENSIONS = '.json,.pdf,.png,.jpg,.jpeg,.webp';
+const ACCEPTED_TYPES = ['application/json', 'application/pdf', 'image/png', 'image/jpeg', 'image/webp'];
 
 function getHeaders() {
   const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
@@ -54,7 +62,6 @@ function getHeaders() {
 
 export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) {
   const t = useTranslations('import');
-  const tAi = useTranslations('ai');
   const tBilling = useTranslations('billing');
   const tBase = useTranslations();
   const router = useRouter();
@@ -62,6 +69,7 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
   const { currentPlan, checkPaywall, showPaywall, setShowPaywall, requiredTier, paywallDescription } = usePaywall();
 
   const [state, setState] = useState<ImportState>('idle');
+  const [errorCode, setErrorCode] = useState<ImportErrorCode>(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileType, setFileType] = useState<FileType | null>(null);
@@ -72,6 +80,7 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
   useEffect(() => {
     if (open) {
       setState('idle');
+      setErrorCode(null);
       setErrorMessage('');
       setSelectedFile(null);
       setFileType(null);
@@ -81,17 +90,17 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
 
   const handleFileSelect = useCallback((file: File) => {
     setErrorMessage('');
-    const name = file.name.toLowerCase();
-
-    if (name.endsWith('.json')) {
+    setErrorCode(null);
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    if (file.type === 'application/json' || ext === 'json') {
       setSelectedFile(file);
       setFileType('json');
       setState('idle');
-    } else if (name.endsWith('.pdf')) {
+    } else if (file.type === 'application/pdf' || ext === 'pdf') {
       setSelectedFile(file);
       setFileType('pdf');
       setState('idle');
-    } else if (['png', 'jpg', 'jpeg', 'webp'].some((ext) => name.endsWith('.' + ext))) {
+    } else if (ACCEPTED_TYPES.includes(file.type) || ['png', 'jpg', 'jpeg', 'webp'].includes(ext || '')) {
       setSelectedFile(file);
       setFileType('image');
       setState('idle');
@@ -99,6 +108,7 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
       setSelectedFile(null);
       setFileType(null);
       setState('error');
+      setErrorCode('PARSE_FAILED');
       setErrorMessage(t('invalidFormat'));
     }
   }, [t]);
@@ -130,9 +140,10 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
 
     setState('importing');
     setErrorMessage('');
+    setErrorCode(null);
 
     try {
-      let newResume;
+      let newResume: { id: string };
 
       if (fileType === 'json') {
         const text = await selectedFile.text();
@@ -156,7 +167,6 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
         if (!res.ok) throw new Error(t('error'));
         newResume = await res.json();
       } else {
-        // PDF or Image
         const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
         const formData = new FormData();
         formData.append('file', selectedFile);
@@ -170,17 +180,12 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
 
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          let msg = data.error || 'Parse failed';
-          if (data.code === 'LIMIT_REACHED_FREE_SLOT') {
-            msg = tBase('dashboard.upload.limitReachedFreeSlot');
-          } else if (data.code === 'TRIAL_ALREADY_USED') {
-            setShowPaywall(true);
-            msg = tBase('dashboard.upload.trialAlreadyUsed');
-          } else if (data.code === 'API_KEY_MISSING' || data.error === 'apiKeyMissing') {
-            setShowPaywall(true);
-            msg = tAi('apiKeyMissingHint');
-          }
-          throw new Error(msg);
+          const code: ImportErrorCode =
+            (data.code as ImportErrorCode) || (data.error === 'apiKeyMissing' ? 'API_KEY_MISSING' : 'PARSE_FAILED');
+          setErrorCode(code);
+          setState('error');
+          setErrorMessage(data.error || t('error'));
+          return;
         }
 
         newResume = await res.json();
@@ -193,16 +198,15 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
       }, 1000);
     } catch (err: unknown) {
       setState('error');
+      setErrorCode('PARSE_FAILED');
       const message = err instanceof Error ? err.message : String(err);
       if (err instanceof SyntaxError) {
         setErrorMessage(t('invalidFormat'));
-      } else if (message === 'apiKeyMissing') {
-        setErrorMessage(`${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}`);
       } else {
         setErrorMessage(message || t('error'));
       }
     }
-  }, [selectedFile, fileType, template, onOpenChange, router, t, tAi, tBase, setShowPaywall]);
+  }, [selectedFile, fileType, template, onOpenChange, router, t]);
 
   const isLoading = state === 'importing';
 
@@ -282,28 +286,55 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
 
             {state === 'error' && (
               <div className="flex flex-col items-center justify-center py-4 text-center">
-                {errorMessage.includes('apiKeyMissing') || errorMessage.toLowerCase().includes('key') || errorMessage.toLowerCase().includes('api') || errorMessage.includes('Free plan') || errorMessage.includes('limited') ? (
+                {errorCode === 'LIMIT_REACHED_FREE_SLOT' && (
                   <div className="w-full max-w-md mx-auto rounded-xl border border-brand/20 bg-gradient-to-br from-brand/5 via-brand/10 to-transparent p-6 text-center shadow-sm">
                     <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-brand">
                       <Sparkles className="h-6 w-6" />
                     </div>
                     <h4 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-                      🚀 Pro & Premium KI-Import
+                      {t('errors.limitReachedFreeSlotTitle')}
                     </h4>
                     <p className="mt-1.5 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                      Du hast deinen 1 kostenlosen Test-Import genutzt. Upgrade auf Pro oder Premium für unbegrenzte KI-Importe & Vorlagen!
+                      {t('errors.limitReachedFreeSlotText')}
+                    </p>
+                    <div className="mt-5 flex justify-center">
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          onOpenChange(false);
+                          setShowPaywall(true);
+                        }}
+                        className="bg-brand hover:bg-brand/90 text-white font-semibold text-xs py-2 px-4 rounded-lg shadow-sm cursor-pointer"
+                      >
+                        <Crown className="mr-1.5 h-4 w-4" />
+                        {t('errors.viewPlans')}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {errorCode === 'TRIAL_ALREADY_USED' && (
+                  <div className="w-full max-w-md mx-auto rounded-xl border border-brand/20 bg-gradient-to-br from-brand/5 via-brand/10 to-transparent p-6 text-center shadow-sm">
+                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-brand">
+                      <Sparkles className="h-6 w-6" />
+                    </div>
+                    <h4 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                      {t('errors.trialAlreadyUsedTitle')}
+                    </h4>
+                    <p className="mt-1.5 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                      {t('errors.trialAlreadyUsedText')}
                     </p>
                     <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
                       <Button
                         type="button"
                         onClick={() => {
                           onOpenChange(false);
-                          checkPaywall('pro', () => {}, { description: 'Schalte unbegrenzte KI-Lebenslauf-Importe frei!' });
+                          setShowPaywall(true);
                         }}
-                        className="w-full sm:w-auto bg-brand hover:bg-brand/90 text-white font-semibold text-xs py-2 px-4 rounded-lg shadow-sm"
+                        className="w-full sm:w-auto bg-brand hover:bg-brand/90 text-white font-semibold text-xs py-2 px-4 rounded-lg shadow-sm cursor-pointer"
                       >
                         <Crown className="mr-1.5 h-4 w-4" />
-                        Auf Pro / Premium upgraden
+                        {t('errors.viewPlans')}
                       </Button>
                       <Button
                         type="button"
@@ -312,13 +343,80 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
                           onOpenChange(false);
                           openModal('settings');
                         }}
-                        className="w-full sm:w-auto text-xs"
+                        className="w-full sm:w-auto text-xs cursor-pointer"
                       >
-                        Eigenen API-Key eintragen
+                        {t('errors.enterApiKey')}
                       </Button>
                     </div>
                   </div>
-                ) : (
+                )}
+
+                {errorCode === 'API_KEY_MISSING' && (
+                  <div className="w-full max-w-md mx-auto rounded-xl border border-brand/20 bg-gradient-to-br from-brand/5 via-brand/10 to-transparent p-6 text-center shadow-sm">
+                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-brand">
+                      <Sparkles className="h-6 w-6" />
+                    </div>
+                    <h4 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                      {t('errors.apiKeyMissingTitle')}
+                    </h4>
+                    <p className="mt-1.5 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                      {t('errors.apiKeyMissingText')}
+                    </p>
+                    <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          onOpenChange(false);
+                          setShowPaywall(true);
+                        }}
+                        className="w-full sm:w-auto bg-brand hover:bg-brand/90 text-white font-semibold text-xs py-2 px-4 rounded-lg shadow-sm cursor-pointer"
+                      >
+                        <Crown className="mr-1.5 h-4 w-4" />
+                        {t('errors.viewPlans')}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          onOpenChange(false);
+                          openModal('settings');
+                        }}
+                        className="w-full sm:w-auto text-xs cursor-pointer"
+                      >
+                        {t('errors.enterApiKey')}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {errorCode === 'API_KEY_INVALID' && (
+                  <div className="w-full max-w-md mx-auto rounded-xl border border-brand/20 bg-gradient-to-br from-brand/5 via-brand/10 to-transparent p-6 text-center shadow-sm">
+                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-950/30 dark:text-red-400">
+                      <AlertCircle className="h-6 w-6" />
+                    </div>
+                    <h4 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                      {t('errors.apiKeyInvalidTitle')}
+                    </h4>
+                    <p className="mt-1.5 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                      {t('errors.apiKeyInvalidText')}
+                    </p>
+                    <div className="mt-5 flex justify-center">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          onOpenChange(false);
+                          openModal('settings');
+                        }}
+                        className="w-full sm:w-auto text-xs cursor-pointer"
+                      >
+                        {t('errors.enterApiKey')}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {(!errorCode || errorCode === 'PARSE_FAILED') && (
                   <>
                     <AlertCircle className="mb-3 h-8 w-8 text-red-500" />
                     <p className="text-sm font-medium text-red-600 dark:text-red-400">
@@ -333,8 +431,10 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
                       setSelectedFile(null);
                       setFileType(null);
                       setState('idle');
+                      setErrorCode(null);
+                      setErrorMessage('');
                     }}
-                    className="mt-4 text-xs font-semibold text-zinc-500 hover:text-zinc-700 cursor-pointer"
+                    className="mt-3 text-xs font-semibold text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 cursor-pointer"
                   >
                     {tBase('common.back')}
                   </button>

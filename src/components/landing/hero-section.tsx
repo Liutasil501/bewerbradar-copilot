@@ -33,7 +33,7 @@ export function HeroSection() {
           className="mb-6 border-brand-muted bg-brand-muted px-4 py-1.5 text-sm text-brand dark:border-brand-muted dark:bg-brand-muted dark:text-brand"
         >
           <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-          AI-Powered
+          {t('badge')}
         </Badge>
 
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
@@ -49,14 +49,14 @@ export function HeroSection() {
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Button
             asChild
-            className="h-12 w-full cursor-pointer rounded-xl bg-brand px-8 text-base font-semibold text-white shadow-lg shadow-brand/25 transition-all hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-xl hover:shadow-brand/30 sm:h-11 sm:w-auto sm:px-6 sm:text-sm"
+            className="h-12 w-full cursor-pointer rounded-xl bg-brand px-8 text-base font-semibold text-white shadow-lg shadow-brand/25 transition-all hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-xl hover:shadow-brand/30 sm:h-12 sm:w-auto sm:px-8 sm:text-base"
           >
-            <Link href="/dashboard">{t('cta')}</Link>
+            <Link href="/dashboard?action=import">{t('cta')}</Link>
           </Button>
           <Button
             asChild
             variant="outline"
-            className="h-12 w-full cursor-pointer rounded-xl border-zinc-300 px-8 text-base font-semibold transition-all hover:-translate-y-0.5 dark:border-zinc-700 sm:h-11 sm:w-auto sm:px-6 sm:text-sm"
+            className="h-12 w-full cursor-pointer rounded-xl border border-zinc-300 bg-white/50 px-6 text-sm font-semibold transition-all hover:-translate-y-0.5 dark:border-zinc-700 dark:bg-zinc-900/50 sm:h-12 sm:w-auto sm:px-6 sm:text-sm"
           >
             <a href="#templates">{t('secondaryCta')}</a>
           </Button>

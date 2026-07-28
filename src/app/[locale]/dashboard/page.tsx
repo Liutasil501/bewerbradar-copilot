@@ -81,7 +81,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState<SortOption>('lastEdited');
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [viewMode, setViewMode] = useState<ViewMode>(getInitialView);
   const [shareResumeId, setShareResumeId] = useState<string | null>(null);
   const startTour = useTourStore((s) => s.startTour);
   const tBilling = useTranslations('billing');
@@ -96,19 +96,27 @@ export default function DashboardPage() {
     }
   };
 
-  // Auto-start dashboard tour for first-time users
+  const [hasImportIntent] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('action') === 'import');
+
+  // Auto-trigger import dialog if arrived with ?action=import
   useEffect(() => {
-    if (isLoading || fpLoading) return;
+    if (hasImportIntent) {
+      openModal('import');
+      // Remove query param from URL so page refresh doesn't reopen dialog
+      const url = new URL(window.location.href);
+      url.searchParams.delete('action');
+      window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+    }
+  }, [hasImportIntent, openModal]);
+
+  // Auto-start dashboard tour for first-time users (skipped if import intent is active)
+  useEffect(() => {
+    if (isLoading || fpLoading || hasImportIntent) return;
     if (hasCompletedTour('dashboard')) return;
     if (window.innerWidth < 768) return;
     const timer = setTimeout(() => startTour('dashboard', DASHBOARD_TOUR_STEPS.length), 800);
     return () => clearTimeout(timer);
-  }, [isLoading, fpLoading, startTour]);
-
-  // Hydrate view preference from localStorage on mount
-  useEffect(() => {
-    setViewMode(getInitialView());
-  }, []);
+  }, [isLoading, fpLoading, startTour, hasImportIntent]);
 
   // Persist view preference
   const handleViewChange = (mode: ViewMode) => {
@@ -123,7 +131,7 @@ export default function DashboardPage() {
     if (authEnabled || fingerprint) {
       fetchResumes();
     }
-  }, [fpLoading, fingerprint, fetchResumes]);
+  }, [fpLoading, fingerprint, authEnabled, fetchResumes]);
 
   // Filter and sort resumes
   const filteredResumes = useMemo(() => {
@@ -276,8 +284,33 @@ export default function DashboardPage() {
           ))}
         </div>
       ) : !hasResumes ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 py-16">
-          <p className="text-zinc-500 dark:text-zinc-400">{t('noResumes')}</p>
+        <div className="mx-auto flex max-w-xl flex-col items-center justify-center rounded-2xl border border-zinc-200 bg-white p-8 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-12">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-muted text-brand dark:bg-brand-muted/50 dark:text-brand">
+            <Upload className="h-7 w-7" />
+          </div>
+          <h2 className="text-xl font-bold text-zinc-900 dark:text-foreground">
+            {t('emptyState.title')}
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+            {t('emptyState.description')}
+          </p>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <Button
+              onClick={() => handleCreateAction(() => openModal('import'))}
+              className="cursor-pointer gap-2 bg-brand px-6 hover:bg-brand-hover"
+            >
+              <Upload className="h-4 w-4" />
+              {t('emptyState.importCta')}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleCreateAction(() => openModal('create-resume'))}
+              className="cursor-pointer gap-2 px-6"
+            >
+              <Plus className="h-4 w-4" />
+              {t('emptyState.blankCta')}
+            </Button>
+          </div>
         </div>
       ) : !hasResults ? (
         <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 py-16">

@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
     }
 
     const allSections = sectionIds
-      ? workingSections.filter((s: any) => sectionIds.includes(s.id))
+      ? workingSections.filter((s: { id: string }) => sectionIds.includes(s.id))
       : workingSections;
 
     if (allSections.length === 0) {
@@ -142,13 +142,12 @@ export async function POST(request: NextRequest) {
     // Save stripped fields so we can merge them back after translation
     const strippedFields = new Map<string, Record<string, unknown>>();
 
-    const sectionsData = allSections.map((s: any) => {
+    const sectionsData = allSections.map((s: { id: string; type: string; title?: string; content?: Record<string, unknown> }) => {
       const fieldsToStrip = STRIP_FIELDS[s.type];
-      let content = s.content;
+      let content = (s.content && typeof s.content === 'object' ? { ...s.content } : s.content) as Record<string, unknown> | undefined;
 
       if (fieldsToStrip && content && typeof content === 'object') {
         const saved: Record<string, unknown> = {};
-        content = { ...content };
         for (const field of fieldsToStrip) {
           if (field in content) {
             saved[field] = content[field];
@@ -163,7 +162,7 @@ export async function POST(request: NextRequest) {
       return {
         sectionId: s.id,
         type: s.type,
-        title: s.title,
+        title: s.title || '',
         content,
       };
     });
@@ -237,7 +236,7 @@ export async function POST(request: NextRequest) {
         try {
           const updatedResume = await resumeRepository.findById(targetResumeId);
           const updatedSections = sectionIds
-            ? updatedResume?.sections.filter((s: any) => sectionIds.includes(s.id))
+            ? updatedResume?.sections.filter((s: { id: string }) => sectionIds.includes(s.id))
             : updatedResume?.sections;
 
           send({
@@ -249,7 +248,7 @@ export async function POST(request: NextRequest) {
             ...(newResumeId ? { newResumeId } : {}),
           });
         } catch (err) {
-          console.error('Error fetching final data:', err);
+          console.error('Error fetching final data: %s', err instanceof Error ? err.name : String(err));
           send({ type: 'done', resumeId: targetResumeId, language: targetLanguage, sections: [], failedCount, ...(newResumeId ? { newResumeId } : {}) });
         }
 
@@ -271,7 +270,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof AIConfigError) {
       return new Response(JSON.stringify({ error: error.message }), { status: 401 });
     }
-    console.error('POST /api/ai/translate error:', error);
+    console.error('POST /api/ai/translate error: %s', error instanceof Error ? error.name : String(error));
     return new Response(JSON.stringify({ error: 'Failed to translate resume' }), { status: 500 });
   }
 }

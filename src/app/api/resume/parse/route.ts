@@ -179,28 +179,36 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    await userRepository.incrementAiImportsCount(user.id);
+    const hasUserApiKey = Boolean(request.headers.get('x-ai-api-key'));
+    const usedServerFreeTrial = isFreePlan && allowFreeTrial && !hasUserApiKey;
+    if (usedServerFreeTrial) {
+      await userRepository.incrementAiImportsCount(user.id);
+    }
 
     const fullResume = await resumeRepository.findById(resume.id);
     return NextResponse.json(fullResume, { status: 201 });
   } catch (error) {
-    const errStr = (String(error) + (error instanceof Error ? error.message : '')).toLowerCase();
-    const isApiKeyIssue =
-      error instanceof AIConfigError ||
-      errStr.includes('api key') ||
-      errStr.includes('key_invalid') ||
-      errStr.includes('invalid') ||
-      errStr.includes('authentication') ||
-      errStr.includes('unauthorized') ||
-      errStr.includes('401') ||
-      errStr.includes('400');
-
-    if (isApiKeyIssue) {
-      return NextResponse.json({ error: 'apiKeyMissing' }, { status: 401 });
+    if (error instanceof AIConfigError) {
+      console.warn('[parse] AIConfigError: API key missing');
+      return NextResponse.json({ code: 'API_KEY_MISSING', error: 'API key missing' }, { status: 401 });
     }
-    const errSummary = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
-    console.error('POST /api/resume/parse error:', errSummary);
-    return NextResponse.json({ error: 'Failed to parse resume' }, { status: 500 });
+    const errName = error instanceof Error ? error.name : 'UnknownError';
+    const errMessage = error instanceof Error ? error.message : String(error);
+    const lower = errMessage.toLowerCase();
+
+    if (
+      lower.includes('invalid api key') ||
+      lower.includes('incorrect api key') ||
+      lower.includes('key_invalid') ||
+      lower.includes('unauthorized') ||
+      lower.includes('401')
+    ) {
+      console.warn('[parse] Provider Auth Error: %s', errName);
+      return NextResponse.json({ code: 'API_KEY_INVALID', error: 'Invalid API key' }, { status: 401 });
+    }
+
+    console.error('[parse] Failure: %s', errName);
+    return NextResponse.json({ code: 'PARSE_FAILED', error: 'Failed to parse resume' }, { status: 500 });
   }
 }
 

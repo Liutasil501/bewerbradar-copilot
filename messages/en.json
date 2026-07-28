@@ -152,6 +152,12 @@
       "parseFailed": "Failed to parse resume. Please try again.",
       "limitReachedFreeSlot": "Your Free plan is limited to 1 resume. Delete an existing resume to use your free trial import.",
       "trialAlreadyUsed": "You have already used your free trial import. Upgrade to Pro for unlimited AI imports."
+    },
+    "emptyState": {
+      "title": "Get started with your existing resume",
+      "description": "Import your file and let BewerbRadar take care of structure and design — or start with a blank resume.",
+      "importCta": "Import Resume",
+      "blankCta": "Start Blank"
     }
   },
   "editor": {
@@ -571,7 +577,19 @@
     "detectImage": "Image Resume Detected",
     "uploadAndParse": "Upload & Analyze",
     "parsing": "Parsing...",
-    "templateSelect": "Select a design for your new resume:"
+    "templateSelect": "Select a design for your new resume:",
+    "errors": {
+      "limitReachedFreeSlotTitle": "Your free resume slot is occupied",
+      "limitReachedFreeSlotText": "The free plan allows you to save 1 resume. Delete your existing resume or upgrade to save more resumes.",
+      "trialAlreadyUsedTitle": "Your free AI import has already been used",
+      "trialAlreadyUsedText": "With Pro or Premium you can import additional resumes using AI. Alternatively, you can use your own API key.",
+      "apiKeyMissingTitle": "Access required for this AI import",
+      "apiKeyMissingText": "Use Pro or Premium, or enter your own API key in settings.",
+      "apiKeyInvalidTitle": "The API key was rejected",
+      "apiKeyInvalidText": "Please check the API key configured in settings and try again.",
+      "viewPlans": "View Pro & Premium",
+      "enterApiKey": "Enter Own API Key"
+    }
   },
   "pdfOptions": {
     "title": "PDF Export Options",
@@ -685,9 +703,10 @@
       "dashboard": "Dashboard"
     },
     "hero": {
-      "title": "Create Your Resume with AI",
-      "subtitle": "Create and optimize your resume in minutes with AI assistance.",
-      "cta": "Import Resume with AI",
+      "badge": "AI-powered",
+      "title": "Create your perfect, ATS-friendly resume with AI.",
+      "subtitle": "Upload your existing resume. BewerbRadar restructures and redesigns it in minutes — for a better chance of landing interviews.",
+      "cta": "Import Your Resume",
       "secondaryCta": "View Templates"
     },
     "features": {

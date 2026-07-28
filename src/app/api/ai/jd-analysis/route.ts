@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof AIConfigError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
     }
-    console.error('POST /api/ai/jd-analysis error:', error);
+    console.error('POST /api/ai/jd-analysis error: %s', error instanceof Error ? error.name : String(error));
     return NextResponse.json({ error: 'Failed to analyze job description match' }, { status: 500 });
   }
 }

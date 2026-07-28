@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { Link } from '@/i18n/routing';
-import { Menu, Star } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LocaleSwitcher } from '@/components/layout/locale-switcher';
 import {
@@ -25,6 +25,7 @@ export function LandingHeader() {
 
   const isLoggedIn = authEnabled && !!session?.user;
   const ctaLabel = isLoggedIn ? t('dashboard') : t('getStarted');
+  const ctaHref = isLoggedIn ? '/dashboard' : '/dashboard?action=import';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -73,7 +74,7 @@ export function LandingHeader() {
             asChild
             className="hidden cursor-pointer bg-brand text-white hover:bg-brand-hover sm:inline-flex"
           >
-            <Link href="/dashboard">{ctaLabel}</Link>
+            <Link href={ctaHref}>{ctaLabel}</Link>
           </Button>
 
           <Sheet open={open} onOpenChange={setOpen}>
@@ -115,7 +116,7 @@ export function LandingHeader() {
                     asChild
                     className="h-11 w-full cursor-pointer rounded-lg bg-brand text-[15px] font-medium text-white shadow-sm shadow-brand/20 hover:bg-brand-hover"
                   >
-                    <Link href="/dashboard" onClick={() => setOpen(false)}>{ctaLabel}</Link>
+                    <Link href={ctaHref} onClick={() => setOpen(false)}>{ctaLabel}</Link>
                   </Button>
                 </div>
               </div>

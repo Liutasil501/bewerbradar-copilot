@@ -164,7 +164,7 @@ Respond with JSON only.`,
     if (error instanceof AIConfigError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
     }
-    console.error('POST /api/ai/generate-resume error:', error);
+    console.error('POST /api/ai/generate-resume error: %s', error instanceof Error ? error.name : String(error));
     return NextResponse.json({ error: 'Failed to generate resume' }, { status: 500 });
   }
 }

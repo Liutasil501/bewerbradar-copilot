@@ -98,11 +98,13 @@ export async function POST(request: NextRequest) {
           const tcs = step.toolCalls ?? [];
           const trs = step.toolResults ?? [];
           for (let i = 0; i < tcs.length; i++) {
+            const tc = tcs[i] as { toolName: string; input: unknown };
+            const tr = trs[i] as { output: unknown } | undefined;
             orderedParts.push({
               type: 'tool',
-              toolName: (tcs[i] as any).toolName,
-              args: (tcs[i] as any).input,
-              result: (trs[i] as any)?.output,
+              toolName: tc.toolName,
+              args: tc.input,
+              result: tr?.output,
             });
           }
         }
@@ -124,7 +126,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof AIConfigError) {
       return new Response(JSON.stringify({ error: error.message }), { status: 401 });
     }
-    console.error('POST /api/ai/chat error:', error);
+    console.error('POST /api/ai/chat error: %s', error instanceof Error ? error.name : String(error));
     return new Response('Internal server error', { status: 500 });
   }
 }

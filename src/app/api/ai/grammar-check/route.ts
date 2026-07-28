@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
 
     // Filter sections if specific IDs are provided
     const sectionsToCheck = sectionIds
-      ? resume.sections.filter((s: any) => sectionIds.includes(s.id))
+      ? resume.sections.filter((s: { id: string }) => sectionIds.includes(s.id))
       : resume.sections;
 
     if (sectionsToCheck.length === 0) {
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Prepare sections data for AI analysis
-    const sectionsData = sectionsToCheck.map((s: any) => ({
+    const sectionsData = sectionsToCheck.map((s: { id: string; title: string; type: string; content: unknown }) => ({
       sectionId: s.id,
       sectionTitle: s.title,
       type: s.type,
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
       });
       historyId = saved?.id;
     } catch (e) {
-      console.error('Failed to save grammar check history:', e);
+      console.error('Failed to save grammar check history: %s', e instanceof Error ? e.name : String(e));
     }
 
     return NextResponse.json({ ...checkResult, historyId });
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof AIConfigError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
     }
-    console.error('POST /api/ai/grammar-check error:', error);
+    console.error('POST /api/ai/grammar-check error: %s', error instanceof Error ? error.name : String(error));
     return NextResponse.json({ error: 'Failed to check grammar' }, { status: 500 });
   }
 }

@@ -25,9 +25,9 @@ export function CTASection() {
             </p>
             <Button
               asChild
-              className="mt-10 h-12 cursor-pointer rounded-xl bg-white px-8 text-base font-semibold text-brand shadow-lg transition-all hover:-translate-y-0.5 hover:bg-zinc-50 hover:shadow-xl sm:h-11 sm:px-6 sm:text-sm"
+              className="mt-10 h-12 cursor-pointer rounded-xl bg-white px-8 text-base font-semibold text-brand shadow-lg transition-all hover:-translate-y-0.5 hover:bg-zinc-50 hover:shadow-xl sm:h-12 sm:px-8 sm:text-base"
             >
-              <Link href="/dashboard">{t('button')}</Link>
+              <Link href="/dashboard?action=import">{t('button')}</Link>
             </Button>
           </div>
         </div>

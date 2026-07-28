@@ -152,6 +152,12 @@
       "parseFailed": "Fehler beim Analysieren des Lebenslaufs. Bitte versuchen Sie es erneut.",
       "limitReachedFreeSlot": "Ihr kostenloses Guthaben reicht für 1 Lebenslauf. Löschen Sie Ihren bestehenden Lebenslauf, um den Testimport zu nutzen.",
       "trialAlreadyUsed": "Sie haben Ihren kostenlosen KI-Testimport bereits genutzt. Führen Sie ein Upgrade auf Pro durch, um unbegrenzt zu importieren."
+    },
+    "emptyState": {
+      "title": "Starten Sie mit Ihrem bestehenden Lebenslauf",
+      "description": "Importieren Sie Ihre Datei und lassen Sie BewerbRadar Struktur und Design übernehmen – oder beginnen Sie mit einem leeren Lebenslauf.",
+      "importCta": "Lebenslauf importieren",
+      "blankCta": "Leer starten"
     }
   },
   "editor": {
@@ -571,7 +577,19 @@
     "detectImage": "Bild-Lebenslauf erkannt",
     "uploadAndParse": "Hochladen & Analysieren",
     "parsing": "Wird analysiert...",
-    "templateSelect": "Wählen Sie ein Design für Ihren neuen Lebenslauf:"
+    "templateSelect": "Wählen Sie ein Design für Ihren neuen Lebenslauf:",
+    "errors": {
+      "limitReachedFreeSlotTitle": "Ihr kostenloser Lebenslaufplatz ist belegt",
+      "limitReachedFreeSlotText": "Im Free-Tarif können Sie einen Lebenslauf speichern. Löschen Sie den vorhandenen Lebenslauf oder upgraden Sie für weitere Lebensläufe.",
+      "trialAlreadyUsedTitle": "Ihr kostenloser KI-Import wurde bereits genutzt",
+      "trialAlreadyUsedText": "Mit Pro oder Premium können Sie weitere Lebensläufe per KI importieren. Alternativ können Sie Ihren eigenen API-Schlüssel verwenden.",
+      "apiKeyMissingTitle": "Für diesen KI-Import wird ein Zugang benötigt",
+      "apiKeyMissingText": "Nutzen Sie Pro oder Premium oder hinterlegen Sie Ihren eigenen API-Schlüssel.",
+      "apiKeyInvalidTitle": "Der API-Schlüssel wurde abgelehnt",
+      "apiKeyInvalidText": "Prüfen Sie den hinterlegten API-Schlüssel und versuchen Sie es erneut.",
+      "viewPlans": "Pro & Premium ansehen",
+      "enterApiKey": "Eigenen API-Schlüssel eintragen"
+    }
   },
   "pdfOptions": {
     "title": "PDF Exportoptionen",
@@ -685,9 +703,10 @@
       "dashboard": "Dashboard"
     },
     "hero": {
-      "title": "Erstellen Sie Ihren Lebenslauf mit KI",
-      "subtitle": "Erstellen und optimieren Sie Ihren Lebenslauf in Minuten mit KI-Unterstützung.",
-      "cta": "Lebenslauf mit KI importieren",
+      "badge": "KI-gestützt",
+      "title": "Erstellen Sie Ihren perfekten, ATS-freundlichen Lebenslauf mit KI.",
+      "subtitle": "Laden Sie Ihren bestehenden Lebenslauf hoch. BewerbRadar strukturiert und gestaltet ihn in wenigen Minuten neu – für mehr Chancen auf Interviews.",
+      "cta": "Lebenslauf jetzt importieren",
       "secondaryCta": "Vorlagen ansehen"
     },
     "features": {
