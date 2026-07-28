@@ -4,7 +4,6 @@ import Credentials from 'next-auth/providers/credentials';
 import Nodemailer from 'next-auth/providers/nodemailer';
 import { config } from '@/lib/config';
 import { userRepository } from '@/lib/db/repositories/user.repository';
-import { createSampleResume } from '@/lib/db/sample-resume';
 import { db } from '@/lib/db';
 import { verificationTokens } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -88,10 +87,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async linkAccount(account: Record<string, unknown>) {
       return account;
     },
-    async getUserByAccount(_provider_providerAccountId: Record<string, unknown>) {
+    async getUserByAccount() {
       return null;
     },
-  } as any,
+  } as unknown as import('next-auth/adapters').Adapter,
   session: { strategy: 'jwt' },
   callbacks: {
     async jwt({ token, user, account, profile }) {
@@ -99,7 +98,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user && (account?.provider === 'google' || account?.provider === 'nodemailer')) {
         const email = (profile?.email || user.email) as string;
         const name = (profile?.name || user.name) as string | undefined;
-        const avatar = ((profile as any)?.picture || user.image) as string | undefined;
+        const avatar = ((profile as { picture?: string })?.picture || user.image) as string | undefined;
 
         let dbUser = email ? await userRepository.findByEmail(email) : null;
         if (!dbUser) {

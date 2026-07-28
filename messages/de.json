@@ -149,7 +149,9 @@
       "uploadAndParse": "Hochladen & Analysieren",
       "invalidType": "Nicht unterstütztes Format. Erlaubt: PDF, PNG, JPG, WebP",
       "fileTooLarge": "Datei zu groß. Maximale Größe: 10MB",
-      "parseFailed": "Fehler beim Analysieren des Lebenslaufs. Bitte versuchen Sie es erneut."
+      "parseFailed": "Fehler beim Analysieren des Lebenslaufs. Bitte versuchen Sie es erneut.",
+      "limitReachedFreeSlot": "Ihr kostenloses Guthaben reicht für 1 Lebenslauf. Löschen Sie Ihren bestehenden Lebenslauf, um den Testimport zu nutzen.",
+      "trialAlreadyUsed": "Sie haben Ihren kostenlosen KI-Testimport bereits genutzt. Führen Sie ein Upgrade auf Pro durch, um unbegrenzt zu importieren."
     }
   },
   "editor": {
@@ -683,9 +685,9 @@
       "dashboard": "Dashboard"
     },
     "hero": {
-      "title": "Erstellen Sie Ihren perfekten Lebenslauf mit KI",
-      "subtitle": "Erstellen Sie in Minuten professionelle, ATS-freundliche Lebensläufe. Unterstützt von KI, damit Sie auffallen und Ihren Traumjob bekommen.",
-      "cta": "Kostenlos starten",
+      "title": "Erstellen Sie Ihren Lebenslauf mit KI",
+      "subtitle": "Erstellen und optimieren Sie Ihren Lebenslauf in Minuten mit KI-Unterstützung.",
+      "cta": "Lebenslauf mit KI importieren",
       "secondaryCta": "Vorlagen ansehen"
     },
     "features": {

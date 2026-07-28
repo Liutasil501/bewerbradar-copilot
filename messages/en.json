@@ -149,7 +149,9 @@
       "uploadAndParse": "Upload & Parse",
       "invalidType": "Unsupported file type. Accepted: PDF, PNG, JPG, WebP",
       "fileTooLarge": "File too large. Maximum size: 10MB",
-      "parseFailed": "Failed to parse resume. Please try again."
+      "parseFailed": "Failed to parse resume. Please try again.",
+      "limitReachedFreeSlot": "Your Free plan is limited to 1 resume. Delete an existing resume to use your free trial import.",
+      "trialAlreadyUsed": "You have already used your free trial import. Upgrade to Pro for unlimited AI imports."
     }
   },
   "editor": {
@@ -683,9 +685,9 @@
       "dashboard": "Dashboard"
     },
     "hero": {
-      "title": "Build Your Perfect Resume with AI",
-      "subtitle": "Create professional, ATS-friendly resumes in minutes. Powered by AI to help you stand out and land your dream job.",
-      "cta": "Start Building for Free",
+      "title": "Create Your Resume with AI",
+      "subtitle": "Create and optimize your resume in minutes with AI assistance.",
+      "cta": "Import Resume with AI",
       "secondaryCta": "View Templates"
     },
     "features": {

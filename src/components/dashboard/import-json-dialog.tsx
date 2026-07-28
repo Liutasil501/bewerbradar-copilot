@@ -59,6 +59,7 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
   const tBase = useTranslations();
   const router = useRouter();
   const openModal = useUIStore((s) => s.openModal);
+  const { currentPlan, checkPaywall, showPaywall, setShowPaywall, requiredTier, paywallDescription } = usePaywall();
 
   const [state, setState] = useState<ImportState>('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -67,8 +68,6 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
   const [template, setTemplate] = useState<string>('classic');
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const { currentPlan, checkPaywall, showPaywall, setShowPaywall, requiredTier, paywallDescription } = usePaywall();
 
   useEffect(() => {
     if (open) {
@@ -171,7 +170,17 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
 
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || 'Parse failed');
+          let msg = data.error || 'Parse failed';
+          if (data.code === 'LIMIT_REACHED_FREE_SLOT') {
+            msg = tBase('dashboard.upload.limitReachedFreeSlot');
+          } else if (data.code === 'TRIAL_ALREADY_USED') {
+            setShowPaywall(true);
+            msg = tBase('dashboard.upload.trialAlreadyUsed');
+          } else if (data.code === 'API_KEY_MISSING' || data.error === 'apiKeyMissing') {
+            setShowPaywall(true);
+            msg = tAi('apiKeyMissingHint');
+          }
+          throw new Error(msg);
         }
 
         newResume = await res.json();
@@ -193,7 +202,7 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
         setErrorMessage(message || t('error'));
       }
     }
-  }, [selectedFile, fileType, template, onOpenChange, router, t, tAi]);
+  }, [selectedFile, fileType, template, onOpenChange, router, t, tAi, tBase, setShowPaywall]);
 
   const isLoading = state === 'importing';
 

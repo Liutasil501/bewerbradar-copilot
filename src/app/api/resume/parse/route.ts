@@ -50,12 +50,18 @@ export async function POST(request: NextRequest) {
     if (isFreePlan && existingResumes.length >= MAX_FREE_RESUMES && !allowFreeTrial) {
       if (aiImportsCount >= 1) {
         return NextResponse.json(
-          { error: 'Trial import already used. Upgrade to Pro for unlimited AI imports.' },
+          {
+            code: 'TRIAL_ALREADY_USED',
+            error: 'Trial import already used. Upgrade to Pro for unlimited AI imports.',
+          },
           { status: 403 }
         );
       }
       return NextResponse.json(
-        { error: `Free plan is limited to ${MAX_FREE_RESUMES} resume(s). Delete existing resume to use your free trial import.` },
+        {
+          code: 'LIMIT_REACHED_FREE_SLOT',
+          error: `Free plan is limited to ${MAX_FREE_RESUMES} resume(s). Delete existing resume to use your free trial import.`,
+        },
         { status: 403 }
       );
     }
@@ -142,7 +148,7 @@ export async function POST(request: NextRequest) {
     // Parse JSON from response
     const raw = parseJsonFromText(result.text);
     if (!raw || typeof raw !== 'object') {
-      console.error('[parse] Failed to parse JSON. Raw text:', result.text.slice(0, 500));
+      console.error('[parse] Failed to parse JSON from response (length=%d)', result.text.length);
       return NextResponse.json({ error: 'Failed to extract resume data' }, { status: 500 });
     }
 

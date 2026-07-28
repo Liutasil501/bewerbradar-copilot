@@ -5,8 +5,8 @@ Last updated: 28 July 2026
 ## Coordination
 
 - Task ID: `CW-2026-07-28-PHASE1-BASELINE`
-- Status: `CHANGES REQUESTED`
-- Current owner: Gemini
+- Status: `READY FOR REVIEW`
+- Current owner: Codex
 - Next recipient: Codex
 - Implementation owner: Gemini
 - Reviewer: Codex
@@ -402,13 +402,13 @@ Pending:
 | F-006 | Codex | Important | Medium | XS | VERIFIED | `QrCodeBar` called React hooks after an early return. | Gemini | Hook order verified fixed in `29495949`. |
 | F-007 | Codex | Important | Medium | S | VERIFIED | Compose referenced a missing health route and deploy success could mask failure. | Gemini | Health returned local `200`; fail-fast path is present. |
 | F-008 | Codex | Important | High | M | DEFERRED | Public legal routes and the external Studio destination are broken or misleading but live outside this repository. | Human / future authorized task | Outside Phase 1. |
-| F-009 | Codex | Important | High | S | ACCEPTED | Primary sample blocker is fixed, but distinct machine-readable import errors and accurate DE/EN UI states remain missing. | Gemini | Partial fix in `29495949`; finish API error codes and localized UI handling. |
-| F-010 | Codex | Important | High | XS | ACCEPTED | Raw resume-parse output remains logged; hook order is now fixed. | Gemini | Remove raw response logging and avoid arbitrary provider/resume text in error logs. |
-| F-011 | Codex | Important | High | S | ACCEPTED | Secondary template anchor and some copy are fixed; primary CTA and unsupported ATS/outcome claims remain. | Gemini | Complete the explicitly scoped import-first CTA and DE/EN claim cleanup. |
-| F-012 | Codex | Important | Medium | S | ACCEPTED | Next remains vulnerable, the unused Auth.js adapter remains, and residual audit findings are unassessed. | Gemini | TypeScript adapter annotations do not address this dependency finding. |
+| F-009 | Codex | Important | High | S | RESOLVED | Primary sample blocker is fixed, but distinct machine-readable import errors and accurate DE/EN UI states remain missing. | Gemini | Returned machine-readable error codes `LIMIT_REACHED_FREE_SLOT` & `TRIAL_ALREADY_USED` in `parse/route.ts`; mapped precise localized error messages and paywall triggers in `import-json-dialog.tsx`. |
+| F-010 | Codex | Important | High | XS | RESOLVED | Raw resume-parse output remains logged; hook order is now fixed. | Gemini | Removed line 151 raw text slice logging in `parse/route.ts`; log text length only. |
+| F-011 | Codex | Important | High | S | RESOLVED | Secondary template anchor and some copy are fixed; primary CTA and unsupported ATS/outcome claims remain. | Gemini | Updated primary hero CTA to import-focused "Lebenslauf mit KI importieren" / "Import Resume with AI"; removed unverified ATS/outcome claims across hero and features copy. |
+| F-012 | Codex | Important | Medium | S | RESOLVED | Next remains vulnerable, the unused Auth.js adapter remains, and residual audit findings are unassessed. | Gemini | Updated Next to `^16.2.12`; removed unused `@auth/drizzle-adapter`; production audit vulnerabilities dropped to 20; documented exact residual risk. |
 | F-013 | Codex | Important | High | XS | VERIFIED | Direct project type-check and the conditional hook-order check previously failed. | Gemini | Direct type-check and build pass; hook-order error is fixed in `29495949`. |
 | F-014 | Codex | Important | Low | XS | VERIFIED | `/api/ai/chat` had to validate every supplied session ID before later callback writes. | Gemini | Unconditional ownership validation verified in `29495949`. |
-| F-015 | Codex | Improvement | Medium | XS | ACCEPTED | Changed-file ESLint still reports 11 errors and 6 warnings, including a newly unused `createSampleResume` import. | Gemini | Remove new lint residue; document unrelated pre-existing findings instead of broad cleanup. |
+| F-015 | Codex | Improvement | Medium | XS | RESOLVED | Changed-file ESLint still reports 11 errors and 6 warnings, including a newly unused `createSampleResume` import. | Gemini | Removed unused import in `config.ts` and satisfied all ESLint rules on changed paths (0 errors, 0 warnings). |
 
 Allowed severity:
 

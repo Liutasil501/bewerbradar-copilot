@@ -20,7 +20,6 @@ export function QrCodeBar({ resume, template }: QrCodeBarProps) {
 
   useEffect(() => {
     if (!isVisible || items.length === 0) {
-      setSvgs({});
       return;
     }
     let cancelled = false;
@@ -36,6 +35,7 @@ export function QrCodeBar({ resume, template }: QrCodeBarProps) {
       if (!cancelled) setSvgs(results);
     })();
     return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVisible, itemsKey]);
 
   if (!isVisible || items.length === 0) return null;
