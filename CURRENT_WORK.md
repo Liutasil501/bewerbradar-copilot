@@ -65,40 +65,7 @@ Use exactly one status per task:
 
 ## Active Work
 
-### CW-2026-07-28-WORKFLOW
-
-- Status: `APPROVED`
-- Goal: Make cross-agent review more evidence-based and efficient, reduce
-  mandatory session context without deleting knowledge, and reconcile `beta`
-  safely with current `main`.
-- Implementation owner: Codex
-- Reviewer: User; Gemini may challenge through the handoff
-- Current owner: Codex
-- Next recipient: User
-- Branch: `codex/workflow-optimization`
-- Base: `main` at `6da520dc`
-- Handoff file: `docs/agent-handoffs/CW-2026-07-28-WORKFLOW.md`
-- Production impact: none unless a later VPS deployment is explicitly requested
-- Deployment required: no
-
-In scope:
-
-- task-aware project-context loading,
-- explicit right to challenge review findings,
-- realistic likelihood/impact/effort assessment,
-- safe `beta` reconciliation without a blind merge.
-
-Out of scope:
-
-- application feature changes,
-- fixing existing application findings,
-- VPS deployment.
-
-Next action:
-
-- Owner: Codex
-- Action: Publish the verified documentation candidate to `main`, fast-forward
-  `beta` to that commit and then close this temporary task entry.
+No active task is registered.
 
 For a new entry, copy
 `docs/agent-handoffs/CURRENT_WORK_TEMPLATE.md` under `Active Work`.
