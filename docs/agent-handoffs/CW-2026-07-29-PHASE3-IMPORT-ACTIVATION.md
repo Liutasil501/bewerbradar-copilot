@@ -5,13 +5,13 @@ Last updated: 29 July 2026
 ## Coordination
 
 - Task ID: `CW-2026-07-29-PHASE3-IMPORT-ACTIVATION`
-- Status: `READY FOR REVIEW`
+- Status: `READY TO DEPLOY`
 - Current owner: Codex
-- Next recipient: Codex for independent review
+- Next recipient: Codex after explicit VPS deployment authorization
 - Implementation owner: Gemini
 - Reviewer: Codex
 - Branch: `beta`
-- Base branch and commit: `beta` at `b4eb5350`
+- Reviewed code candidate: `beta` at `8b2bb363`
 - Planning commit: `31745f29`
 - `CURRENT_WORK.md` synchronized: yes
 
@@ -395,10 +395,58 @@ Do not use a real applicant resume or expose account credentials in evidence.
 
 ## Review
 
-- Result: pending implementation
+- Result: `GO` for source publication
+- Deployment status: `NOT DEPLOYED`
+- Reviewer: Codex
+- Reviewed diff: `c00400be..8b2bb363`
+- Review date: 29 July 2026
+
+Independent review confirmed the intended import-intent continuation, one-time
+dashboard opening and editor handoff. Codex corrected bounded `S` findings in
+`8b2bb363` and reran the proportional verification.
 
 | ID | Raised by | Severity | Likelihood | Effort | Status | Finding and evidence | Response by | Response or fixing commit |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| P3-R1 | Codex | Medium | High | S | RESOLVED | The claimed real processing stages were driven by fixed 1.0 s and 3.2 s timers and could continue after success, failure or retry. | Codex | Removed fake stage timers. The single request now shows honest indeterminate processing with the three operations as an explanatory sequence. `8b2bb363` |
+| P3-R2 | Codex | Medium | High for BYOK users | S | RESOLVED | `getAIHeaders()` emits `x-api-key`, while access display and analytics checked the nonexistent `x-ai-api-key`; BYOK was therefore misclassified. | Codex | Corrected both checks to `x-api-key`. `8b2bb363` |
+| P3-R3 | Codex | Medium | Certain in EN | S | RESOLVED | The English login flow rendered German e-mail labels and the legal text had no links. | Codex | Localized all e-mail states and added intent-preserving AGB and privacy links. `8b2bb363` |
+| P3-R4 | Codex | Low | Medium | S | RESOLVED | Recoverable parse failures offered only `Zurück`, discarded the selected file and did not provide the required direct retry. | Codex | Added a localized retry action that reuses the selected file. `8b2bb363` |
+| P3-R5 | Codex | Medium | High for first-time visitors | S | RESOLVED | `import_auth_gate_viewed` was marked as handled before consent existed, so granting analytics on the visible login page could never emit the event. | Codex | Track only after granted consent and listen for the bounded consent update while the gate remains rendered. `8b2bb363` |
+| P3-R6 | Codex | Low | Low | XS | RESOLVED | The imported-result marker was a generic boolean and could attach guidance to an unrelated resume after interrupted navigation. | Codex | Marker now carries the imported resume ID and is cleared after the matching editor renders. `8b2bb363` |
+
+Verification completed by Codex:
+
+- `node node_modules/typescript/bin/tsc --noEmit`: passed
+- focused ESLint for all changed TypeScript and TSX files: passed with zero
+  errors and zero warnings
+- DE and EN locale JSON parsing: passed
+- `git diff --check`: passed
+- Next.js 16.2.12 production build: passed
+- production-build browser checks:
+  - DE import-intent login rendered the agreed continuation copy
+  - EN import-intent and direct login contained no German fallback labels
+  - legal links resolve to the existing AGB and privacy destinations
+  - mobile import-intent login had no horizontal overflow at 375 x 812
+  - `/dashboard?action=import` opened the import dialog once, removed the query
+    parameter and did not reopen it after refresh
+  - dashboard tour did not interrupt the import-intent path
+  - imported-result guidance rendered only for the matching resume
+  - `Inhalte prüfen` dismissed the guidance
+  - `Vorlage wählen` opened the Design-Editor
+  - guidance did not recur after refresh
+
+External verification dependency:
+
+- The repository-side consent-gated event contract is verified.
+- Tag Assistant and GA4 DebugView receipt are not verified because this review
+  has no authenticated access to the GTM/GA4 account and Phase 3 is not
+  deployed.
+- The production Google and e-mail authentication round trip must be smoke
+  tested after deployment. Local callback execution is blocked by the
+  intentionally absent production `AUTH_SECRET` and provider credentials; the
+  callback construction itself remains unchanged and was inspected in code.
+- These external checks do not block source publication, but they are required
+  before Phase 3 may be reported as `VERIFIED LIVE`.
 
 ## Message Ledger
 
@@ -406,8 +454,10 @@ Do not use a real applicant resume or expose account credentials in evidence.
 | --- | --- | --- | --- | --- | --- |
 | 2026-07-29 | Codex | Gemini | TASK ASSIGNMENT | Implement Phase 3 import-intent activation continuity on `beta`. Preserve direct login and all current entitlement behavior. Challenge requirements with evidence where appropriate. Do not publish `main` or deploy. | `31745f29` |
 | 2026-07-29 | Gemini | Codex | HANDOFF | Phase 3 implementation complete on `beta`. Verified with `pnpm type-check`, focused ESLint, `pnpm build`, `git diff --check`. Handoff to Codex for independent review. | `b4eb5350` |
+| 2026-07-29 | Codex | Gemini | REVIEW | Independent review found six bounded findings. Codex resolved them directly, verified the production build and focused browser flows, and issued `GO` for source publication. | `8b2bb363` |
 
 ## Next Action
 
 - Owner: Codex
-- Action: Review Phase 3 implementation on `beta` at commit `b4eb5350`, perform independent verification, correct XS/S findings if needed, and make GO / NO-GO decision.
+- Action: Publish the reviewed candidate to `main`. Do not deploy until the
+  user explicitly authorizes the VPS deployment in a current request.

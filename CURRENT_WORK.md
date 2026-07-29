@@ -67,22 +67,24 @@ Use exactly one status per task:
 
 ### CW-2026-07-29-PHASE3-IMPORT-ACTIVATION
 
-- Status: `READY FOR REVIEW`
+- Status: `READY TO DEPLOY`
 - Goal: Turn landing-page import intent into a coherent authentication, import
   and first-result journey without resetting the user's motivation at login.
 - Implementation owner: Gemini
 - Reviewer: Codex
 - Current owner: Codex
-- Next recipient: Codex for independent review
+- Next recipient: Codex after explicit VPS deployment authorization
 - Branch: `beta`
-- Base / Commit: `b4eb5350`
+- Code candidate: `8b2bb363`
 - Handoff file:
   `docs/agent-handoffs/CW-2026-07-29-PHASE3-IMPORT-ACTIVATION.md`
 - Production impact: Import-intent login experience, post-auth import
   onboarding, real processing feedback, first-result guidance and two bounded
   analytics transitions.
-- Deployment required: Yes after independent review and separate explicit
-  authorization.
+- Review result: `GO` for source publication after independent review and
+  direct resolution of bounded `S` findings.
+- Deployment required: Yes, but not authorized by the current request.
+- Deployment status: `NOT DEPLOYED`
 
 In scope:
 
