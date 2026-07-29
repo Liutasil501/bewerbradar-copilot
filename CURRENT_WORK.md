@@ -65,8 +65,93 @@ Use exactly one status per task:
 
 ## Active Work
 
-No active task.
+### CW-2026-07-29-PHASE2-MEASUREMENT-ACTIVATION
 
-Phase 1 was verified live on 29 July 2026. Its decisions, findings, release
-commit and residual risks remain in
-`docs/agent-handoffs/CW-2026-07-28-PHASE1-BASELINE.md`.
+- Status: `IMPLEMENTING`
+- Goal: Make the landing-to-activation funnel observable without collecting
+  resume content or other personal data, then use that evidence for the next
+  conversion decision.
+- Implementation owner: Gemini
+- Reviewer: Codex
+- Current owner: Gemini
+- Next recipient: Codex
+- Branch: `beta`
+- Base: `69c8ce5c5878de82299e1af224e26f398eadeb78`
+- Handoff file:
+  `docs/agent-handoffs/CW-2026-07-29-PHASE2-MEASUREMENT-ACTIVATION.md`
+- Production impact: Consent UI, GTM consent updates and analytics events across
+  landing, authentication, import, activation, paywall and checkout entry.
+- Deployment required: Yes after independent review and separate explicit
+  authorization. No VPS deployment is authorized by this task assignment.
+
+In scope:
+
+- P2.1 user-facing analytics consent choice in German and English,
+- versioned persistence and later reopening of the consent choice,
+- Consent Mode v2 updates while keeping advertising consent denied,
+- P2.2 typed and privacy-bounded data-layer utility,
+- the smallest useful landing-to-activation and conversion event funnel,
+- Tag Assistant and GA4 DebugView verification when the connected external
+  configuration is available,
+- durable analytics documentation after implementation.
+
+Out of scope:
+
+- guest import without authentication,
+- broad landing redesign or new AI features,
+- pricing or entitlement changes,
+- lifecycle e-mails and long-term retention automation,
+- legal-text authoring or claims of legal compliance,
+- a custom analytics dashboard,
+- production deployment.
+
+Decisions and assumptions:
+
+- Phase 2 starts with measurement because the largest current uncertainty is
+  where real users abandon the journey.
+- Activation means a user sees the usable result of their own successful
+  import. Registration alone is not activation.
+- Optional product analytics events are emitted only after analytics consent.
+- Advertising consent remains denied in this package.
+- No event may include resume content, filename, contact information, e-mail,
+  user ID, resume ID, API key, prompt, provider response or free-form error.
+- T-shirt size: `L` for Phase 2 overall, split into `M` consent foundation and
+  `M` funnel instrumentation.
+
+Verification completed:
+
+- `main` and `beta` verified aligned at `69c8ce5c`,
+- existing GTM container and denied Consent Mode defaults verified in code,
+- missing consent choice, consent update, GA4 confirmation and event utility
+  verified in project documentation and code search.
+
+Verification pending:
+
+- complete candidate diff review,
+- type-check and changed-file ESLint,
+- production build,
+- German and English consent-flow browser tests,
+- denied and granted data-layer behavior,
+- event trigger and deduplication checks,
+- Tag Assistant and GA4 DebugView where external access permits,
+- explicit PII-absence review.
+
+Database and environment impact:
+
+- no database migration expected,
+- no secret may be added to the repository,
+- a public GA4 measurement ID or GTM-side Google Tag may require external
+  configuration and must be reported honestly if unavailable.
+
+Risks or blockers:
+
+- GTM web-container or GA4 access may be an external-state dependency,
+- analytics and consent require stronger verification than ordinary UI copy,
+- event names become a durable measurement contract and must not drift silently.
+
+Next action:
+
+- Owner: Gemini
+- Action: Fetch `copilot/beta`, read the linked handoff, implement P2.1 and
+  P2.2 completely on `beta`, verify locally, commit and push, set
+  `READY FOR REVIEW`, assign Codex and stop editing.
