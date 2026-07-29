@@ -12,6 +12,7 @@ Last updated: 29 July 2026
 - Reviewer: Codex
 - Branch: `beta`
 - Base branch and commit: `main` at `c00400be`
+- Planning commit: `31745f29`
 - `CURRENT_WORK.md` synchronized: yes
 
 ## Goal
@@ -403,7 +404,7 @@ Do not use a real applicant resume or expose account credentials in evidence.
 
 | Time | From | To | Type | Message or response | Commit |
 | --- | --- | --- | --- | --- | --- |
-| 2026-07-29 | Codex | Gemini | TASK ASSIGNMENT | Implement Phase 3 import-intent activation continuity on `beta`. Preserve direct login and all current entitlement behavior. Challenge requirements with evidence where appropriate. Do not publish `main` or deploy. | pending planning commit |
+| 2026-07-29 | Codex | Gemini | TASK ASSIGNMENT | Implement Phase 3 import-intent activation continuity on `beta`. Preserve direct login and all current entitlement behavior. Challenge requirements with evidence where appropriate. Do not publish `main` or deploy. | `31745f29` |
 
 ## Next Action
 
