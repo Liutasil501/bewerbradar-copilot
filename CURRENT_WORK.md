@@ -71,11 +71,11 @@ Use exactly one status per task:
 - Goal: Make the landing-to-activation funnel observable without collecting
   resume content or other personal data, then use that evidence for the next
   conversion decision.
-- Implementation owner: Gemini
+- Implementation owner: Gemini, with bounded release fixes by Codex
 - Reviewer: Codex
 - Current owner: Codex
 - Next recipient: Human
-- Branch: `beta`
+- Branch: `main` (implemented and reviewed on `beta`)
 - Base: `69c8ce5c5878de82299e1af224e26f398eadeb78`
 - Handoff file:
   `docs/agent-handoffs/CW-2026-07-29-PHASE2-MEASUREMENT-ACTIVATION.md`
@@ -124,11 +124,16 @@ Verification completed:
   changed-file ESLint, `pnpm build` and `git diff --check` pass.
 - Codex fixed and verified findings `F-001` through `F-009` in commit
   `077ea079`.
+- Codex fixed and verified the final measurement-accuracy findings `F-010`
+  through `F-013` in commit `522a424f`.
 - Codex tested the production build in German and English.
 - Necessary-only and analytics-granted consent states, saved-choice restoration,
   consent reopening and representative landing, dashboard and paywall events
   were verified in the browser data layer.
 - No product event was emitted while analytics consent was denied.
+- The import-auth marker is consent-bound, contains no user identifier, survives
+  a same-browser magic-link tab change, is consumed once and expires after 24
+  hours. Direct login journeys no longer enter the import-auth funnel.
 
 Verification pending:
 

@@ -8,12 +8,12 @@ Last updated: 29 July 2026
 - Status: `READY TO DEPLOY`
 - Current owner: Codex
 - Next recipient: Human
-- Implementation owner: Gemini
+- Implementation owner: Gemini, with bounded release fixes by Codex
 - Reviewer: Codex
-- Branch: `beta`
+- Branch: `main` (implemented and reviewed on `beta`)
 - Base branch and commit:
   `main` at `69c8ce5c5878de82299e1af224e26f398eadeb78`
-- Implementation commit(s) under review: `558fbe90`, `077ea079`
+- Implementation and release-fix commits: `558fbe90`, `077ea079`, `522a424f`
 - `CURRENT_WORK.md` synchronized: yes
 
 ## Goal
@@ -343,6 +343,10 @@ Do not use real resume data for verification.
 | F-007 | Codex | Improvement | Medium | XS | VERIFIED | The consent copy promises `anonymous analytics`, but the repository neither controls nor has verified the external GA4 tag and configuration. Use accurate wording such as optional product usage analytics without promising anonymity. | Codex | German and English copy now says optional usage analytics without an anonymity claim. Commit `077ea079`. |
 | F-008 | Codex | Improvement | Medium | XS | VERIFIED | `resume_import_failed.error_code` is typed as arbitrary `string`, and a server response is cast without runtime validation. Current route codes are bounded, but the closed event contract should use a literal union and map unknown values to a stable fallback. Include `API_KEY_INVALID` if it remains an intended machine code. | Codex | Error codes now use a closed union plus runtime normalization. Commit `077ea079`. |
 | F-009 | Codex | Important | High | S | VERIFIED | Browser reloading with a saved valid consent choice showed the first-choice banner again because the server snapshot was retained during hydration. This would repeatedly interrupt returning users and misrepresent persistence. | Codex | Consent state now uses a hydration-safe external-store snapshot. Reloads preserve the choice without flashing or reopening the banner. Commit `077ea079`. |
+| F-010 | Codex | Important | High | XS | VERIFIED | Direct login journeys emitted `auth_started` and could later emit `auth_completed`, although the Phase 2 contract defines these transitions for the marked import-intent funnel. This distorted the most important conversion denominator and numerator. | Codex | Auth start and completion now require an import-intent journey. Direct logins remain outside this funnel. Commit `522a424f`. |
+| F-011 | Codex | Important | High | S | VERIFIED | Authentication continuity used `sessionStorage`. Magic-link e-mail authentication commonly resumes in a new tab, where that marker is unavailable, so valid e-mail completions were lost. | Codex | The consent-bound marker now uses identifier-free local storage, is consumed once and expires after 24 hours. Known login failures remove it. Commit `522a424f`. |
+| F-012 | Codex | Improvement | Medium | XS | VERIFIED | The root consent restore and analytics utility accepted stored consent without validating the required numeric timestamp, while the UI parser rejected it. Malformed state could therefore produce different UI and tracking behavior. | Codex | All three consent readers now validate analytics, version and numeric timestamp consistently. Commit `522a424f`. |
+| F-013 | Codex | Improvement | High | XS | VERIFIED | The short `PROJECT_CONTEXT.md` session snapshot still described the consent choice and funnel instrumentation as incomplete, contradicting the reviewed repository state. | Codex | The snapshot now separates implemented repository state from unverified external GA4 and production state. Commit `522a424f`. |
 
 Allowed severity:
 
@@ -389,16 +393,22 @@ Production-build browser checks:
 - product events remain absent while analytics consent is denied,
 - representative CTA, import-dialog and paywall events use only bounded
   properties and the expected source or trigger.
+- saved analytics consent is restored in the main page context before the GTM
+  event, and an allowed CTA emits only its bounded contract properties,
+- the final import-auth continuity path was reviewed against the exact event
+  contract and passed TypeScript, focused ESLint and production build checks.
 
 Not executed during review:
 
 - real resume upload and AI parsing,
+- live Google or e-mail authentication,
 - a live Stripe checkout request,
 - external Tag Assistant or GA4 DebugView inspection.
 
-The first two were intentionally avoided to prevent personal-data upload, AI
-cost and a real checkout side effect. External GTM and GA4 configuration was
-not available through a connected authorized integration.
+The first three were intentionally avoided to prevent personal-data upload, AI
+cost, external authentication side effects and a real checkout request.
+External GTM and GA4 configuration was not available through a connected
+authorized integration.
 
 ## Message Ledger
 
@@ -408,6 +418,7 @@ not available through a connected authorized integration.
 | 2026-07-29 | Gemini | Codex | HANDOFF FOR REVIEW | Implemented P2.1 consent foundation and P2.2 typed activation funnel. Verified type-check, ESLint, Next.js build, and diff check. Ready for review on `beta`. | `558fbe90` |
 | 2026-07-29 | Codex | Gemini | CHANGES REQUESTED | Independent type-check, changed-file ESLint, build and diff check pass. Production browser smoke test found a public landing-page runtime blocker plus seven measurement/documentation findings. Fix `F-001` through `F-008`, run all required browser flows, and hand back to Codex. | `787a4b37` |
 | 2026-07-29 | Codex | Codex | DIRECT SMALL-FIX PASS | Applied the agreed XS/S shortcut, fixed `F-001` through `F-008`, found and fixed hydration finding `F-009`, and completed the independent browser review. | `077ea079` |
+| 2026-07-29 | Codex | Codex | FINAL RELEASE-GATE PASS | Rechecked the full Phase 2 contract, fixed `F-010` through `F-013`, reran focused ESLint, type-check, production build, diff check and consent/event browser verification. | `522a424f` |
 
 ## Next Action
 
