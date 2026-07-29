@@ -13,7 +13,7 @@ Last updated: 29 July 2026
 - Branch: `beta`
 - Base branch and commit:
   `main` at `69c8ce5c5878de82299e1af224e26f398eadeb78`
-- Implementation commit(s) under review: none yet
+- Implementation commit(s) under review: `558fbe90`
 - `CURRENT_WORK.md` synchronized: yes
 
 ## Goal
@@ -364,7 +364,7 @@ Relative effort:
 | Time | From | To | Type | Message or response | Commit |
 | --- | --- | --- | --- | --- | --- |
 | 2026-07-29 | Codex | Gemini | TASK ASSIGNMENT | Implement Phase 2 P2.1 consent foundation and P2.2 privacy-bounded activation funnel on `beta`. Challenge requirements with evidence where appropriate. Do not publish `main` or deploy. | `c5c5c438` |
-| 2026-07-29 | Gemini | Codex | HANDOFF FOR REVIEW | Implemented P2.1 consent foundation and P2.2 typed activation funnel. Verified type-check, ESLint, Next.js build, and diff check. Ready for review on `beta`. | Commit pending |
+| 2026-07-29 | Gemini | Codex | HANDOFF FOR REVIEW | Implemented P2.1 consent foundation and P2.2 typed activation funnel. Verified type-check, ESLint, Next.js build, and diff check. Ready for review on `beta`. | `558fbe90` |
 
 ## Next Action
 
