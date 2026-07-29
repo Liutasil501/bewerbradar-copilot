@@ -4,6 +4,7 @@ export type SubscriptionPlan = 'free' | 'pro' | 'premium';
 
 interface SubscriptionStore {
   plan: SubscriptionPlan;
+  aiImportsCount: number;
   isLoading: boolean;
   isHydrated: boolean;
   hydrate: (force?: boolean) => Promise<void>;
@@ -11,6 +12,7 @@ interface SubscriptionStore {
 
 export const useSubscriptionStore = create<SubscriptionStore>((set, get) => ({
   plan: 'free',
+  aiImportsCount: 0,
   isLoading: true,
   isHydrated: false,
   hydrate: async (force = false) => {
@@ -23,8 +25,14 @@ export const useSubscriptionStore = create<SubscriptionStore>((set, get) => ({
       });
       if (res.ok) {
         const user = await res.json();
-        if (user && user.subscriptionPlan) {
-          set({ plan: user.subscriptionPlan as SubscriptionPlan });
+        if (user) {
+          set({
+            ...(user.subscriptionPlan && {
+              plan: user.subscriptionPlan as SubscriptionPlan,
+            }),
+            aiImportsCount:
+              typeof user.aiImportsCount === 'number' ? user.aiImportsCount : 0,
+          });
         }
       }
     } catch (e) {

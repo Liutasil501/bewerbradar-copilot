@@ -71,7 +71,17 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
   const locale = useLocale();
   const router = useRouter();
   const openModal = useUIStore((s) => s.openModal);
-  const { currentPlan, checkPaywall, showPaywall, setShowPaywall, requiredTier, paywallDescription } = usePaywall();
+  const {
+    currentPlan,
+    aiImportsCount,
+    isLoading: isAccessLoading,
+    refreshSubscription,
+    checkPaywall,
+    showPaywall,
+    setShowPaywall,
+    requiredTier,
+    paywallDescription,
+  } = usePaywall();
 
   const [state, setState] = useState<ImportState>('idle');
   const [errorCode, setErrorCode] = useState<ImportErrorCode>(null);
@@ -82,14 +92,21 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [parseStage, setParseStage] = useState<'uploading' | 'extracting' | 'building'>('uploading');
-
-  const hasUserKey = Boolean(getAIHeaders()['x-ai-api-key']);
+  const hasUserKey = Boolean(getAIHeaders()['x-api-key']);
   const accessMode: AccessMode = hasUserKey
     ? 'byok'
     : currentPlan === 'pro' || currentPlan === 'premium'
     ? 'paid'
     : 'free_trial';
+  const accessLabel = isAccessLoading
+    ? t('accessChecking')
+    : accessMode === 'byok'
+      ? t('byokAccess')
+      : accessMode === 'paid'
+        ? t('paidAccess')
+        : aiImportsCount < 1
+          ? t('freeTrialAccess')
+          : t('freeTrialUsedAccess');
 
   useEffect(() => {
     if (open) {
@@ -99,8 +116,6 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
       setSelectedFile(null);
       setFileType(null);
       setTemplate('classic');
-      setParseStage('uploading');
-
       trackEvent('import_dialog_opened', { locale, source });
     }
   }, [open, locale, source]);
@@ -156,14 +171,10 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
     if (!selectedFile || !fileType) return;
 
     setState('importing');
-    setParseStage('uploading');
     setErrorMessage('');
     setErrorCode(null);
 
-    setTimeout(() => setParseStage('extracting'), 1000);
-    setTimeout(() => setParseStage('building'), 3200);
-
-    const hasUserKey = Boolean(getAIHeaders()['x-ai-api-key']);
+    const hasUserKey = Boolean(getAIHeaders()['x-api-key']);
     const access_mode: AccessMode = hasUserKey
       ? 'byok'
       : currentPlan === 'pro' || currentPlan === 'premium'
@@ -218,7 +229,7 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
           );
           setErrorCode(code);
           setState('error');
-          setErrorMessage(data.error || t('error'));
+          setErrorMessage(t('error'));
           trackEvent('resume_import_failed', {
             locale,
             file_kind: fileType,
@@ -244,7 +255,11 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
         });
 
         if (typeof window !== 'undefined') {
-          sessionStorage.setItem('br_just_imported', '1');
+          sessionStorage.setItem('br_just_imported', newResume.id);
+        }
+
+        if (access_mode === 'free_trial') {
+          await refreshSubscription(true);
         }
       }
 
@@ -273,7 +288,17 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
         setErrorMessage(message || t('error'));
       }
     }
-  }, [selectedFile, fileType, template, onOpenChange, router, t, locale, currentPlan]);
+  }, [
+    selectedFile,
+    fileType,
+    template,
+    onOpenChange,
+    router,
+    t,
+    locale,
+    currentPlan,
+    refreshSubscription,
+  ]);
 
   const isLoading = state === 'importing';
 
@@ -303,7 +328,7 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
                 {t('title')}
               </DialogTitle>
               <Badge variant="outline" className={cn("text-[11px] py-0.5 shrink-0", accessMode === 'byok' ? "border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300" : accessMode === 'paid' ? "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300" : "border-brand/30 bg-brand/5 text-brand dark:bg-brand/10 dark:text-brand")}>
-                {accessMode === 'byok' ? t('byokAccess') : accessMode === 'paid' ? t('paidAccess') : t('freeTrialAccess')}
+                {accessLabel}
               </Badge>
             </div>
             <DialogDescription className="mt-1">{t('dashboardDescription')}</DialogDescription>
@@ -494,6 +519,17 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
                     <p className="text-sm font-medium text-red-600 dark:text-red-400">
                       {errorMessage || t('error')}
                     </p>
+                    {selectedFile && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void handleImport()}
+                        className="mt-4 cursor-pointer"
+                      >
+                        {t('retry')}
+                      </Button>
+                    )}
                   </>
                 )}
                 {selectedFile && (
@@ -518,28 +554,22 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <Loader2 className="mb-4 h-9 w-9 animate-spin text-brand" />
                 <p className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-                  {fileType === 'json'
-                    ? t('importing')
-                    : parseStage === 'uploading'
-                    ? t('stageUploading')
-                    : parseStage === 'extracting'
-                    ? t('stageExtracting')
-                    : t('stageBuilding')}
+                  {fileType === 'json' ? t('importing') : t('parsing')}
                 </p>
                 {fileType !== 'json' && (
                   <div className="mt-6 flex items-center justify-center gap-3 text-xs font-medium text-zinc-400">
-                    <span className={cn("flex items-center gap-1.5", parseStage === 'uploading' ? "font-bold text-brand" : "text-zinc-500")}>
-                      <span className={cn("flex h-4 w-4 items-center justify-center rounded-full text-[10px]", parseStage === 'uploading' ? "bg-brand text-white" : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300")}>1</span>
+                    <span className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand/10 text-[10px] text-brand">1</span>
                       {t('stageUploading').replace('...', '')}
                     </span>
                     <span>&rarr;</span>
-                    <span className={cn("flex items-center gap-1.5", parseStage === 'extracting' ? "font-bold text-brand" : parseStage === 'building' ? "text-zinc-500" : "text-zinc-400")}>
-                      <span className={cn("flex h-4 w-4 items-center justify-center rounded-full text-[10px]", parseStage === 'extracting' ? "bg-brand text-white" : parseStage === 'building' ? "bg-emerald-500 text-white" : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300")}>2</span>
+                    <span className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand/10 text-[10px] text-brand">2</span>
                       {t('stageExtracting').replace('...', '')}
                     </span>
                     <span>&rarr;</span>
-                    <span className={cn("flex items-center gap-1.5", parseStage === 'building' ? "font-bold text-brand" : "text-zinc-400")}>
-                      <span className={cn("flex h-4 w-4 items-center justify-center rounded-full text-[10px]", parseStage === 'building' ? "bg-brand text-white" : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300")}>3</span>
+                    <span className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand/10 text-[10px] text-brand">3</span>
                       {t('stageBuilding').replace('...', '')}
                     </span>
                   </div>

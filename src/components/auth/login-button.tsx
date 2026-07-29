@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { Mail, CheckCircle2, Sparkles, ShieldCheck, FileText } from 'lucide-react';
 import {
   discardImportAuthJourney,
+  hasAnalyticsConsent,
   rememberImportAuthJourney,
   trackEvent,
   type AuthIntent,
@@ -33,10 +34,17 @@ export function LoginButton() {
     (typeof window !== 'undefined' && sessionStorage.getItem('br_import_intent') === '1');
 
   useEffect(() => {
-    if (isImportIntent && !gateTracked.current) {
+    const trackGateView = () => {
+      if (!isImportIntent || gateTracked.current || !hasAnalyticsConsent()) return;
+
       gateTracked.current = true;
       trackEvent('import_auth_gate_viewed', { locale });
-    }
+    };
+
+    trackGateView();
+    window.addEventListener('br_consent_updated', trackGateView);
+
+    return () => window.removeEventListener('br_consent_updated', trackGateView);
   }, [isImportIntent, locale]);
 
   const getAuthIntent = (): AuthIntent => {
@@ -85,9 +93,11 @@ export function LoginButton() {
       <div className="flex flex-col items-center justify-center space-y-4 rounded-xl border border-green-200 bg-green-50 p-6 text-center dark:border-green-900/30 dark:bg-green-900/20 w-full">
         <CheckCircle2 className="h-8 w-8 text-green-500" />
         <div className="space-y-1">
-          <h3 className="font-medium text-green-800 dark:text-green-400">E-Mail gesendet!</h3>
+          <h3 className="font-medium text-green-800 dark:text-green-400">
+            {t('emailSentTitle')}
+          </h3>
           <p className="text-sm text-green-600 dark:text-green-500">
-            Bitte prüfe dein Postfach (und den Spam-Ordner) nach dem Login-Link.
+            {t('emailSentDescription')}
           </p>
         </div>
       </div>
@@ -187,7 +197,7 @@ export function LoginButton() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-white px-2 text-zinc-400 dark:bg-zinc-950 dark:text-zinc-500">
-                  Oder mit E-Mail
+                  {t('orWithEmail')}
                 </span>
               </div>
             </div>
@@ -198,7 +208,7 @@ export function LoginButton() {
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-zinc-400" />
                 <Input
                   type="email"
-                  placeholder="E-Mail Adresse"
+                  placeholder={t('emailPlaceholder')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-9 h-10"
@@ -212,7 +222,7 @@ export function LoginButton() {
                 disabled={isLoading || !email}
                 className="h-10 w-full font-medium"
               >
-                {isLoading ? 'Sendet...' : 'Mit E-Mail-Link anmelden'}
+                {isLoading ? t('emailSending') : t('loginWithEmailLink')}
               </Button>
             </form>
           </div>
@@ -236,7 +246,7 @@ export function LoginButton() {
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-zinc-400" />
                 <Input
                   type="email"
-                  placeholder="E-Mail Adresse"
+                  placeholder={t('emailPlaceholder')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-9 h-10"
@@ -249,7 +259,7 @@ export function LoginButton() {
                 disabled={isLoading || !email}
                 className="h-10 w-full"
               >
-                {isLoading ? 'Sendet...' : 'Mit E-Mail anmelden'}
+                {isLoading ? t('emailSending') : t('loginWithEmail')}
               </Button>
             </form>
 
@@ -259,7 +269,7 @@ export function LoginButton() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-white px-2 text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
-                  Oder
+                  {t('or')}
                 </span>
               </div>
             </div>
@@ -302,7 +312,25 @@ export function LoginButton() {
 
       {/* Terms */}
       <p className="mt-6 text-center text-[11px] leading-relaxed text-zinc-400 dark:text-zinc-500">
-        {t('agreeTerms')}
+        {t('agreePrefix')}{' '}
+        <a
+          href="https://bewerbradar.de/agb"
+          target="_blank"
+          rel="noreferrer"
+          className="underline underline-offset-2 hover:text-zinc-600 dark:hover:text-zinc-300"
+        >
+          {t('terms')}
+        </a>{' '}
+        {t('agreeConjunction')}{' '}
+        <a
+          href="https://bewerbradar.de/datenschutz"
+          target="_blank"
+          rel="noreferrer"
+          className="underline underline-offset-2 hover:text-zinc-600 dark:hover:text-zinc-300"
+        >
+          {t('privacy')}
+        </a>
+        {t('agreeSuffix')}
       </p>
     </div>
   );

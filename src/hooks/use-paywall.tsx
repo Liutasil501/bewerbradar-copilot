@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useSubscriptionStore, SubscriptionPlan } from '@/stores/subscription-store';
+import { useSubscriptionStore } from '@/stores/subscription-store';
 import { useSettingsStore } from '@/stores/settings-store';
 
 export interface PaywallOptions {
@@ -9,7 +9,7 @@ export interface PaywallOptions {
 }
 
 export function usePaywall() {
-  const { plan, isLoading } = useSubscriptionStore();
+  const { plan, aiImportsCount, isLoading, hydrate } = useSubscriptionStore();
   const aiApiKey = useSettingsStore((s) => s.aiApiKey);
   const [showPaywall, setShowPaywall] = useState(false);
   const [requiredTier, setRequiredTier] = useState<'pro' | 'premium'>('pro');
@@ -48,5 +48,7 @@ export function usePaywall() {
     checkPaywall,
     isLoading,
     currentPlan: plan,
+    aiImportsCount,
+    refreshSubscription: hydrate,
   };
 }

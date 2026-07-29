@@ -62,12 +62,19 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
   // Track first_resume_viewed (activation) if arriving from a successful import
   useEffect(() => {
     if (!resume) return;
-    if (typeof window !== 'undefined' && sessionStorage.getItem('br_just_imported') === '1') {
+    if (typeof window === 'undefined') return;
+
+    const importedResumeId = sessionStorage.getItem('br_just_imported');
+    if (importedResumeId !== id && importedResumeId !== '1') return;
+
+    const timer = window.setTimeout(() => {
       trackEvent('first_resume_viewed', { locale, source: 'import' });
+      setShowActivationGuidance(true);
       sessionStorage.removeItem('br_just_imported');
-      setTimeout(() => setShowActivationGuidance(true), 0);
-    }
-  }, [resume, locale]);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [resume, id, locale]);
 
   // Catch unhandled promise rejections (e.g. "Failed to find Server Action")
   // to prevent page crash — show toast instead
