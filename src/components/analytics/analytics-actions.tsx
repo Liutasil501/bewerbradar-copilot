@@ -8,14 +8,16 @@ import { trackEvent, type ImportCtaPlacement } from '@/lib/analytics';
 interface TrackedImportLinkProps {
   children: ReactNode;
   placement: ImportCtaPlacement;
+  className?: string;
 }
 
-export function TrackedImportLink({ children, placement }: TrackedImportLinkProps) {
+export function TrackedImportLink({ children, placement, className }: TrackedImportLinkProps) {
   const locale = useLocale();
 
   return (
     <Link
       href="/dashboard?action=import"
+      className={className}
       onClick={() => trackEvent('import_cta_clicked', { locale, placement })}
     >
       {children}
