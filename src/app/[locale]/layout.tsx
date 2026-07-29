@@ -8,6 +8,8 @@ import { ThemeProvider } from '@/components/layout/theme-provider';
 import { RuntimeConfigProvider } from '@/components/providers/runtime-config-provider';
 import { BrandProvider } from '@/components/layout/brand-provider';
 
+import { CookieConsentBanner } from '@/components/consent/cookie-consent-banner';
+
 export default async function LocaleLayout({
   children,
   params,
@@ -18,7 +20,7 @@ export default async function LocaleLayout({
   const { locale } = await params;
   const authEnabled = process.env.AUTH_ENABLED === 'true';
 
-  if (!routing.locales.includes(locale as any)) {
+  if (!routing.locales.includes(locale as (typeof routing.locales)[number])) {
     notFound();
   }
 
@@ -37,6 +39,7 @@ export default async function LocaleLayout({
           <BrandProvider>
             <TooltipProvider>
               {children}
+              <CookieConsentBanner />
               <Toaster />
             </TooltipProvider>
           </BrandProvider>

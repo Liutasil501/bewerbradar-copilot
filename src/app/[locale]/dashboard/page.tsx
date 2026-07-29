@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Plus, Search, LayoutGrid, List, Sparkles, Upload, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { trackEvent } from '@/lib/analytics';
 import {
   Select,
   SelectContent,
@@ -74,6 +75,7 @@ function sortResumes(resumes: Resume[], sort: SortOption): Resume[] {
 
 export default function DashboardPage() {
   const t = useTranslations('dashboard');
+  const locale = useLocale();
   const { resumes, isLoading, fetchResumes, createResume, deleteResume, renameResume, duplicateResume } = useResume();
   const { openModal, activeModal, closeModal } = useUIStore();
   const { fingerprint, isLoading: fpLoading } = useFingerprint();
@@ -97,6 +99,17 @@ export default function DashboardPage() {
       return action();
     }
   };
+
+  // Track auth_completed if arriving from a login flow
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (sessionStorage.getItem('br_auth_in_progress') === '1') {
+      const method = (sessionStorage.getItem('br_auth_method') as 'google' | 'email') || 'unknown';
+      trackEvent('auth_completed', { locale, method });
+      sessionStorage.removeItem('br_auth_in_progress');
+      sessionStorage.removeItem('br_auth_method');
+    }
+  }, [locale]);
 
   const importIntentHandled = useRef(false);
   const hasImportIntent = searchParams.get('action') === 'import';

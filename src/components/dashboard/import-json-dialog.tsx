@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
+import { trackEvent, AccessMode, DurationBucket } from '@/lib/analytics';
 import {
   Dialog,
   DialogContent,
@@ -64,6 +65,7 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
   const t = useTranslations('import');
   const tBilling = useTranslations('billing');
   const tBase = useTranslations();
+  const locale = useLocale();
   const router = useRouter();
   const openModal = useUIStore((s) => s.openModal);
   const { currentPlan, checkPaywall, showPaywall, setShowPaywall, requiredTier, paywallDescription } = usePaywall();
@@ -85,8 +87,17 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
       setSelectedFile(null);
       setFileType(null);
       setTemplate('classic');
+
+      let source: 'landing' | 'dashboard_empty' | 'dashboard_action' | 'unknown' = 'unknown';
+      if (typeof window !== 'undefined') {
+        const search = window.location.search;
+        if (search.includes('action=import')) {
+          source = 'dashboard_action';
+        }
+      }
+      trackEvent('import_dialog_opened', { locale, source });
     }
-  }, [open]);
+  }, [open, locale]);
 
   const handleFileSelect = useCallback((file: File) => {
     setErrorMessage('');
@@ -142,6 +153,16 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
     setErrorMessage('');
     setErrorCode(null);
 
+    const hasUserKey = Boolean(getAIHeaders()['x-ai-api-key']);
+    const access_mode: AccessMode = hasUserKey
+      ? 'byok'
+      : currentPlan === 'pro' || currentPlan === 'premium'
+      ? 'paid'
+      : 'free_trial';
+
+    trackEvent('resume_import_started', { locale, file_kind: fileType, access_mode });
+    const startTime = Date.now();
+
     try {
       let newResume: { id: string };
 
@@ -185,10 +206,31 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
           setErrorCode(code);
           setState('error');
           setErrorMessage(data.error || t('error'));
+          trackEvent('resume_import_failed', {
+            locale,
+            file_kind: fileType,
+            access_mode,
+            error_code: code || 'PARSE_FAILED',
+          });
           return;
         }
 
         newResume = await res.json();
+      }
+
+      const durationMs = Date.now() - startTime;
+      const duration_bucket: DurationBucket =
+        durationMs < 3000 ? '<3s' : durationMs <= 10000 ? '3-10s' : '>10s';
+
+      trackEvent('resume_import_succeeded', {
+        locale,
+        file_kind: fileType,
+        access_mode,
+        duration_bucket,
+      });
+
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('br_just_imported', '1');
       }
 
       setState('success');
@@ -200,13 +242,21 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
       setState('error');
       setErrorCode('PARSE_FAILED');
       const message = err instanceof Error ? err.message : String(err);
+
+      trackEvent('resume_import_failed', {
+        locale,
+        file_kind: fileType,
+        access_mode,
+        error_code: 'PARSE_FAILED',
+      });
+
       if (err instanceof SyntaxError) {
         setErrorMessage(t('invalidFormat'));
       } else {
         setErrorMessage(message || t('error'));
       }
     }
-  }, [selectedFile, fileType, template, onOpenChange, router, t]);
+  }, [selectedFile, fileType, template, onOpenChange, router, t, locale, currentPlan]);
 
   const isLoading = state === 'importing';
 

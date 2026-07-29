@@ -807,10 +807,22 @@
         "impressum": "Impressum",
         "privacy": "Datenschutzerklärung",
         "terms": "Nutzungsbedingungen",
-        "cookies": "Cookie-Richtlinie"
+        "cookies": "Cookie-Richtlinie",
+        "consentSettings": "Cookie-Einstellungen"
       },
       "copyright": "© {year} BewerbRadar Copilot. Alle Rechte vorbehalten."
     }
+  },
+  "consent": {
+    "title": "Datenschutz- & Cookie-Einstellungen",
+    "description": "Wir nutzen notwendige Cookies für den grundlegenden Betrieb und optionale anonyme Analyse-Cookies, um die App fortlaufend zu verbessern. Werbe-Cookies bleiben immer deaktiviert.",
+    "allowAnalytics": "Analyse erlauben",
+    "necessaryOnly": "Nur notwendige",
+    "reopenTitle": "Datenschutz-Einstellungen anpassen",
+    "statusAllowed": "Anonyme Analyse ist zurzeit aktiviert.",
+    "statusDenied": "Anonyme Analyse ist zurzeit deaktiviert.",
+    "changeChoice": "Auswahl ändern",
+    "close": "Schließen"
   },
   "linkedinPhoto": {
     "title": "KI LinkedIn Foto",

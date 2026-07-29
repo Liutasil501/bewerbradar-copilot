@@ -1,12 +1,14 @@
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TemplateThumbnail } from '@/components/dashboard/template-thumbnail';
+import { trackEvent } from '@/lib/analytics';
 
 export function HeroSection() {
   const t = useTranslations('landing.hero');
+  const locale = useLocale();
 
   return (
     <section className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden px-4 pt-16 sm:px-6 lg:px-8">
@@ -51,7 +53,12 @@ export function HeroSection() {
             asChild
             className="h-12 w-full cursor-pointer rounded-xl bg-brand px-8 text-base font-semibold text-white shadow-lg shadow-brand/25 transition-all hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-xl hover:shadow-brand/30 sm:h-12 sm:w-auto sm:px-8 sm:text-base"
           >
-            <Link href="/dashboard?action=import">{t('cta')}</Link>
+            <Link
+              href="/dashboard?action=import"
+              onClick={() => trackEvent('import_cta_clicked', { locale, placement: 'hero' })}
+            >
+              {t('cta')}
+            </Link>
           </Button>
           <Button
             asChild

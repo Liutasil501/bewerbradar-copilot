@@ -1,14 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Check, Sparkles, Download, Wand2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { Check, Sparkles, Wand2 } from 'lucide-react';
+import { useTranslations, useLocale } from 'next-intl';
 import { useUIStore } from '@/stores/ui-store';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { trackEvent } from '@/lib/analytics';
 
 interface PricingModalProps {
   open: boolean;
@@ -22,10 +22,37 @@ export function PricingModal({ open, onOpenChange, requiredTier, descriptionOver
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const t = useTranslations('billing');
   const tAi = useTranslations('ai');
+  const locale = useLocale();
   const openModal = useUIStore((s) => s.openModal);
+
+  useEffect(() => {
+    if (open) {
+      let trigger: 'resume_limit' | 'trial_used' | 'premium_feature' | 'unknown' = 'unknown';
+      if (descriptionOverride) {
+        const descLower = descriptionOverride.toLowerCase();
+        if (descLower.includes('limit') || descLower.includes('kostenlos') || descLower.includes('slot')) {
+          trigger = 'resume_limit';
+        } else if (descLower.includes('trial') || descLower.includes('import')) {
+          trigger = 'trial_used';
+        } else {
+          trigger = 'premium_feature';
+        }
+      } else if (requiredTier === 'premium') {
+        trigger = 'premium_feature';
+      } else if (requiredTier === 'pro') {
+        trigger = 'resume_limit';
+      }
+      trackEvent('paywall_viewed', { locale, trigger });
+    }
+  }, [open, requiredTier, descriptionOverride, locale]);
 
   const handleCheckout = async (tier: 'pro' | 'premium') => {
     setIsLoading(tier);
+    trackEvent('checkout_started', {
+      locale,
+      plan: tier,
+      billing_period: billingCycle,
+    });
     try {
       const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
       const res = await fetch('/api/stripe/checkout', {
@@ -42,7 +69,7 @@ export function PricingModal({ open, onOpenChange, requiredTier, descriptionOver
       } else {
         toast.error(data.error || 'Checkout failed');
       }
-    } catch (e) {
+    } catch {
       toast.error('An error occurred during checkout');
     } finally {
       setIsLoading(null);

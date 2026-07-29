@@ -1,7 +1,9 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
+import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
+import { trackEvent } from '@/lib/analytics';
 import { useEditor } from '@/hooks/use-editor';
 import { useFingerprint } from '@/hooks/use-fingerprint';
 import { useIsMobile } from '@/hooks/use-media-query';
@@ -40,6 +42,7 @@ const EDITOR_TOUR_STEPS: TourStepConfig[] = [
 
 export default function EditorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const locale = useLocale();
   const { isLoading: fpLoading } = useFingerprint();
   const { resume, sections, updateSection, addSection, removeSection, reorderSections } = useEditor(id);
   const isMobile = useIsMobile();
@@ -52,6 +55,15 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
   useEffect(() => {
     if (!_hydrated) hydrate();
   }, [_hydrated, hydrate]);
+
+  // Track first_resume_viewed (activation) if arriving from a successful import
+  useEffect(() => {
+    if (!resume) return;
+    if (typeof window !== 'undefined' && sessionStorage.getItem('br_just_imported') === '1') {
+      trackEvent('first_resume_viewed', { locale, source: 'import' });
+      sessionStorage.removeItem('br_just_imported');
+    }
+  }, [resume, locale]);
 
   // Catch unhandled promise rejections (e.g. "Failed to find Server Action")
   // to prevent page crash — show toast instead

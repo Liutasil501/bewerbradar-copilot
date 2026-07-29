@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LocaleSwitcher } from '@/components/layout/locale-switcher';
+import { trackEvent } from '@/lib/analytics';
 import {
   Sheet,
   SheetContent,
@@ -18,6 +19,7 @@ import { useRuntimeConfig } from '@/components/providers/runtime-config-provider
 
 export function LandingHeader() {
   const t = useTranslations('landing.header');
+  const locale = useLocale();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const { data: session } = useSession();
@@ -26,6 +28,12 @@ export function LandingHeader() {
   const isLoggedIn = authEnabled && !!session?.user;
   const ctaLabel = isLoggedIn ? t('dashboard') : t('getStarted');
   const ctaHref = isLoggedIn ? '/dashboard' : '/dashboard?action=import';
+
+  const handleCtaClick = () => {
+    if (!isLoggedIn) {
+      trackEvent('import_cta_clicked', { locale, placement: 'header' });
+    }
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -74,7 +82,7 @@ export function LandingHeader() {
             asChild
             className="hidden cursor-pointer bg-brand text-white hover:bg-brand-hover sm:inline-flex"
           >
-            <Link href={ctaHref}>{ctaLabel}</Link>
+            <Link href={ctaHref} onClick={handleCtaClick}>{ctaLabel}</Link>
           </Button>
 
           <Sheet open={open} onOpenChange={setOpen}>
@@ -116,7 +124,7 @@ export function LandingHeader() {
                     asChild
                     className="h-11 w-full cursor-pointer rounded-lg bg-brand text-[15px] font-medium text-white shadow-sm shadow-brand/20 hover:bg-brand-hover"
                   >
-                    <Link href={ctaHref} onClick={() => setOpen(false)}>{ctaLabel}</Link>
+                    <Link href={ctaHref} onClick={() => { setOpen(false); handleCtaClick(); }}>{ctaLabel}</Link>
                   </Button>
                 </div>
               </div>

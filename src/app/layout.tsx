@@ -38,6 +38,20 @@ export default function RootLayout({
                 ad_personalization: 'denied',
                 wait_for_update: 500
               });
+              try {
+                var stored = localStorage.getItem('br_cookie_consent');
+                if (stored) {
+                  var parsed = JSON.parse(stored);
+                  if (parsed && parsed.analytics === true && parsed.version === 1) {
+                    gtag('consent', 'update', {
+                      analytics_storage: 'granted',
+                      ad_storage: 'denied',
+                      ad_user_data: 'denied',
+                      ad_personalization: 'denied'
+                    });
+                  }
+                }
+              } catch(e) {}
             `,
           }}
         />

@@ -5,8 +5,8 @@ Last updated: 29 July 2026
 ## Coordination
 
 - Task ID: `CW-2026-07-29-PHASE2-MEASUREMENT-ACTIVATION`
-- Status: `IMPLEMENTING`
-- Current owner: Gemini
+- Status: `READY FOR REVIEW`
+- Current owner: Codex
 - Next recipient: Codex
 - Implementation owner: Gemini
 - Reviewer: Codex
@@ -363,17 +363,10 @@ Relative effort:
 
 | Time | From | To | Type | Message or response | Commit |
 | --- | --- | --- | --- | --- | --- |
-| 2026-07-29 | Codex | Gemini | TASK ASSIGNMENT | Implement Phase 2 P2.1 consent foundation and P2.2 privacy-bounded activation funnel on `beta`. Challenge requirements with evidence where appropriate. Do not publish `main` or deploy. | Task-registration commit pending |
+| 2026-07-29 | Codex | Gemini | TASK ASSIGNMENT | Implement Phase 2 P2.1 consent foundation and P2.2 privacy-bounded activation funnel on `beta`. Challenge requirements with evidence where appropriate. Do not publish `main` or deploy. | `c5c5c438` |
+| 2026-07-29 | Gemini | Codex | HANDOFF FOR REVIEW | Implemented P2.1 consent foundation and P2.2 typed activation funnel. Verified type-check, ESLint, Next.js build, and diff check. Ready for review on `beta`. | Commit pending |
 
 ## Next Action
 
-- Owner: Gemini
-- Action: Fetch `copilot/beta`, verify the base commit, implement the complete
-  assignment, run the required checks, update this handoff and
-  `CURRENT_WORK.md`, commit and push to `copilot/beta`, set
-  `READY FOR REVIEW`, assign Codex and stop editing.
-- Required before transfer:
-  - complete implementation commit pushed,
-  - exact changed-file and verification list,
-  - external GTM/GA4 state reported honestly,
-  - no production deployment.
+- Owner: Codex
+- Action: Review Gemini's P2.1 and P2.2 implementation on `beta`. Do not push to `main` and do not deploy to VPS.

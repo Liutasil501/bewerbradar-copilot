@@ -27,6 +27,7 @@ export function LandingFooter() {
         { key: 'legal.impressum' as const, href: 'https://bewerbradar.de/impressum' },
         { key: 'legal.privacy' as const, href: 'https://bewerbradar.de/datenschutz' },
         { key: 'legal.terms' as const, href: 'https://bewerbradar.de/agb' },
+        { key: 'legal.consentSettings' as const, href: '#consent', isConsentAction: true },
       ],
     },
   ];
@@ -53,7 +54,15 @@ export function LandingFooter() {
                 <ul className="mt-4 space-y-3">
                   {col.links.map((link) => (
                     <li key={link.key}>
-                      {link.href.startsWith('#') ? (
+                      {'isConsentAction' in link && link.isConsentAction ? (
+                        <button
+                          type="button"
+                          onClick={() => window.dispatchEvent(new Event('br_open_consent_modal'))}
+                          className="block text-sm text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 cursor-pointer"
+                        >
+                          {t(link.key)}
+                        </button>
+                      ) : link.href.startsWith('#') ? (
                         <a
                           href={link.href}
                           className="block text-sm text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"

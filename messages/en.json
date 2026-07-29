@@ -807,10 +807,22 @@
         "impressum": "Legal Notice",
         "privacy": "Privacy Policy",
         "terms": "Terms of Service",
-        "cookies": "Cookie Policy"
+        "cookies": "Cookie Policy",
+        "consentSettings": "Cookie Settings"
       },
       "copyright": "© {year} BewerbRadar Copilot. All rights reserved."
     }
+  },
+  "consent": {
+    "title": "Cookie & Privacy Settings",
+    "description": "We use essential cookies for core functionality and optional anonymous analytics cookies to continuously improve the app. Advertising cookies always remain disabled.",
+    "allowAnalytics": "Allow analytics",
+    "necessaryOnly": "Necessary only",
+    "reopenTitle": "Adjust Privacy Settings",
+    "statusAllowed": "Anonymous analytics is currently enabled.",
+    "statusDenied": "Anonymous analytics is currently disabled.",
+    "changeChoice": "Change choice",
+    "close": "Close"
   },
   "linkedinPhoto": {
     "title": "AI LinkedIn Photo",
