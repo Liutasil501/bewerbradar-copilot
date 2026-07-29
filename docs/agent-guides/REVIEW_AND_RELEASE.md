@@ -51,6 +51,38 @@ A low-impact theoretical edge case is not a blocker merely because it is
 possible. Conversely, one cross-user privacy breach can be serious without a
 mass attack.
 
+## Reviewer Remediation Boundary
+
+The review should close the candidate efficiently, not create an automatic
+handoff loop for every finding.
+
+Codex may directly correct a finding when all of these conditions hold:
+
+- effort is `XS` or `S`,
+- the required behavior is unambiguous,
+- the fix remains inside the reviewed scope,
+- no new product, entitlement, pricing or architecture decision is introduced,
+- the correction does not expand into a material sensitive-area change,
+- proportional verification can cover the resulting diff.
+
+Return the candidate to Gemini when:
+
+- any required correction is `M` or `L`,
+- intended behavior is ambiguous,
+- scope expands materially,
+- the fix requires a migration, entitlement decision or architectural change,
+- the reviewer would become the primary author of a non-trivial application
+  change.
+
+After a direct correction, Codex records the finding, response, fixing commit
+and exact verification. The original implementation received independent
+review; the reviewer-authored correction did not. This is an accepted
+efficiency tradeoff only for bounded `XS` and `S` work.
+
+Use one complete independent review followed by at most one direct small-fix
+pass where practical. Do not bounce a candidate between agents for cosmetic or
+mechanical leftovers.
+
 ## Proportional Verification
 
 Typical checks:

@@ -149,6 +149,48 @@ Gemini/Antigravity is normally the implementation and visual-iteration agent.
 Codex is normally the independent reviewer and release gate. The user may
 change these roles for any task.
 
+Choose the lightest workflow that matches scope and risk.
+
+Use one agent for:
+
+- text and documentation,
+- small styling changes,
+- contained local UI corrections,
+- clear `XS` and `S` fixes,
+- low-risk configuration without production, billing, entitlement, secret or
+  migration impact.
+
+Use Gemini plus Codex for:
+
+- complete features spanning multiple layers,
+- authentication or authorization,
+- databases or migrations,
+- Stripe, pricing or entitlements,
+- AI access or server-funded cost logic,
+- resume import or export,
+- analytics consent,
+- major landing-page, onboarding or activation flows,
+- deployment, infrastructure or other production-critical changes.
+
+For two-agent work:
+
+1. Codex defines goal, scope, acceptance criteria and realistic risks.
+2. Gemini implements and self-checks the candidate on `beta` or a feature
+   branch.
+3. Codex performs one complete independent review.
+4. Codex may fix remaining `XS` or `S` findings directly when the correction is
+   unambiguous, stays within the reviewed scope and does not create a new
+   product decision.
+5. `M` or `L` findings, ambiguous fixes and material scope changes return to
+   Gemini.
+6. After direct fixes, Codex reruns proportional checks and inspects the final
+   candidate diff.
+7. Avoid repeated handoff loops when no material issue remains.
+
+If a direct reviewer fix grows beyond `S`, crosses a sensitive boundary or
+changes the intended behavior materially, stop and restore independent review
+by returning it to Gemini or assigning another reviewer.
+
 Gemini must not declare its own work production-ready without independent
 review, claim code is live without runtime proof, or use unsupported statements
 such as “100% perfect.”

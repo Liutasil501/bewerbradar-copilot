@@ -51,20 +51,34 @@ handoff file concurrently.
    - `GO`
    - `CONDITIONAL GO`
    - `NO-GO`
-8. For changes:
+8. Codex classifies every required correction by impact, likelihood and
+   relative effort before choosing the next owner.
+9. For unambiguous `XS` or `S` corrections inside the reviewed scope:
+   - Codex keeps the baton,
+   - records the finding and direct-fix decision,
+   - fixes the candidate on the non-production branch,
+   - reruns proportional verification,
+   - records the fixing commit and final result.
+10. If a correction grows beyond `S`, crosses a sensitive boundary, requires a
+    product decision or materially changes behavior:
    - set `CHANGES REQUESTED`,
    - assign Gemini as next recipient,
    - record actionable findings and evidence,
    - commit and push,
    - stop editing.
-9. For approval:
+11. For approval:
    - set `APPROVED`,
    - merge/push `main` when the standing authorization in `AGENTS.md` applies,
    - otherwise set `NEEDS USER DECISION`.
-10. After the authorized merge and any required verified deployment:
+12. After the authorized merge and any required verified deployment:
     - remove the task from `CURRENT_WORK.md`,
     - remove the active handoff file,
     - rely on Git history for the completed record.
+
+A direct reviewer fix does not become independently reviewed merely because the
+reviewer tested it. This shortcut is accepted only for bounded `XS` and `S`
+corrections. Material reviewer-authored changes require a fresh independent
+review or return to the implementation owner.
 
 ## Communication Rules
 
