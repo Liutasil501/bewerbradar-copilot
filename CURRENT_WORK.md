@@ -67,15 +67,15 @@ Use exactly one status per task:
 
 ### CW-2026-07-29-PHASE3-IMPORT-ACTIVATION
 
-- Status: `PLANNED`
+- Status: `READY FOR REVIEW`
 - Goal: Turn landing-page import intent into a coherent authentication, import
   and first-result journey without resetting the user's motivation at login.
 - Implementation owner: Gemini
 - Reviewer: Codex
-- Current owner: Gemini
-- Next recipient: Codex after implementation and self-check
+- Current owner: Codex
+- Next recipient: Codex for independent review
 - Branch: `beta`
-- Base: `c00400be`
+- Base / Commit: `b4eb5350`
 - Handoff file:
   `docs/agent-handoffs/CW-2026-07-29-PHASE3-IMPORT-ACTIVATION.md`
 - Production impact: Import-intent login experience, post-auth import

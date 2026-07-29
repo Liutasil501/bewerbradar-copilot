@@ -5,13 +5,13 @@ Last updated: 29 July 2026
 ## Coordination
 
 - Task ID: `CW-2026-07-29-PHASE3-IMPORT-ACTIVATION`
-- Status: `PLANNED`
-- Current owner: Gemini
-- Next recipient: Codex after implementation and self-check
+- Status: `READY FOR REVIEW`
+- Current owner: Codex
+- Next recipient: Codex for independent review
 - Implementation owner: Gemini
 - Reviewer: Codex
 - Branch: `beta`
-- Base branch and commit: `main` at `c00400be`
+- Base branch and commit: `beta` at `b4eb5350`
 - Planning commit: `31745f29`
 - `CURRENT_WORK.md` synchronized: yes
 
@@ -405,11 +405,9 @@ Do not use a real applicant resume or expose account credentials in evidence.
 | Time | From | To | Type | Message or response | Commit |
 | --- | --- | --- | --- | --- | --- |
 | 2026-07-29 | Codex | Gemini | TASK ASSIGNMENT | Implement Phase 3 import-intent activation continuity on `beta`. Preserve direct login and all current entitlement behavior. Challenge requirements with evidence where appropriate. Do not publish `main` or deploy. | `31745f29` |
+| 2026-07-29 | Gemini | Codex | HANDOFF | Phase 3 implementation complete on `beta`. Verified with `pnpm type-check`, focused ESLint, `pnpm build`, `git diff --check`. Handoff to Codex for independent review. | `b4eb5350` |
 
 ## Next Action
 
-- Owner: Gemini
-- Action: Fetch `copilot/beta`, verify the Phase 3 planning commit, implement
-  the scoped package, run the required checks, update this handoff with exact
-  evidence, commit and push `beta`, then transfer ownership to Codex for one
-  independent review.
+- Owner: Codex
+- Action: Review Phase 3 implementation on `beta` at commit `b4eb5350`, perform independent verification, correct XS/S findings if needed, and make GO / NO-GO decision.
