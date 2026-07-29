@@ -7,7 +7,13 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Mail, CheckCircle2 } from 'lucide-react';
-import { trackEvent } from '@/lib/analytics';
+import {
+  discardImportAuthJourney,
+  rememberImportAuthJourney,
+  trackEvent,
+  type AuthIntent,
+  type AuthMethod,
+} from '@/lib/analytics';
 
 export function LoginButton() {
   const t = useTranslations('auth');
@@ -18,10 +24,17 @@ export function LoginButton() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const getAuthIntent = () => {
+  const getAuthIntent = (): AuthIntent => {
     if (callbackUrl.includes('action=import')) return 'import';
     if (typeof window !== 'undefined' && sessionStorage.getItem('br_import_intent') === '1') return 'import';
     return 'direct';
+  };
+
+  const trackAuthStart = (method: AuthMethod, intent: AuthIntent) => {
+    if (intent !== 'import') return;
+
+    trackEvent('auth_started', { locale, method, intent });
+    rememberImportAuthJourney(method, intent);
   };
 
   const handleMagicLink = async (e: React.FormEvent) => {
@@ -30,11 +43,7 @@ export function LoginButton() {
     setIsLoading(true);
     
     const intent = getAuthIntent();
-    trackEvent('auth_started', { locale, method: 'email', intent });
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('br_auth_in_progress', '1');
-      sessionStorage.setItem('br_auth_method', 'email');
-    }
+    trackAuthStart('email', intent);
 
     try {
       const res = await signIn('nodemailer', {
@@ -44,12 +53,14 @@ export function LoginButton() {
       });
       
       if (res?.error) {
+        discardImportAuthJourney();
         console.error(res.error);
         setIsSuccess(false);
       } else {
         setIsSuccess(true);
       }
     } catch (error) {
+      discardImportAuthJourney();
       console.error(error);
       setIsSuccess(false);
     } finally {
@@ -109,12 +120,10 @@ export function LoginButton() {
       <Button
       onClick={() => {
         const intent = getAuthIntent();
-        trackEvent('auth_started', { locale, method: 'google', intent });
-        if (typeof window !== 'undefined') {
-          sessionStorage.setItem('br_auth_in_progress', '1');
-          sessionStorage.setItem('br_auth_method', 'google');
-        }
-        signIn('google', { callbackUrl });
+        trackAuthStart('google', intent);
+        void signIn('google', { callbackUrl }).catch(() => {
+          discardImportAuthJourney();
+        });
       }}
       variant="outline"
       className="h-11 w-full cursor-pointer gap-3 rounded-xl border-zinc-200 bg-white px-6 text-sm font-medium text-zinc-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-zinc-50 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"

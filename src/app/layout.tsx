@@ -42,7 +42,12 @@ export default function RootLayout({
                 var stored = localStorage.getItem('br_cookie_consent');
                 if (stored) {
                   var parsed = JSON.parse(stored);
-                  if (parsed && parsed.analytics === true && parsed.version === 1) {
+                  if (
+                    parsed &&
+                    parsed.analytics === true &&
+                    parsed.version === 1 &&
+                    typeof parsed.timestamp === 'number'
+                  ) {
                     gtag('consent', 'update', {
                       analytics_storage: 'granted',
                       ad_storage: 'denied',

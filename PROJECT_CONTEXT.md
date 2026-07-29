@@ -33,8 +33,9 @@ below only when the active task touches them.
 - A push to `main` does not deploy the VPS.
 - Codex has standing authorization to publish verified candidates to `main`
   under the conditions in `AGENTS.md`; VPS deployment remains separate.
-- Normal intended workflow: Gemini implements → Codex reviews → approved
-  candidate to `main` → optional authorized deployment.
+- Normal intended workflow: Gemini implements, Codex reviews, Codex closes
+  bounded XS/S findings directly, approved candidate goes to `main`, and VPS
+  deployment remains separately authorized.
 - `beta` was reconciled with `main` on 28 July 2026; verify ancestry before
   every new integration cycle rather than relying on this snapshot.
 - Free plan: one resume, five templates, JSON/TXT export and no public sharing.
@@ -43,10 +44,12 @@ below only when the active task touches them.
   request headers.
 - Server AI provider: Gemini where route and entitlement logic permit it.
 - Stripe synchronizes paid-plan state into the local user record.
-- GTM and denied Consent Mode defaults are live; CMP, consent updates, GA4 tag
-  and funnel events remain incomplete.
-- Known high-value follow-ups include CMP/GA4 funnel instrumentation, legal
-  routes, external Studio exposure and the remaining dependency advisories.
+- GTM and denied Consent Mode defaults are live. The Phase 2 consent choice,
+  consent updates and bounded funnel events are implemented on `main` but not
+  yet deployed or production-verified.
+- External GA4 tag configuration, Tag Assistant and DebugView validation remain
+  open. Other high-value follow-ups include legal routes, external Studio
+  exposure and the remaining dependency advisories.
 - Resume content is sensitive personal data and must not enter logs or
   analytics.
 

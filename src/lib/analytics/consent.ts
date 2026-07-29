@@ -26,7 +26,12 @@ export function getStoredConsent(): CookieConsentState | null {
     const raw = localStorage.getItem(COOKIE_CONSENT_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed.analytics === 'boolean' && parsed.version === CONSENT_VERSION) {
+    if (
+      parsed &&
+      typeof parsed.analytics === 'boolean' &&
+      parsed.version === CONSENT_VERSION &&
+      typeof parsed.timestamp === 'number'
+    ) {
       return parsed as CookieConsentState;
     }
   } catch {

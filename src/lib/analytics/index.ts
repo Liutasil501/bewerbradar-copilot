@@ -8,6 +8,8 @@ export type DurationBucket = '<3s' | '3-10s' | '>10s';
 export type ImportCtaPlacement = 'header' | 'hero' | 'footer';
 export type ImportDialogSource = 'landing' | 'dashboard_empty' | 'dashboard_action' | 'unknown';
 export type PaywallTrigger = 'resume_limit' | 'trial_used' | 'premium_feature' | 'unknown';
+export type AuthMethod = 'google' | 'email';
+export type AuthIntent = 'import' | 'direct';
 export type AnalyticsImportErrorCode =
   | 'LIMIT_REACHED_FREE_SLOT'
   | 'TRIAL_ALREADY_USED'
@@ -22,6 +24,9 @@ const ANALYTICS_IMPORT_ERROR_CODES: readonly AnalyticsImportErrorCode[] = [
   'API_KEY_INVALID',
   'PARSE_FAILED',
 ];
+
+const AUTH_JOURNEY_KEY = 'br_auth_journey';
+const AUTH_JOURNEY_TTL_MS = 24 * 60 * 60 * 1000;
 
 /**
  * Event contract for BewerbRadar Copilot activation & conversion funnel.
@@ -42,12 +47,12 @@ export type AnalyticsEventMap = {
   };
   auth_started: {
     locale: string;
-    method: 'google' | 'email';
-    intent: 'import' | 'direct';
+    method: AuthMethod;
+    intent: AuthIntent;
   };
   auth_completed: {
     locale: string;
-    method?: 'google' | 'email' | 'unknown';
+    method?: AuthMethod | 'unknown';
   };
   import_dialog_opened: {
     locale: string;
@@ -92,6 +97,57 @@ export function normalizeImportErrorCode(value: unknown): AnalyticsImportErrorCo
     ANALYTICS_IMPORT_ERROR_CODES.includes(value as AnalyticsImportErrorCode)
     ? (value as AnalyticsImportErrorCode)
     : 'PARSE_FAILED';
+}
+
+export function rememberImportAuthJourney(method: AuthMethod, intent: AuthIntent): void {
+  if (typeof window === 'undefined' || intent !== 'import' || !hasAnalyticsConsent()) return;
+
+  try {
+    localStorage.setItem(
+      AUTH_JOURNEY_KEY,
+      JSON.stringify({ method, intent, timestamp: Date.now() })
+    );
+  } catch {
+    // Analytics continuity must never block authentication.
+  }
+}
+
+export function discardImportAuthJourney(): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    localStorage.removeItem(AUTH_JOURNEY_KEY);
+  } catch {
+    // Analytics cleanup must never block authentication.
+  }
+}
+
+export function consumeImportAuthJourney(): AuthMethod | null {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const raw = localStorage.getItem(AUTH_JOURNEY_KEY);
+    localStorage.removeItem(AUTH_JOURNEY_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw);
+    const isValidMethod = parsed?.method === 'google' || parsed?.method === 'email';
+    const isFresh =
+      typeof parsed?.timestamp === 'number' &&
+      parsed.timestamp <= Date.now() &&
+      Date.now() - parsed.timestamp <= AUTH_JOURNEY_TTL_MS;
+
+    return parsed?.intent === 'import' && isValidMethod && isFresh
+      ? parsed.method
+      : null;
+  } catch {
+    try {
+      localStorage.removeItem(AUTH_JOURNEY_KEY);
+    } catch {
+      // Ignore storage cleanup errors.
+    }
+    return null;
+  }
 }
 
 /**

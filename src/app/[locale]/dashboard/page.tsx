@@ -6,7 +6,11 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Plus, Search, LayoutGrid, List, Sparkles, Upload, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { trackEvent, type ImportDialogSource } from '@/lib/analytics';
+import {
+  consumeImportAuthJourney,
+  trackEvent,
+  type ImportDialogSource,
+} from '@/lib/analytics';
 import {
   Select,
   SelectContent,
@@ -112,11 +116,9 @@ export default function DashboardPage() {
   // Track auth_completed if arriving from a login flow
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (sessionStorage.getItem('br_auth_in_progress') === '1') {
-      const method = (sessionStorage.getItem('br_auth_method') as 'google' | 'email') || 'unknown';
+    const method = consumeImportAuthJourney();
+    if (method) {
       trackEvent('auth_completed', { locale, method });
-      sessionStorage.removeItem('br_auth_in_progress');
-      sessionStorage.removeItem('br_auth_method');
     }
   }, [locale]);
 
