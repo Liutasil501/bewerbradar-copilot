@@ -5,9 +5,9 @@ Last updated: 29 July 2026
 ## Coordination
 
 - Task ID: `CW-2026-07-29-PHASE2-MEASUREMENT-ACTIVATION`
-- Status: `READY FOR REVIEW`
-- Current owner: Codex
-- Next recipient: Codex
+- Status: `CHANGES REQUESTED`
+- Current owner: Gemini
+- Next recipient: Gemini
 - Implementation owner: Gemini
 - Reviewer: Codex
 - Branch: `beta`
@@ -330,11 +330,18 @@ Do not use real resume data for verification.
 
 ## Review
 
-- Result: `PENDING`
+- Result: `CHANGES REQUESTED`
 
 | ID | Raised by | Severity | Likelihood | Effort | Status | Finding and evidence | Response by | Response or fixing commit |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| F-001 |  |  |  |  | Open |  |  |  |
+| F-001 | Codex | Release blocker | High | S | Open | The production build passes, but the public landing page fails during server rendering. `hero-section.tsx`, `cta-section.tsx` and `landing-footer.tsx` remain server components while passing `onClick` handlers to client-facing elements. A browser request to `http://localhost:3099/de` reproduced `Event handlers cannot be passed to Client Component props`. Prefer small client tracking/action wrappers instead of making the full hero and template preview client-rendered. |  |  |
+| F-002 | Codex | Important | High | S | Open | The primary import and activation funnel now includes JSON backup restores. The stable contract limits `resume_import_started` and its downstream import events to personal PDF/image imports. Counting JSON restores inflates import success and `first_resume_viewed` activation. Remove `json` from this funnel or define a separate reviewed event outside this package. |  |  |
+| F-003 | Codex | Important | High | XS | Open | `cta-section.tsx` emits placement `cta_bottom`, although the stable contract allows only `header`, `hero` and `footer`. Use the contracted value or explicitly revise the contract before emitting a new value. |  |  |
+| F-004 | Codex | Important | High | S | Open | `import_dialog_opened.source` is not propagated from the actual opener. The dashboard removes `action=import` immediately after opening, while the dialog later inspects `window.location.search`; manual dashboard action and empty-state origins are never marked. This will commonly emit `unknown` even though the source is known. Pass a bounded source from each opener into the dialog. |  |  |
+| F-005 | Codex | Important | High | S | Open | `paywall_viewed.trigger` is inferred from translated description text and `requiredTier`. A direct `TRIAL_ALREADY_USED` paywall has no description override and is therefore recorded as `resume_limit`; ordinary Pro feature paywalls are also recorded as `resume_limit`. Pass an explicit bounded trigger from the paywall origin, or use `unknown` when the origin cannot be established. |  |  |
+| F-006 | Codex | Important | High | S | Open | `PROJECT_CONTEXT.md` and `ARCHITECTURE.md` still state that no consent choice, update integration or funnel utility exists. This directly contradicts the implementation and fails acceptance criterion 15. Update those files and add the concrete analytics implementation paths to the Analytics router in `docs/PROJECT_MAP.md`. Keep GA4 and Tag Assistant external state explicitly unverified. |  |  |
+| F-007 | Codex | Improvement | Medium | XS | Open | The consent copy promises `anonymous analytics`, but the repository neither controls nor has verified the external GA4 tag and configuration. Use accurate wording such as optional product usage analytics without promising anonymity. |  |  |
+| F-008 | Codex | Improvement | Medium | XS | Open | `resume_import_failed.error_code` is typed as arbitrary `string`, and a server response is cast without runtime validation. Current route codes are bounded, but the closed event contract should use a literal union and map unknown values to a stable fallback. Include `API_KEY_INVALID` if it remains an intended machine code. |  |  |
 
 Allowed severity:
 
@@ -365,8 +372,12 @@ Relative effort:
 | --- | --- | --- | --- | --- | --- |
 | 2026-07-29 | Codex | Gemini | TASK ASSIGNMENT | Implement Phase 2 P2.1 consent foundation and P2.2 privacy-bounded activation funnel on `beta`. Challenge requirements with evidence where appropriate. Do not publish `main` or deploy. | `c5c5c438` |
 | 2026-07-29 | Gemini | Codex | HANDOFF FOR REVIEW | Implemented P2.1 consent foundation and P2.2 typed activation funnel. Verified type-check, ESLint, Next.js build, and diff check. Ready for review on `beta`. | `558fbe90` |
+| 2026-07-29 | Codex | Gemini | CHANGES REQUESTED | Independent type-check, changed-file ESLint, build and diff check pass. Production browser smoke test found a public landing-page runtime blocker plus seven measurement/documentation findings. Fix `F-001` through `F-008`, run all required browser flows, and hand back to Codex. | `787a4b37` |
 
 ## Next Action
 
-- Owner: Codex
-- Action: Review Gemini's P2.1 and P2.2 implementation on `beta`. Do not push to `main` and do not deploy to VPS.
+- Owner: Gemini
+- Action: Fix open findings `F-001` through `F-008` on `beta`, rerun all
+  required checks including German and English browser flows, update the
+  finding responses with evidence and fixing commit, then hand back to Codex.
+  Do not push to `main` and do not deploy to VPS.

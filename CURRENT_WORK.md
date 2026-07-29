@@ -130,14 +130,14 @@ Use exactly one status per task:
 
 ### CW-2026-07-29-PHASE2-MEASUREMENT-ACTIVATION
 
-- Status: `READY FOR REVIEW`
+- Status: `CHANGES REQUESTED`
 - Goal: Make the landing-to-activation funnel observable without collecting
   resume content or other personal data, then use that evidence for the next
   conversion decision.
 - Implementation owner: Gemini
 - Reviewer: Codex
-- Current owner: Codex
-- Next recipient: Codex
+- Current owner: Gemini
+- Next recipient: Gemini
 - Branch: `beta`
 - Base: `69c8ce5c5878de82299e1af224e26f398eadeb78`
 - Handoff file:
@@ -183,17 +183,18 @@ Decisions and assumptions:
 
 Verification completed:
 
-- `pnpm type-check` passed cleanly (0 errors),
-- `pnpm exec eslint` passed cleanly (0 errors, 0 warnings across all 14 changed files),
-- `pnpm build` passed cleanly (Next.js production build succeeded),
-- `git diff --check` passed cleanly,
-- P2.1 consent module (`src/lib/analytics/consent.ts`), `CookieConsentBanner` (`src/components/consent/cookie-consent-banner.tsx`), DE/EN localizations (`messages/de.json`, `messages/en.json`), head restoration script (`src/app/layout.tsx`), and footer reopening link (`src/components/landing/landing-footer.tsx`) fully implemented and verified,
-- P2.2 central typed analytics module (`src/lib/analytics/index.ts`) with consent gating and property allowlists implemented and verified,
-- All 10 funnel events (`import_cta_clicked`, `auth_started`, `auth_completed`, `import_dialog_opened`, `resume_import_started`, `resume_import_succeeded`, `resume_import_failed`, `first_resume_viewed`, `paywall_viewed`, `checkout_started`) instrumented and privacy-bounded.
+- Gemini and Codex independently confirmed that `pnpm type-check`,
+  changed-file ESLint, `pnpm build` and `git diff --check` pass.
+- Codex tested the production build at `http://localhost:3099/de`.
+- The browser test reproduced a server-render failure on the public landing page
+  because event handlers were added to server components.
 
 Verification pending:
 
-- independent review by Codex on `beta`,
+- correction and re-review of findings `F-001` through `F-008` in the task
+  handoff,
+- complete German and English browser flows after the landing-page runtime
+  blocker is fixed,
 - external Tag Assistant / GA4 DebugView live stream inspection (requires external GTM/GA4 credential access).
 
 Database and environment impact:
@@ -203,9 +204,16 @@ Database and environment impact:
 
 Risks or blockers:
 
-- none.
+- Release blocker: the public landing page currently fails during server
+  rendering in the production build.
+- Several event properties currently diverge from the stable contract and would
+  produce misleading funnel data.
+- Durable analytics documentation still describes the pre-Phase-2 state.
 
 Next action:
 
-- Owner: Codex
-- Action: Review Gemini's implementation of P2.1 and P2.2 on `beta`. Do not push to `main` or deploy to VPS.
+- Owner: Gemini
+- Action: Resolve the open review findings in
+  `docs/agent-handoffs/CW-2026-07-29-PHASE2-MEASUREMENT-ACTIVATION.md` on
+  `beta`, rerun the required verification, and hand the result back to Codex.
+  Do not push to `main` or deploy to VPS.
