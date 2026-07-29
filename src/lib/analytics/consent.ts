@@ -59,11 +59,14 @@ export function applyConsentToGtag(analyticsGranted: boolean): void {
     };
 
     window.dataLayer = window.dataLayer || [];
-    if (typeof window.gtag === 'function') {
-      window.gtag('consent', 'update', consentPayload);
-    } else {
-      window.dataLayer.push(['consent', 'update', consentPayload]);
+    if (typeof window.gtag !== 'function') {
+      window.gtag = function gtag() {
+        // Google tag command queues require the function's Arguments object.
+        // eslint-disable-next-line prefer-rest-params
+        window.dataLayer?.push(arguments);
+      };
     }
+    window.gtag('consent', 'update', consentPayload);
   } catch {
     // Fail gracefully if GTM / dataLayer is blocked
   }

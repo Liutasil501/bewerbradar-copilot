@@ -1,6 +1,7 @@
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { Link } from '@/i18n/routing';
+import { ConsentSettingsButton } from '@/components/analytics/analytics-actions';
 
 export function LandingFooter() {
   const t = useTranslations('landing.footer');
@@ -55,13 +56,11 @@ export function LandingFooter() {
                   {col.links.map((link) => (
                     <li key={link.key}>
                       {'isConsentAction' in link && link.isConsentAction ? (
-                        <button
-                          type="button"
-                          onClick={() => window.dispatchEvent(new Event('br_open_consent_modal'))}
+                        <ConsentSettingsButton
                           className="block text-sm text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 cursor-pointer"
                         >
                           {t(link.key)}
-                        </button>
+                        </ConsentSettingsButton>
                       ) : link.href.startsWith('#') ? (
                         <a
                           href={link.href}

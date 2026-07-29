@@ -1,43 +1,80 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { useTranslations } from 'next-intl';
 import { Cookie, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { getStoredConsent, saveConsent, CookieConsentState } from '@/lib/analytics/consent';
+import {
+  CONSENT_VERSION,
+  COOKIE_CONSENT_KEY,
+  saveConsent,
+  type CookieConsentState,
+} from '@/lib/analytics/consent';
+
+const HYDRATING_SNAPSHOT = '__hydrating__';
+
+function subscribeToConsent(callback: () => void) {
+  window.addEventListener('br_consent_updated', callback);
+  window.addEventListener('storage', callback);
+
+  return () => {
+    window.removeEventListener('br_consent_updated', callback);
+    window.removeEventListener('storage', callback);
+  };
+}
+
+function getConsentSnapshot() {
+  try {
+    return localStorage.getItem(COOKIE_CONSENT_KEY) ?? '';
+  } catch {
+    return '';
+  }
+}
+
+function getServerConsentSnapshot() {
+  return HYDRATING_SNAPSHOT;
+}
+
+function parseConsentSnapshot(snapshot: string): CookieConsentState | null {
+  if (!snapshot || snapshot === HYDRATING_SNAPSHOT) return null;
+
+  try {
+    const parsed = JSON.parse(snapshot);
+    if (
+      parsed &&
+      typeof parsed.analytics === 'boolean' &&
+      parsed.version === CONSENT_VERSION &&
+      typeof parsed.timestamp === 'number'
+    ) {
+      return parsed as CookieConsentState;
+    }
+  } catch {
+    // Invalid or outdated choices fall back to a fresh user decision.
+  }
+
+  return null;
+}
 
 export function CookieConsentBanner() {
   const t = useTranslations('consent');
-  const [consentState, setConsentState] = useState<CookieConsentState | null>(() => getStoredConsent());
-  const [showBanner, setShowBanner] = useState(() => getStoredConsent() === null);
+  const consentSnapshot = useSyncExternalStore(
+    subscribeToConsent,
+    getConsentSnapshot,
+    getServerConsentSnapshot
+  );
+  const consentState = parseConsentSnapshot(consentSnapshot);
+  const showBanner = consentSnapshot !== HYDRATING_SNAPSHOT && consentState === null;
   const [showReopenModal, setShowReopenModal] = useState(false);
 
   useEffect(() => {
-    const handleReopen = () => {
-      setShowReopenModal(true);
-    };
-
-    const handleUpdated = (e: Event) => {
-      const customEvent = e as CustomEvent<CookieConsentState>;
-      if (customEvent.detail) {
-        setConsentState(customEvent.detail);
-      }
-    };
-
+    const handleReopen = () => setShowReopenModal(true);
     window.addEventListener('br_open_consent_modal', handleReopen);
-    window.addEventListener('br_consent_updated', handleUpdated);
-
-    return () => {
-      window.removeEventListener('br_open_consent_modal', handleReopen);
-      window.removeEventListener('br_consent_updated', handleUpdated);
-    };
+    return () => window.removeEventListener('br_open_consent_modal', handleReopen);
   }, []);
 
   const handleChoice = (analyticsGranted: boolean) => {
-    const updated = saveConsent(analyticsGranted);
-    setConsentState(updated);
-    setShowBanner(false);
+    saveConsent(analyticsGranted);
     setShowReopenModal(false);
   };
 

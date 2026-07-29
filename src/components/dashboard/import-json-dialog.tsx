@@ -3,7 +3,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
-import { trackEvent, AccessMode, DurationBucket } from '@/lib/analytics';
+import {
+  normalizeImportErrorCode,
+  trackEvent,
+  type AccessMode,
+  type AnalyticsImportErrorCode,
+  type DurationBucket,
+  type ImportDialogSource,
+} from '@/lib/analytics';
 import {
   Dialog,
   DialogContent,
@@ -38,16 +45,11 @@ import { PricingModal } from '@/components/billing/pricing-modal';
 interface ImportJsonDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  source: ImportDialogSource;
 }
 
 type ImportState = 'idle' | 'importing' | 'success' | 'error';
-type ImportErrorCode =
-  | 'LIMIT_REACHED_FREE_SLOT'
-  | 'TRIAL_ALREADY_USED'
-  | 'API_KEY_MISSING'
-  | 'API_KEY_INVALID'
-  | 'PARSE_FAILED'
-  | null;
+type ImportErrorCode = AnalyticsImportErrorCode | null;
 type FileType = 'json' | 'pdf' | 'image';
 
 const ACCEPTED_EXTENSIONS = '.json,.pdf,.png,.jpg,.jpeg,.webp';
@@ -61,7 +63,7 @@ function getHeaders() {
   };
 }
 
-export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) {
+export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialogProps) {
   const t = useTranslations('import');
   const tBilling = useTranslations('billing');
   const tBase = useTranslations();
@@ -88,16 +90,9 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
       setFileType(null);
       setTemplate('classic');
 
-      let source: 'landing' | 'dashboard_empty' | 'dashboard_action' | 'unknown' = 'unknown';
-      if (typeof window !== 'undefined') {
-        const search = window.location.search;
-        if (search.includes('action=import')) {
-          source = 'dashboard_action';
-        }
-      }
       trackEvent('import_dialog_opened', { locale, source });
     }
-  }, [open, locale]);
+  }, [open, locale, source]);
 
   const handleFileSelect = useCallback((file: File) => {
     setErrorMessage('');
@@ -160,7 +155,9 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
       ? 'paid'
       : 'free_trial';
 
-    trackEvent('resume_import_started', { locale, file_kind: fileType, access_mode });
+    if (fileType !== 'json') {
+      trackEvent('resume_import_started', { locale, file_kind: fileType, access_mode });
+    }
     const startTime = Date.now();
 
     try {
@@ -201,8 +198,9 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
 
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          const code: ImportErrorCode =
-            (data.code as ImportErrorCode) || (data.error === 'apiKeyMissing' ? 'API_KEY_MISSING' : 'PARSE_FAILED');
+          const code = normalizeImportErrorCode(
+            data.code ?? (data.error === 'apiKeyMissing' ? 'API_KEY_MISSING' : 'PARSE_FAILED')
+          );
           setErrorCode(code);
           setState('error');
           setErrorMessage(data.error || t('error'));
@@ -222,15 +220,17 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
       const duration_bucket: DurationBucket =
         durationMs < 3000 ? '<3s' : durationMs <= 10000 ? '3-10s' : '>10s';
 
-      trackEvent('resume_import_succeeded', {
-        locale,
-        file_kind: fileType,
-        access_mode,
-        duration_bucket,
-      });
+      if (fileType !== 'json') {
+        trackEvent('resume_import_succeeded', {
+          locale,
+          file_kind: fileType,
+          access_mode,
+          duration_bucket,
+        });
 
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem('br_just_imported', '1');
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('br_just_imported', '1');
+        }
       }
 
       setState('success');
@@ -243,12 +243,14 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
       setErrorCode('PARSE_FAILED');
       const message = err instanceof Error ? err.message : String(err);
 
-      trackEvent('resume_import_failed', {
-        locale,
-        file_kind: fileType,
-        access_mode,
-        error_code: 'PARSE_FAILED',
-      });
+      if (fileType !== 'json') {
+        trackEvent('resume_import_failed', {
+          locale,
+          file_kind: fileType,
+          access_mode,
+          error_code: 'PARSE_FAILED',
+        });
+      }
 
       if (err instanceof SyntaxError) {
         setErrorMessage(t('invalidFormat'));
@@ -605,7 +607,19 @@ export function ImportJsonDialog({ open, onOpenChange }: ImportJsonDialogProps) 
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <PricingModal open={showPaywall} onOpenChange={setShowPaywall} requiredTier={requiredTier} descriptionOverride={paywallDescription} />
+      <PricingModal
+        open={showPaywall}
+        onOpenChange={setShowPaywall}
+        requiredTier={requiredTier}
+        descriptionOverride={paywallDescription}
+        analyticsTrigger={
+          errorCode === 'TRIAL_ALREADY_USED'
+            ? 'trial_used'
+            : errorCode === 'LIMIT_REACHED_FREE_SLOT'
+              ? 'resume_limit'
+              : undefined
+        }
+      />
     </>
   );
 }

@@ -815,12 +815,12 @@
   },
   "consent": {
     "title": "Cookie & Privacy Settings",
-    "description": "We use essential cookies for core functionality and optional anonymous analytics cookies to continuously improve the app. Advertising cookies always remain disabled.",
+    "description": "We use essential cookies for core functionality and optional usage analytics to continuously improve the app. Advertising cookies always remain disabled.",
     "allowAnalytics": "Allow analytics",
     "necessaryOnly": "Necessary only",
     "reopenTitle": "Adjust Privacy Settings",
-    "statusAllowed": "Anonymous analytics is currently enabled.",
-    "statusDenied": "Anonymous analytics is currently disabled.",
+    "statusAllowed": "Optional usage analytics is currently enabled.",
+    "statusDenied": "Optional usage analytics is currently disabled.",
     "changeChoice": "Change choice",
     "close": "Close"
   },

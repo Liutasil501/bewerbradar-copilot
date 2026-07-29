@@ -8,16 +8,23 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useUIStore } from '@/stores/ui-store';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { trackEvent } from '@/lib/analytics';
+import { trackEvent, type PaywallTrigger } from '@/lib/analytics';
 
 interface PricingModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   requiredTier: 'pro' | 'premium';
   descriptionOverride?: string;
+  analyticsTrigger?: PaywallTrigger;
 }
 
-export function PricingModal({ open, onOpenChange, requiredTier, descriptionOverride }: PricingModalProps) {
+export function PricingModal({
+  open,
+  onOpenChange,
+  requiredTier,
+  descriptionOverride,
+  analyticsTrigger,
+}: PricingModalProps) {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const t = useTranslations('billing');
@@ -27,24 +34,10 @@ export function PricingModal({ open, onOpenChange, requiredTier, descriptionOver
 
   useEffect(() => {
     if (open) {
-      let trigger: 'resume_limit' | 'trial_used' | 'premium_feature' | 'unknown' = 'unknown';
-      if (descriptionOverride) {
-        const descLower = descriptionOverride.toLowerCase();
-        if (descLower.includes('limit') || descLower.includes('kostenlos') || descLower.includes('slot')) {
-          trigger = 'resume_limit';
-        } else if (descLower.includes('trial') || descLower.includes('import')) {
-          trigger = 'trial_used';
-        } else {
-          trigger = 'premium_feature';
-        }
-      } else if (requiredTier === 'premium') {
-        trigger = 'premium_feature';
-      } else if (requiredTier === 'pro') {
-        trigger = 'resume_limit';
-      }
+      const trigger = analyticsTrigger ?? (requiredTier === 'premium' ? 'premium_feature' : 'unknown');
       trackEvent('paywall_viewed', { locale, trigger });
     }
-  }, [open, requiredTier, descriptionOverride, locale]);
+  }, [open, requiredTier, analyticsTrigger, locale]);
 
   const handleCheckout = async (tier: 'pro' | 'premium') => {
     setIsLoading(tier);

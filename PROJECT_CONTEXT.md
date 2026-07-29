@@ -423,21 +423,33 @@ Implementation:
   - `ad_storage: denied`
   - `ad_user_data: denied`
   - `ad_personalization: denied`
+- `src/components/consent/cookie-consent-banner.tsx` provides the German and
+  English analytics choice,
+- the versioned choice is stored under `br_cookie_consent`,
+- saved consent is restored before GTM loads,
+- analytics consent can be granted, rejected and changed later,
+- advertising-related consent remains denied,
+- `src/lib/analytics/index.ts` is the central typed product-event path,
+- product events are emitted only after analytics consent,
+- the initial activation funnel covers landing CTA, authentication, PDF/image
+  import, first imported resume view, paywall view and checkout start,
+- event properties use bounded allowlists and exclude resume content, filenames,
+  contact information, application identifiers, API keys and free-form errors.
 
 Verified production state on 28 July 2026:
 
 - GTM container ID is present in live HTML,
 - consent defaults are present in live HTML.
 
-Still required:
+The Phase 2 consent choice and funnel instrumentation have not yet been deployed
+or verified in production.
 
-- Consent Management Platform or custom cookie banner,
-- consent updates after user choice,
-- GA4 measurement ID and Google Tag inside GTM,
-- funnel event definitions,
+External state still required:
+
+- correct GA4 measurement ID and Google Tag inside GTM,
 - Tag Assistant validation,
 - GA4 DebugView validation,
-- privacy review of event parameters.
+- production verification after deployment.
 
 Resume content, filenames, e-mail addresses and other PII must never be sent to
 analytics.

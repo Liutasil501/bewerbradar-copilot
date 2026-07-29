@@ -3,8 +3,25 @@
 import { hasAnalyticsConsent } from './consent';
 
 export type AccessMode = 'free_trial' | 'byok' | 'paid' | 'unknown';
-export type FileKind = 'pdf' | 'image' | 'json';
+export type FileKind = 'pdf' | 'image';
 export type DurationBucket = '<3s' | '3-10s' | '>10s';
+export type ImportCtaPlacement = 'header' | 'hero' | 'footer';
+export type ImportDialogSource = 'landing' | 'dashboard_empty' | 'dashboard_action' | 'unknown';
+export type PaywallTrigger = 'resume_limit' | 'trial_used' | 'premium_feature' | 'unknown';
+export type AnalyticsImportErrorCode =
+  | 'LIMIT_REACHED_FREE_SLOT'
+  | 'TRIAL_ALREADY_USED'
+  | 'API_KEY_MISSING'
+  | 'API_KEY_INVALID'
+  | 'PARSE_FAILED';
+
+const ANALYTICS_IMPORT_ERROR_CODES: readonly AnalyticsImportErrorCode[] = [
+  'LIMIT_REACHED_FREE_SLOT',
+  'TRIAL_ALREADY_USED',
+  'API_KEY_MISSING',
+  'API_KEY_INVALID',
+  'PARSE_FAILED',
+];
 
 /**
  * Event contract for BewerbRadar Copilot activation & conversion funnel.
@@ -21,7 +38,7 @@ export type DurationBucket = '<3s' | '3-10s' | '>10s';
 export type AnalyticsEventMap = {
   import_cta_clicked: {
     locale: string;
-    placement: 'header' | 'hero' | 'cta_bottom' | 'footer';
+    placement: ImportCtaPlacement;
   };
   auth_started: {
     locale: string;
@@ -34,7 +51,7 @@ export type AnalyticsEventMap = {
   };
   import_dialog_opened: {
     locale: string;
-    source: 'landing' | 'dashboard_empty' | 'dashboard_action' | 'unknown';
+    source: ImportDialogSource;
   };
   resume_import_started: {
     locale: string;
@@ -51,7 +68,7 @@ export type AnalyticsEventMap = {
     locale: string;
     file_kind: FileKind;
     access_mode: AccessMode;
-    error_code: string;
+    error_code: AnalyticsImportErrorCode;
   };
   first_resume_viewed: {
     locale: string;
@@ -59,7 +76,7 @@ export type AnalyticsEventMap = {
   };
   paywall_viewed: {
     locale: string;
-    trigger: 'resume_limit' | 'trial_used' | 'premium_feature' | 'unknown';
+    trigger: PaywallTrigger;
   };
   checkout_started: {
     locale: string;
@@ -69,6 +86,13 @@ export type AnalyticsEventMap = {
 };
 
 export type EventName = keyof AnalyticsEventMap;
+
+export function normalizeImportErrorCode(value: unknown): AnalyticsImportErrorCode {
+  return typeof value === 'string' &&
+    ANALYTICS_IMPORT_ERROR_CODES.includes(value as AnalyticsImportErrorCode)
+    ? (value as AnalyticsImportErrorCode)
+    : 'PARSE_FAILED';
+}
 
 /**
  * Closed property allowlist per event for strict privacy compliance.

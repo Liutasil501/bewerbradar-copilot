@@ -715,15 +715,19 @@ Inspect:
 
 Inspect:
 
-1. root layout
-2. cookie banner/CMP
-3. data-layer utility
-4. CTA and funnel components
-5. GTM configuration
-6. Tag Assistant
-7. GA4 DebugView
-8. consent state
-9. absence of PII
+1. `src/app/layout.tsx` for denied defaults, saved-choice restoration and GTM
+2. `src/lib/analytics/consent.ts` for persistence and Consent Mode updates
+3. `src/components/consent/cookie-consent-banner.tsx` for DE/EN choice and
+   reopening
+4. `src/lib/analytics/index.ts` for the typed event contract, consent gate and
+   bounded data-layer path
+5. `src/components/analytics/analytics-actions.tsx` and landing CTA components
+6. authentication, dashboard, import, editor and pricing components for exact
+   event transitions
+7. GTM container configuration
+8. Tag Assistant and GA4 DebugView
+9. event deduplication and source continuity
+10. absence of PII, identifiers, filenames and free-form errors
 
 ### Deployment
 

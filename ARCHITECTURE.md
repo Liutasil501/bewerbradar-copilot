@@ -504,20 +504,34 @@ Current flow:
 flowchart LR
     Document["Root document"] --> Denied["Consent defaults denied"]
     Denied --> GTM["Load GTM container"]
-    GTM --> Waiting["No granted analytics storage yet"]
-    Choice["Future CMP or cookie banner"] -.-> Update["Consent update"]
+    Stored["Versioned saved choice"] --> Restore["Restore before GTM"]
+    Restore --> GTM
+    Choice["DE/EN consent component"] --> Update["Consent update"]
     Update -.-> GTM
+    Choice --> Gate["Analytics event gate"]
+    Gate --> Events["Typed bounded funnel events"]
 ```
 
-The repository does not yet contain the complete measurement layer:
+Relevant implementation:
 
-- no connected user-facing consent choice,
-- no consent-update integration,
-- no confirmed GA4 Google Tag in this repository,
-- no defined product funnel event utility.
+- `src/app/layout.tsx` owns denied defaults, saved-choice restoration and GTM
+  loading,
+- `src/lib/analytics/consent.ts` owns versioned consent persistence and Consent
+  Mode updates,
+- `src/components/consent/cookie-consent-banner.tsx` owns the German and English
+  choice UI,
+- `src/lib/analytics/index.ts` owns the typed event contract, consent gate,
+  property allowlists and the single product-event data-layer path,
+- `src/components/analytics/analytics-actions.tsx` contains small client actions
+  for server-rendered landing sections.
+
+The repository does not confirm the external GA4 Google Tag, Tag Assistant
+validation or GA4 DebugView. Repository instrumentation, production observation
+and causal validation remain separate evidence states.
 
 Analytics events must never include resume content, filenames, contact data,
-e-mail addresses, user identifiers or API keys.
+e-mail addresses, user identifiers, resume identifiers, API keys, prompts,
+model responses or free-form errors.
 
 ## 13. Production Runtime
 
@@ -585,7 +599,8 @@ example should be aligned in a separate, reviewed configuration change.
 7. BYOK secrets transit the BewerbRadar backend even though they are stored
    only in the browser.
 8. The repository Compose healthcheck targets a missing `/api/health` route.
-9. Analytics consent defaults exist, but the choice/update layer is incomplete.
+9. Analytics repository instrumentation exists, but external GA4 configuration
+   and production event observation are not yet verified.
 10. The deployment helper is not transactional and does not fail fast.
 11. AI chat-session routes do not consistently enforce resume/session
     ownership before repository access.

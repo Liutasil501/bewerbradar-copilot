@@ -815,12 +815,12 @@
   },
   "consent": {
     "title": "Datenschutz- & Cookie-Einstellungen",
-    "description": "Wir nutzen notwendige Cookies für den grundlegenden Betrieb und optionale anonyme Analyse-Cookies, um die App fortlaufend zu verbessern. Werbe-Cookies bleiben immer deaktiviert.",
+    "description": "Wir nutzen notwendige Cookies für den grundlegenden Betrieb und optionale Nutzungsanalyse, um die App fortlaufend zu verbessern. Werbe-Cookies bleiben immer deaktiviert.",
     "allowAnalytics": "Analyse erlauben",
     "necessaryOnly": "Nur notwendige",
     "reopenTitle": "Datenschutz-Einstellungen anpassen",
-    "statusAllowed": "Anonyme Analyse ist zurzeit aktiviert.",
-    "statusDenied": "Anonyme Analyse ist zurzeit deaktiviert.",
+    "statusAllowed": "Optionale Nutzungsanalyse ist zurzeit aktiviert.",
+    "statusDenied": "Optionale Nutzungsanalyse ist zurzeit deaktiviert.",
     "changeChoice": "Auswahl ändern",
     "close": "Schließen"
   },

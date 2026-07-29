@@ -1,11 +1,9 @@
-import { useTranslations, useLocale } from 'next-intl';
-import { Link } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
-import { trackEvent } from '@/lib/analytics';
+import { TrackedImportLink } from '@/components/analytics/analytics-actions';
 
 export function CTASection() {
   const t = useTranslations('landing.cta');
-  const locale = useLocale();
 
   return (
     <section className="px-4 py-24 sm:px-6 sm:py-32 lg:px-8">
@@ -29,12 +27,9 @@ export function CTASection() {
               asChild
               className="mt-10 h-12 cursor-pointer rounded-xl bg-white px-8 text-base font-semibold text-brand shadow-lg transition-all hover:-translate-y-0.5 hover:bg-zinc-50 hover:shadow-xl sm:h-12 sm:px-8 sm:text-base"
             >
-              <Link
-                href="/dashboard?action=import"
-                onClick={() => trackEvent('import_cta_clicked', { locale, placement: 'cta_bottom' })}
-              >
+              <TrackedImportLink placement="footer">
                 {t('button')}
-              </Link>
+              </TrackedImportLink>
             </Button>
           </div>
         </div>

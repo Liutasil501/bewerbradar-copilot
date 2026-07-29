@@ -6,7 +6,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Plus, Search, LayoutGrid, List, Sparkles, Upload, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { trackEvent } from '@/lib/analytics';
+import { trackEvent, type ImportDialogSource } from '@/lib/analytics';
 import {
   Select,
   SelectContent,
@@ -83,10 +83,14 @@ export default function DashboardPage() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
+  const hasImportIntent = searchParams.get('action') === 'import';
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState<SortOption>('lastEdited');
   const [viewMode, setViewMode] = useState<ViewMode>(getInitialView);
   const [shareResumeId, setShareResumeId] = useState<string | null>(null);
+  const [importDialogSource, setImportDialogSource] = useState<ImportDialogSource>(
+    hasImportIntent ? 'landing' : 'unknown'
+  );
   const startTour = useTourStore((s) => s.startTour);
   const tBilling = useTranslations('billing');
   const { checkPaywall, showPaywall, setShowPaywall, requiredTier, currentPlan, paywallDescription } = usePaywall();
@@ -98,6 +102,11 @@ export default function DashboardPage() {
     } else {
       return action();
     }
+  };
+
+  const openImportDialog = (source: ImportDialogSource) => {
+    setImportDialogSource(source);
+    openModal('import');
   };
 
   // Track auth_completed if arriving from a login flow
@@ -112,7 +121,6 @@ export default function DashboardPage() {
   }, [locale]);
 
   const importIntentHandled = useRef(false);
-  const hasImportIntent = searchParams.get('action') === 'import';
 
   // Auto-trigger import dialog if arrived with ?action=import
   useEffect(() => {
@@ -208,7 +216,7 @@ export default function DashboardPage() {
           </Button>
           <Button
             variant="outline"
-            onClick={() => handleCreateAction(() => openModal('import'))}
+            onClick={() => handleCreateAction(() => openImportDialog('dashboard_action'))}
             className="cursor-pointer gap-2"
           >
             <Upload className="h-4 w-4" />
@@ -314,7 +322,7 @@ export default function DashboardPage() {
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Button
-              onClick={() => handleCreateAction(() => openModal('import'))}
+              onClick={() => handleCreateAction(() => openImportDialog('dashboard_empty'))}
               className="cursor-pointer gap-2 bg-brand px-6 hover:bg-brand-hover"
             >
               <Upload className="h-4 w-4" />
@@ -369,6 +377,7 @@ export default function DashboardPage() {
       <ImportJsonDialog
         open={activeModal === 'import'}
         onOpenChange={(open) => open ? openModal('import') : closeModal()}
+        source={importDialogSource}
       />
       <SettingsDialog />
       {shareResumeId && (
@@ -379,7 +388,15 @@ export default function DashboardPage() {
         />
       )}
       <TourOverlay tourId="dashboard" steps={DASHBOARD_TOUR_STEPS} />
-      <PricingModal open={showPaywall} onOpenChange={setShowPaywall} requiredTier={requiredTier} descriptionOverride={paywallDescription} />
+      <PricingModal
+        open={showPaywall}
+        onOpenChange={setShowPaywall}
+        requiredTier={requiredTier}
+        descriptionOverride={paywallDescription}
+        analyticsTrigger={
+          paywallDescription === tBilling('limitResumesDesc') ? 'resume_limit' : undefined
+        }
+      />
     </div>
   );
 }
