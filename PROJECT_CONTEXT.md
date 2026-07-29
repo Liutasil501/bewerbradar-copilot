@@ -44,9 +44,8 @@ below only when the active task touches them.
   request headers.
 - Server AI provider: Gemini where route and entitlement logic permit it.
 - Stripe synchronizes paid-plan state into the local user record.
-- GTM and denied Consent Mode defaults are live. The Phase 2 consent choice,
-  consent updates and bounded funnel events are implemented on `main` but not
-  yet deployed or production-verified.
+- GTM, the Phase 2 DE/EN consent choice, consent updates and the bounded funnel
+  events are live on the VPS from release `d98de14e`.
 - External GA4 tag configuration, Tag Assistant and DebugView validation remain
   open. Other high-value follow-ups include legal routes, external Studio
   exposure and the remaining dependency advisories.
@@ -439,20 +438,23 @@ Implementation:
 - event properties use bounded allowlists and exclude resume content, filenames,
   contact information, application identifiers, API keys and free-form errors.
 
-Verified production state on 28 July 2026:
+Verified production state on 29 July 2026:
 
 - GTM container ID is present in live HTML,
-- consent defaults are present in live HTML.
-
-The Phase 2 consent choice and funnel instrumentation have not yet been deployed
-or verified in production.
+- consent defaults execute before GTM,
+- saved analytics consent is restored before GTM,
+- necessary-only blocks optional product events,
+- analytics approval grants only analytics storage while advertising remains
+  denied,
+- the live landing CTA emits the bounded `import_cta_clicked` event,
+- DE and EN public pages and `/api/health` respond successfully,
+- VPS release `d98de14e` runs with zero container restarts after deployment.
 
 External state still required:
 
 - correct GA4 measurement ID and Google Tag inside GTM,
 - Tag Assistant validation,
-- GA4 DebugView validation,
-- production verification after deployment.
+- GA4 DebugView validation.
 
 Resume content, filenames, e-mail addresses and other PII must never be sent to
 analytics.

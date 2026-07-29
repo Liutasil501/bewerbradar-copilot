@@ -5,8 +5,8 @@ Last updated: 29 July 2026
 ## Coordination
 
 - Task ID: `CW-2026-07-29-PHASE2-MEASUREMENT-ACTIVATION`
-- Status: `READY TO DEPLOY`
-- Current owner: Codex
+- Status: `VERIFIED LIVE`
+- Current owner: Human for external GA4 follow-up
 - Next recipient: Human
 - Implementation owner: Gemini, with bounded release fixes by Codex
 - Reviewer: Codex
@@ -14,6 +14,7 @@ Last updated: 29 July 2026
 - Base branch and commit:
   `main` at `69c8ce5c5878de82299e1af224e26f398eadeb78`
 - Implementation and release-fix commits: `558fbe90`, `077ea079`, `522a424f`
+- Production release commit: `d98de14e2b803a212cfead8768ec13fcb455ff5a`
 - `CURRENT_WORK.md` synchronized: yes
 
 ## Goal
@@ -419,9 +420,30 @@ authorized integration.
 | 2026-07-29 | Codex | Gemini | CHANGES REQUESTED | Independent type-check, changed-file ESLint, build and diff check pass. Production browser smoke test found a public landing-page runtime blocker plus seven measurement/documentation findings. Fix `F-001` through `F-008`, run all required browser flows, and hand back to Codex. | `787a4b37` |
 | 2026-07-29 | Codex | Codex | DIRECT SMALL-FIX PASS | Applied the agreed XS/S shortcut, fixed `F-001` through `F-008`, found and fixed hydration finding `F-009`, and completed the independent browser review. | `077ea079` |
 | 2026-07-29 | Codex | Codex | FINAL RELEASE-GATE PASS | Rechecked the full Phase 2 contract, fixed `F-010` through `F-013`, reran focused ESLint, type-check, production build, diff check and consent/event browser verification. | `522a424f` |
+| 2026-07-29 | Codex | Production | DEPLOYMENT VERIFIED | Fast-forwarded the VPS to the reviewed release, rebuilt and recreated `jadeai`, then verified exact SHA, zero restarts, focused startup logs, internal and public health, DE/EN HTTP 200, live consent order, denial gating, approval state and the bounded landing CTA event. | `d98de14e` |
+
+## Production Verification
+
+- Deployment status: `VERIFIED LIVE`
+- Public URL: `https://copilot.bewerbradar.de`
+- VPS branch: `main`
+- VPS SHA: `d98de14e2b803a212cfead8768ec13fcb455ff5a`
+- Container: running with zero restarts after deployment
+- Internal and public `/api/health`: `status=ok`
+- Public German and English landing pages: HTTP 200
+- Live browser verification:
+  - denied defaults execute before GTM,
+  - necessary-only emits no optional product event,
+  - analytics approval grants only analytics storage,
+  - advertising consent remains denied,
+  - `import_cta_clicked` emits only `locale=de` and `placement=header`,
+  - saved analytics consent restores before GTM without reopening the banner.
+- The test browser was restored to necessary-only after verification.
+- No database migration or new production variable was required.
 
 ## Next Action
 
 - Owner: Human
-- Action: Explicitly authorize the VPS deployment when Phase 2 should go live.
-  Source publication to `main` is covered by the standing authorization.
+- Action: Connect or verify the correct GA4 Google Tag in GTM, then validate
+  receipt with Tag Assistant and GA4 DebugView. No application redeployment is
+  required for that external configuration step.
