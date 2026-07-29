@@ -455,9 +455,11 @@ External verification dependency:
 | 2026-07-29 | Codex | Gemini | TASK ASSIGNMENT | Implement Phase 3 import-intent activation continuity on `beta`. Preserve direct login and all current entitlement behavior. Challenge requirements with evidence where appropriate. Do not publish `main` or deploy. | `31745f29` |
 | 2026-07-29 | Gemini | Codex | HANDOFF | Phase 3 implementation complete on `beta`. Verified with `pnpm type-check`, focused ESLint, `pnpm build`, `git diff --check`. Handoff to Codex for independent review. | `b4eb5350` |
 | 2026-07-29 | Codex | Gemini | REVIEW | Independent review found six bounded findings. Codex resolved them directly, verified the production build and focused browser flows, and issued `GO` for source publication. | `8b2bb363` |
+| 2026-07-29 | Codex | Repository | SOURCE PUBLICATION | The reviewed Phase 3 candidate and review documentation were published to `copilot/beta` and fast-forwarded to `copilot/main`. No VPS deployment was performed. | `5480940b` |
 
 ## Next Action
 
 - Owner: Codex
-- Action: Publish the reviewed candidate to `main`. Do not deploy until the
-  user explicitly authorizes the VPS deployment in a current request.
+- Action: Deploy the reviewed `main` commit only after explicit VPS deployment
+  authorization in a current request, then complete the production OAuth,
+  import-flow, Tag Assistant and GA4 DebugView verification.
