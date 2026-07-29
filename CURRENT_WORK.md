@@ -65,5 +65,57 @@ Use exactly one status per task:
 
 ## Active Work
 
-No active work. Completed Phase 2 evidence remains in
-`docs/agent-handoffs/CW-2026-07-29-PHASE2-MEASUREMENT-ACTIVATION.md`.
+### CW-2026-07-29-PHASE3-IMPORT-ACTIVATION
+
+- Status: `PLANNED`
+- Goal: Turn landing-page import intent into a coherent authentication, import
+  and first-result journey without resetting the user's motivation at login.
+- Implementation owner: Gemini
+- Reviewer: Codex
+- Current owner: Gemini
+- Next recipient: Codex after implementation and self-check
+- Branch: `beta`
+- Base: `c00400be`
+- Handoff file:
+  `docs/agent-handoffs/CW-2026-07-29-PHASE3-IMPORT-ACTIVATION.md`
+- Production impact: Import-intent login experience, post-auth import
+  onboarding, real processing feedback, first-result guidance and two bounded
+  analytics transitions.
+- Deployment required: Yes after independent review and separate explicit
+  authorization.
+
+In scope:
+
+- verify the external GA4 event path or document the exact account dependency,
+- intent-aware DE/EN login continuation for landing import users,
+- immediate and reliable post-auth import-dialog continuation,
+- clearer import value, limits and real processing stages,
+- one-time first-result guidance in the editor,
+- bounded analytics needed to locate the remaining activation drop-off.
+
+Out of scope:
+
+- uploading or processing a resume before authentication,
+- temporary guest-file storage,
+- pricing, plan or entitlement changes,
+- database migrations,
+- job tracking and lifecycle e-mails,
+- broad landing-page redesign,
+- A/B-testing infrastructure,
+- production deployment.
+
+T-shirt size:
+
+- Phase 3 overall: `L`
+- external measurement bridge: `S`
+- import-intent authentication continuation: `M`
+- import onboarding and real progress feedback: `M`
+- first-result activation handoff: `M`
+
+Success signal:
+
+- Primary: `first_resume_viewed / import_cta_clicked`
+- Supporting: authentication start and completion, import start and success
+  rates, bounded import failures and selected first-result action
+- Guardrails: no increase in login or import failures, no PII in analytics and
+  no regression in direct login

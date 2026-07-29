@@ -561,7 +561,8 @@ Verified on 29 July 2026:
 
 - production source branch: `main`
 - VPS repository branch: `main`
-- deployed Phase 1 release commit: `1f8368364a2aeb143aacd68901ef0fe4e9ce932d`
+- deployed Phase 2 application release: `d98de14e2b803a212cfead8768ec13fcb455ff5a`
+- source-only CTA styling hotfix: `c00400be`, not yet deployed
 - production container is running Next.js `16.2.12`
 - live `/api/health` returns `200`
 - German and English public landing pages return `200`
@@ -604,6 +605,7 @@ Any commits unique to both sides require investigation before merge.
 9. PostgreSQL is publicly bound on port 5432 in the broader stack and requires
     firewall and credential review.
 10. Two historical SQLite database names exist in the production volume.
-11. Consent Mode is present, but no user-facing consent mechanism is connected.
+11. The user-facing consent mechanism is live, but external GA4 receipt still
+    requires Tag Assistant and DebugView verification.
 12. The production dependency audit retains assessed transitive advisories in
     browser/PDF, image and build tooling; upgrades remain follow-up work.
