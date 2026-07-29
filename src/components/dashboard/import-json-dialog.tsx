@@ -20,6 +20,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Upload,
   Loader2,
@@ -81,6 +82,15 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [parseStage, setParseStage] = useState<'uploading' | 'extracting' | 'building'>('uploading');
+
+  const hasUserKey = Boolean(getAIHeaders()['x-ai-api-key']);
+  const accessMode: AccessMode = hasUserKey
+    ? 'byok'
+    : currentPlan === 'pro' || currentPlan === 'premium'
+    ? 'paid'
+    : 'free_trial';
+
   useEffect(() => {
     if (open) {
       setState('idle');
@@ -89,6 +99,7 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
       setSelectedFile(null);
       setFileType(null);
       setTemplate('classic');
+      setParseStage('uploading');
 
       trackEvent('import_dialog_opened', { locale, source });
     }
@@ -145,8 +156,12 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
     if (!selectedFile || !fileType) return;
 
     setState('importing');
+    setParseStage('uploading');
     setErrorMessage('');
     setErrorCode(null);
+
+    setTimeout(() => setParseStage('extracting'), 1000);
+    setTimeout(() => setParseStage('building'), 3200);
 
     const hasUserKey = Boolean(getAIHeaders()['x-ai-api-key']);
     const access_mode: AccessMode = hasUserKey
@@ -282,11 +297,16 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
       <Dialog open={open} onOpenChange={(o) => { if (!o && !isLoading) onOpenChange(false); }}>
         <DialogContent className="sm:max-w-4xl p-0 gap-0 overflow-hidden max-h-[90vh] flex flex-col">
           <DialogHeader className="px-6 pt-6 pb-0 flex-shrink-0">
-            <DialogTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5 text-brand" />
-              {t('title')}
-            </DialogTitle>
-            <DialogDescription>{t('dashboardDescription')}</DialogDescription>
+            <div className="flex items-center justify-between gap-4">
+              <DialogTitle className="flex items-center gap-2">
+                <Upload className="h-5 w-5 text-brand" />
+                {t('title')}
+              </DialogTitle>
+              <Badge variant="outline" className={cn("text-[11px] py-0.5 shrink-0", accessMode === 'byok' ? "border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300" : accessMode === 'paid' ? "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300" : "border-brand/30 bg-brand/5 text-brand dark:bg-brand/10 dark:text-brand")}>
+                {accessMode === 'byok' ? t('byokAccess') : accessMode === 'paid' ? t('paidAccess') : t('freeTrialAccess')}
+              </Badge>
+            </div>
+            <DialogDescription className="mt-1">{t('dashboardDescription')}</DialogDescription>
           </DialogHeader>
 
           <div className="px-6 py-5 overflow-y-auto flex-1 space-y-5">
@@ -495,11 +515,35 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
             )}
 
             {state === 'importing' && (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <Loader2 className="mb-3 h-8 w-8 animate-spin text-brand" />
-                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  {fileType === 'json' ? t('importing') : t('parsing')}
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <Loader2 className="mb-4 h-9 w-9 animate-spin text-brand" />
+                <p className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                  {fileType === 'json'
+                    ? t('importing')
+                    : parseStage === 'uploading'
+                    ? t('stageUploading')
+                    : parseStage === 'extracting'
+                    ? t('stageExtracting')
+                    : t('stageBuilding')}
                 </p>
+                {fileType !== 'json' && (
+                  <div className="mt-6 flex items-center justify-center gap-3 text-xs font-medium text-zinc-400">
+                    <span className={cn("flex items-center gap-1.5", parseStage === 'uploading' ? "font-bold text-brand" : "text-zinc-500")}>
+                      <span className={cn("flex h-4 w-4 items-center justify-center rounded-full text-[10px]", parseStage === 'uploading' ? "bg-brand text-white" : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300")}>1</span>
+                      {t('stageUploading').replace('...', '')}
+                    </span>
+                    <span>&rarr;</span>
+                    <span className={cn("flex items-center gap-1.5", parseStage === 'extracting' ? "font-bold text-brand" : parseStage === 'building' ? "text-zinc-500" : "text-zinc-400")}>
+                      <span className={cn("flex h-4 w-4 items-center justify-center rounded-full text-[10px]", parseStage === 'extracting' ? "bg-brand text-white" : parseStage === 'building' ? "bg-emerald-500 text-white" : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300")}>2</span>
+                      {t('stageExtracting').replace('...', '')}
+                    </span>
+                    <span>&rarr;</span>
+                    <span className={cn("flex items-center gap-1.5", parseStage === 'building' ? "font-bold text-brand" : "text-zinc-400")}>
+                      <span className={cn("flex h-4 w-4 items-center justify-center rounded-full text-[10px]", parseStage === 'building' ? "bg-brand text-white" : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300")}>3</span>
+                      {t('stageBuilding').replace('...', '')}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 

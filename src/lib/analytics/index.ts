@@ -88,6 +88,13 @@ export type AnalyticsEventMap = {
     plan: 'pro' | 'premium';
     billing_period: 'monthly' | 'yearly';
   };
+  import_auth_gate_viewed: {
+    locale: string;
+  };
+  activation_next_step_selected: {
+    locale: string;
+    action: 'review_content' | 'choose_template';
+  };
 };
 
 export type EventName = keyof AnalyticsEventMap;
@@ -164,6 +171,8 @@ const ALLOWED_PROPERTIES: Record<EventName, readonly string[]> = {
   first_resume_viewed: ['locale', 'source'],
   paywall_viewed: ['locale', 'trigger'],
   checkout_started: ['locale', 'plan', 'billing_period'],
+  import_auth_gate_viewed: ['locale'],
+  activation_next_step_selected: ['locale', 'action'],
 };
 
 /**

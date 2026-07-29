@@ -1,9 +1,11 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
-import { useLocale } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { trackEvent } from '@/lib/analytics';
+import { Button } from '@/components/ui/button';
+import { CheckCircle2, Palette, X, List } from 'lucide-react';
 import { useEditor } from '@/hooks/use-editor';
 import { useFingerprint } from '@/hooks/use-fingerprint';
 import { useIsMobile } from '@/hooks/use-media-query';
@@ -15,7 +17,6 @@ import { EditorPreviewPanel } from '@/components/editor/editor-preview-panel';
 import { EditorMobileTabBar } from '@/components/editor/editor-mobile-tab-bar';
 import { AIChatBubble } from '@/components/ai/ai-chat-bubble';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { List } from "lucide-react";
 import { SettingsDialog } from '@/components/settings/settings-dialog';
 import { JdAnalysisDialog } from '@/components/editor/jd-analysis-dialog';
 import { TranslateDialog } from '@/components/editor/translate-dialog';
@@ -43,11 +44,13 @@ const EDITOR_TOUR_STEPS: TourStepConfig[] = [
 export default function EditorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const locale = useLocale();
+  const tAct = useTranslations('activation');
+  const [showActivationGuidance, setShowActivationGuidance] = useState(false);
   const { isLoading: fpLoading } = useFingerprint();
   const { resume, sections, updateSection, addSection, removeSection, reorderSections } = useEditor(id);
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { showThemeEditor, mobileActiveTab } = useEditorStore();
+  const { showThemeEditor, toggleThemeEditor, mobileActiveTab } = useEditorStore();
   const { activeModal, openModal, closeModal } = useUIStore();
   const { hydrate, _hydrated } = useSettingsStore();
   const startTour = useTourStore((s) => s.startTour);
@@ -62,6 +65,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
     if (typeof window !== 'undefined' && sessionStorage.getItem('br_just_imported') === '1') {
       trackEvent('first_resume_viewed', { locale, source: 'import' });
       sessionStorage.removeItem('br_just_imported');
+      setTimeout(() => setShowActivationGuidance(true), 0);
     }
   }, [resume, locale]);
 
@@ -106,6 +110,75 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
   return (
     <div className="flex h-screen flex-col">
       <EditorToolbar resumeId={id} />
+
+      {showActivationGuidance && (
+        <div className="z-30 bg-emerald-50/90 dark:bg-emerald-950/40 border-b border-emerald-200 dark:border-emerald-800/60 px-4 py-3 shadow-sm transition-all animate-in slide-in-from-top duration-300">
+          <div className="mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 max-w-7xl">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">
+                <CheckCircle2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                  {tAct('guidanceTitle')}
+                </h3>
+                <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
+                  {tAct('guidanceSubtitle')}
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+                  <span className="text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                    ✓ {tAct('stepImported')}
+                  </span>
+                  <span>&rarr;</span>
+                  <span className="text-zinc-800 dark:text-zinc-200 font-semibold">{tAct('stepReview')}</span>
+                  <span>&rarr;</span>
+                  <span>{tAct('stepDesign')}</span>
+                  <span>&rarr;</span>
+                  <span>{tAct('stepExport')}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  trackEvent('activation_next_step_selected', { locale, action: 'choose_template' });
+                  if (!showThemeEditor) toggleThemeEditor();
+                  setShowActivationGuidance(false);
+                }}
+                className="text-xs h-8 border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100/50 dark:hover:bg-emerald-900/40 cursor-pointer"
+              >
+                <Palette className="mr-1.5 h-3.5 w-3.5" />
+                {tAct('btnTemplate')}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => {
+                  trackEvent('activation_next_step_selected', { locale, action: 'review_content' });
+                  setShowActivationGuidance(false);
+                }}
+                className="text-xs h-8 bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm cursor-pointer"
+              >
+                <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                {tAct('btnReview')}
+              </Button>
+              <button
+                type="button"
+                onClick={() => setShowActivationGuidance(false)}
+                className="ml-1 p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
+                title={tAct('dismiss')}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <EditorMobileTabBar />
 
       <div className="flex flex-1 overflow-hidden">

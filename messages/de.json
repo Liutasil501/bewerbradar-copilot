@@ -65,7 +65,15 @@
     "loginWithGoogle": "Mit Google anmelden",
     "welcomeBack": "Willkommen zurück",
     "loginDescription": "Melden Sie sich an, um Ihre Lebensläufe zu verwalten",
-    "agreeTerms": "Mit der Anmeldung stimmen Sie unseren Nutzungsbedingungen und Datenschutzrichtlinien zu"
+    "agreeTerms": "Mit der Anmeldung stimmen Sie unseren Nutzungsbedingungen und Datenschutzrichtlinien zu",
+    "intentTitle": "Ihr Lebenslauf ist gleich startklar",
+    "intentSubtitle": "Melden Sie sich kostenlos an. Danach öffnet sich direkt der KI-Import.",
+    "intentBadgeTrial": "1 KI-Import kostenlos",
+    "intentBadgeNoCard": "Keine Kreditkarte",
+    "intentBadgeLimits": "PDF oder Bild bis 10 MB",
+    "step1": "1. Anmelden",
+    "step2": "2. Importieren",
+    "step3": "3. Ergebnis prüfen"
   },
   "dashboard": {
     "nav": "Dashboard",
@@ -578,6 +586,12 @@
     "uploadAndParse": "Hochladen & Analysieren",
     "parsing": "Wird analysiert...",
     "templateSelect": "Wählen Sie ein Design für Ihren neuen Lebenslauf:",
+    "freeTrialAccess": "1 kostenloser KI-Import verfügbar",
+    "byokAccess": "Eigener API-Schlüssel aktiv",
+    "paidAccess": "Pro / Premium Import aktiv",
+    "stageUploading": "Datei wird hochgeladen...",
+    "stageExtracting": "Inhalte werden erkannt...",
+    "stageBuilding": "Lebenslauf wird erstellt...",
     "errors": {
       "limitReachedFreeSlotTitle": "Ihr kostenloser Lebenslaufplatz ist belegt",
       "limitReachedFreeSlotText": "Im Free-Tarif können Sie einen Lebenslauf speichern. Löschen Sie den vorhandenen Lebenslauf oder upgraden Sie für weitere Lebensläufe.",
@@ -590,6 +604,17 @@
       "viewPlans": "Pro & Premium ansehen",
       "enterApiKey": "Eigenen API-Schlüssel eintragen"
     }
+  },
+  "activation": {
+    "guidanceTitle": "Import erfolgreich abgeschlossen",
+    "guidanceSubtitle": "Ihr Lebenslauf wurde aufbereitet. Überprüfen Sie die Inhalte oder wählen Sie eine Vorlage.",
+    "stepImported": "Import abgeschlossen",
+    "stepReview": "Inhalte prüfen",
+    "stepDesign": "Design wählen",
+    "stepExport": "Exportieren",
+    "btnReview": "Inhalte prüfen",
+    "btnTemplate": "Vorlage wählen",
+    "dismiss": "Schließen"
   },
   "pdfOptions": {
     "title": "PDF Exportoptionen",
