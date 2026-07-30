@@ -131,15 +131,16 @@ Success signal:
 
 ### CW-2026-07-30-PHASE4-VALUE-TO-REVENUE
 
-- Status: `PLANNED`
+- Status: `READY FOR REVIEW`
 - Goal: Convert activated Free users at a meaningful paid-action boundary
   without losing their work, motivation or trust.
 - Implementation owner: Gemini
 - Reviewer: Codex
-- Current owner: Gemini
-- Next recipient: Codex after Gemini's implementation handoff
+- Current owner: Codex
+- Next recipient: Codex for independent Phase 4 review and verification
 - Branch: `beta`
 - Planning commit: `cfaff22`
+- Implementation commit: `be7a5f2`
 - Handoff file:
   `docs/agent-handoffs/CW-2026-07-30-PHASE4-VALUE-TO-REVENUE.md`
 - Production impact: Pricing and paywall presentation, entitlement truth,
