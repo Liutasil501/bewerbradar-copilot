@@ -67,13 +67,14 @@ Use exactly one status per task:
 
 ### CW-2026-07-29-PHASE3-IMPORT-ACTIVATION
 
-- Status: `READY TO DEPLOY`
+- Status: `DEPLOYING - NOT YET VERIFIED`
 - Goal: Turn landing-page import intent into a coherent authentication, import
   and first-result journey without resetting the user's motivation at login.
 - Implementation owner: Gemini
 - Reviewer: Codex
 - Current owner: Codex
-- Next recipient: Codex after explicit VPS deployment authorization
+- Next recipient: Codex when an authenticated production test session and GA4
+  account access are available
 - Branch: `beta`
 - Code candidate: `8b2bb363`
 - Handoff file:
@@ -83,8 +84,14 @@ Use exactly one status per task:
   analytics transitions.
 - Review result: `GO` for source publication after independent review and
   direct resolution of bounded `S` findings.
-- Deployment required: Yes, but not authorized by the current request.
-- Deployment status: `NOT DEPLOYED`
+- Deployment required: Completed on 30 July 2026 from `main` commit
+  `e5335829`.
+- Deployment status: `DEPLOYING - NOT YET VERIFIED`
+- Production verification: VPS SHA, container, startup logs, internal health,
+  public DE/EN import-intent login, direct login, landing CTA styling and
+  Google OAuth initiation passed. The authenticated import-to-editor round
+  trip and GA4 DebugView receipt still require an authenticated production
+  session and authorized analytics account access.
 
 In scope:
 

@@ -1,13 +1,14 @@
 # Agent Handoff - CW-2026-07-29-PHASE3-IMPORT-ACTIVATION
 
-Last updated: 29 July 2026
+Last updated: 30 July 2026
 
 ## Coordination
 
 - Task ID: `CW-2026-07-29-PHASE3-IMPORT-ACTIVATION`
-- Status: `READY TO DEPLOY`
+- Status: `DEPLOYING - NOT YET VERIFIED`
 - Current owner: Codex
-- Next recipient: Codex after explicit VPS deployment authorization
+- Next recipient: Codex when an authenticated production test session and GA4
+  account access are available
 - Implementation owner: Gemini
 - Reviewer: Codex
 - Branch: `beta`
@@ -396,7 +397,7 @@ Do not use a real applicant resume or expose account credentials in evidence.
 ## Review
 
 - Result: `GO` for source publication
-- Deployment status: `NOT DEPLOYED`
+- Deployment status: `DEPLOYING - NOT YET VERIFIED`
 - Reviewer: Codex
 - Reviewed diff: `c00400be..8b2bb363`
 - Review date: 29 July 2026
@@ -438,15 +439,18 @@ Verification completed by Codex:
 External verification dependency:
 
 - The repository-side consent-gated event contract is verified.
-- Tag Assistant and GA4 DebugView receipt are not verified because this review
-  has no authenticated access to the GTM/GA4 account and Phase 3 is not
-  deployed.
-- The production Google and e-mail authentication round trip must be smoke
-  tested after deployment. Local callback execution is blocked by the
-  intentionally absent production `AUTH_SECRET` and provider credentials; the
-  callback construction itself remains unchanged and was inspected in code.
-- These external checks do not block source publication, but they are required
-  before Phase 3 may be reported as `VERIFIED LIVE`.
+- Production deployment from `main` commit `e5335829` completed on 30 July
+  2026. The VPS SHA matched, the container was running with zero restarts,
+  startup logs were clean and the internal health endpoint returned HTTP 200.
+- Public browser checks passed for the DE and EN import-intent login, the
+  unchanged direct-login experience, the restored landing CTA styling and
+  Google OAuth initiation through the account-selection screen.
+- The authenticated import-to-editor round trip was not completed because no
+  authenticated production test session or synthetic test file was available.
+- Tag Assistant and GA4 DebugView receipt remain unverified because this review
+  has no authenticated GTM/GA4 account access.
+- These remaining external checks are required before Phase 3 may be reported
+  as `VERIFIED LIVE`.
 
 ## Message Ledger
 
@@ -456,10 +460,11 @@ External verification dependency:
 | 2026-07-29 | Gemini | Codex | HANDOFF | Phase 3 implementation complete on `beta`. Verified with `pnpm type-check`, focused ESLint, `pnpm build`, `git diff --check`. Handoff to Codex for independent review. | `b4eb5350` |
 | 2026-07-29 | Codex | Gemini | REVIEW | Independent review found six bounded findings. Codex resolved them directly, verified the production build and focused browser flows, and issued `GO` for source publication. | `8b2bb363` |
 | 2026-07-29 | Codex | Repository | SOURCE PUBLICATION | The reviewed Phase 3 candidate and review documentation were published to `copilot/beta` and fast-forwarded to `copilot/main`. No VPS deployment was performed. | `5480940b` |
+| 2026-07-30 | Codex | Production | DEPLOYMENT | Deployed `main` commit `e5335829`. VPS SHA, container, startup logs, health, DE/EN login surfaces, landing CTA styling and Google OAuth initiation passed. Authenticated import-to-editor and GA4 receipt remain pending external access. | `e5335829` |
 
 ## Next Action
 
 - Owner: Codex
-- Action: Deploy the reviewed `main` commit only after explicit VPS deployment
-  authorization in a current request, then complete the production OAuth,
-  import-flow, Tag Assistant and GA4 DebugView verification.
+- Action: Complete the authenticated production import-to-editor round trip
+  with a synthetic no-PII file and verify Tag Assistant plus GA4 DebugView when
+  the required authenticated sessions are available.
