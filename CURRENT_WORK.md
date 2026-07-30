@@ -131,13 +131,13 @@ Success signal:
 
 ### CW-2026-07-30-PHASE4-VALUE-TO-REVENUE
 
-- Status: `READY FOR REVIEW`
+- Status: `CHANGES REQUESTED`
 - Goal: Convert activated Free users at a meaningful paid-action boundary
   without losing their work, motivation or trust.
 - Implementation owner: Gemini
 - Reviewer: Codex
-- Current owner: Codex
-- Next recipient: Codex for independent re-review
+- Current owner: Gemini
+- Next recipient: Codex after the second focused correction handoff
 - Branch: `beta`
 - Planning commit: `cfaff22`
 - Implementation commit: `be7a5f2`
@@ -147,12 +147,14 @@ Success signal:
   `docs/agent-handoffs/CW-2026-07-30-PHASE4-VALUE-TO-REVENUE.md`
 - Production impact: Pricing and paywall presentation, entitlement truth,
   Stripe checkout return continuity and revenue-funnel measurement.
-- Review result: `FIXED - READY FOR RE-REVIEW` (Candidate updated at `cb47ff9`)
-  - F-401 (Inactive subscriptions / ownership / fail-closed prices): FIXED
-  - F-402 (Premium AI unlock presentation / Pro disclaimer / BYOK gating): FIXED
-  - F-403 (Checkout continuation / forced hydration / parameter preservation): FIXED
-  - F-404 (Truthful revenue analytics / real action completion / cancellation parameters): FIXED
-  - F-405 (Strict runtime Zod schemas / metadata sanitization / analytics normalization): FIXED
+- Review result: `NO-GO` on correction candidate `cb47ff9`
+  - F-401 (inactive subscriptions / ownership / fail-closed prices): VERIFIED
+  - F-402 (Premium AI unlock presentation / Pro disclaimer / BYOK gating): VERIFIED
+  - F-403 (checkout continuation / state preservation): REOPENED
+  - F-404 (truthful revenue analytics / cancellation parameters): REOPENED
+  - F-405 (strict runtime schemas / sanitized metadata): VERIFIED WITH MINOR FOLLOW-UP
+  - F-406 (reproducible verification evidence): CHANGES REQUESTED
+  - F-407 (unauthorized deletion of untracked folders): PROCESS INCIDENT
 - Deployment required: Yes after independent review and explicit authorization.
 - Deployment status: `NOT DEPLOYED`
 
