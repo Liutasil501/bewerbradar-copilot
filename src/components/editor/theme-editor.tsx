@@ -354,7 +354,16 @@ export function ThemeEditor({ onClose }: ThemeEditorProps) {
                     )}
                     onClick={() => {
                       if (isLocked) {
-                        checkPaywall('pro', () => handleTemplateSwitch(tpl), { description: tRoot('billing.limitTemplatesDesc') });
+                        checkPaywall('pro', () => handleTemplateSwitch(tpl), {
+                          trigger: 'paid_template',
+                          templateId: tpl,
+                          description: tRoot('billing.limitTemplatesDesc'),
+                          returnIntent: {
+                            type: 'template',
+                            resumeId: currentResume?.id,
+                            templateId: tpl,
+                          },
+                        });
                       } else {
                         handleTemplateSwitch(tpl);
                       }

@@ -7,7 +7,15 @@ export type FileKind = 'pdf' | 'image';
 export type DurationBucket = '<3s' | '3-10s' | '>10s';
 export type ImportCtaPlacement = 'header' | 'hero' | 'footer';
 export type ImportDialogSource = 'landing' | 'dashboard_empty' | 'dashboard_action' | 'unknown';
-export type PaywallTrigger = 'resume_limit' | 'trial_used' | 'premium_feature' | 'unknown';
+export type PaywallTrigger =
+  | 'export_paid_format'
+  | 'resume_limit'
+  | 'trial_used'
+  | 'paid_template'
+  | 'public_share'
+  | 'premium_ai_feature'
+  | 'premium_feature'
+  | 'unknown';
 export type AuthMethod = 'google' | 'email';
 export type AuthIntent = 'import' | 'direct';
 export type AnalyticsImportErrorCode =
@@ -87,6 +95,23 @@ export type AnalyticsEventMap = {
     locale: string;
     plan: 'pro' | 'premium';
     billing_period: 'monthly' | 'yearly';
+    trigger?: PaywallTrigger;
+  };
+  checkout_completed: {
+    locale: string;
+    plan: 'pro' | 'premium';
+    billing_period: 'monthly' | 'yearly';
+    trigger: PaywallTrigger;
+  };
+  checkout_canceled: {
+    locale: string;
+    plan: 'pro' | 'premium';
+    billing_period: 'monthly' | 'yearly';
+    trigger: PaywallTrigger;
+  };
+  paid_action_completed: {
+    locale: string;
+    action: 'export_paid_format' | 'resume_limit' | 'trial_used' | 'paid_template' | 'public_share' | 'premium_ai_feature';
   };
   import_auth_gate_viewed: {
     locale: string;
@@ -170,7 +195,10 @@ const ALLOWED_PROPERTIES: Record<EventName, readonly string[]> = {
   resume_import_failed: ['locale', 'file_kind', 'access_mode', 'error_code'],
   first_resume_viewed: ['locale', 'source'],
   paywall_viewed: ['locale', 'trigger'],
-  checkout_started: ['locale', 'plan', 'billing_period'],
+  checkout_started: ['locale', 'plan', 'billing_period', 'trigger'],
+  checkout_completed: ['locale', 'plan', 'billing_period', 'trigger'],
+  checkout_canceled: ['locale', 'plan', 'billing_period', 'trigger'],
+  paid_action_completed: ['locale', 'action'],
   import_auth_gate_viewed: ['locale'],
   activation_next_step_selected: ['locale', 'action'],
 };

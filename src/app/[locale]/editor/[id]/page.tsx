@@ -33,6 +33,8 @@ import { useTourStore, hasCompletedTour } from '@/stores/tour-store';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
+import { useCheckoutReturn } from '@/hooks/use-checkout-return';
+
 const EDITOR_TOUR_STEPS: TourStepConfig[] = [
   { target: 'sidebar', placement: 'right', i18nKey: 'sidebar' },
   { target: 'preview', placement: 'left', i18nKey: 'preview' },
@@ -54,6 +56,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
   const { activeModal, openModal, closeModal } = useUIStore();
   const { hydrate, _hydrated } = useSettingsStore();
   const startTour = useTourStore((s) => s.startTour);
+  useCheckoutReturn();
 
   useEffect(() => {
     if (!_hydrated) hydrate();

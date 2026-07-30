@@ -16,11 +16,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { tier, plan } = await req.json(); // tier: 'pro' | 'premium', plan: 'monthly' | 'yearly'
-    
+    const { tier, plan, trigger, returnIntent, locale } = await req.json();
+
     if (!['pro', 'premium'].includes(tier) || !['monthly', 'yearly'].includes(plan)) {
       return NextResponse.json({ error: 'Invalid tier or plan selected' }, { status: 400 });
     }
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const targetLocale = locale === 'en' ? 'en' : 'de';
+    const returnPath =
+      returnIntent?.type && ['export', 'template', 'share', 'ai_feature'].includes(returnIntent.type) && returnIntent.resumeId
+        ? `/${targetLocale}/editor/${encodeURIComponent(returnIntent.resumeId)}`
+        : `/${targetLocale}/dashboard`;
+
+    const encodedReturnIntent = returnIntent ? encodeURIComponent(JSON.stringify(returnIntent)) : '';
+    const intentQuery = encodedReturnIntent ? `&returnIntent=${encodedReturnIntent}` : '';
+
+    const successUrl = `${baseUrl}${returnPath}?session_id={CHECKOUT_SESSION_ID}${intentQuery}`;
+    const cancelUrl = `${baseUrl}${returnPath}?canceled=true${intentQuery}`;
 
     const priceId = STRIPE_CONFIG.prices[tier as 'pro' | 'premium'][plan as 'monthly' | 'yearly'];
 
@@ -140,12 +153,14 @@ export async function POST(req: NextRequest) {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard?canceled=true`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       metadata: {
         userId: user.id,
         tier,
         plan,
+        trigger: typeof trigger === 'string' ? trigger : 'unknown',
+        returnIntentType: returnIntent?.type || '',
       },
     };
 

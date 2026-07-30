@@ -399,7 +399,10 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
                         type="button"
                         onClick={() => {
                           onOpenChange(false);
-                          setShowPaywall(true);
+                          checkPaywall('pro', () => {}, {
+                            trigger: 'resume_limit',
+                            returnIntent: { type: 'dashboard_import' },
+                          });
                         }}
                         className="bg-brand hover:bg-brand/90 text-white font-semibold text-xs py-2 px-4 rounded-lg shadow-sm cursor-pointer"
                       >
@@ -426,7 +429,11 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
                         type="button"
                         onClick={() => {
                           onOpenChange(false);
-                          setShowPaywall(true);
+                          checkPaywall('pro', () => {}, {
+                            trigger: 'trial_used',
+                            allowByok: true,
+                            returnIntent: { type: 'dashboard_import' },
+                          });
                         }}
                         className="w-full sm:w-auto bg-brand hover:bg-brand/90 text-white font-semibold text-xs py-2 px-4 rounded-lg shadow-sm cursor-pointer"
                       >

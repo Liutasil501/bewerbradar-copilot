@@ -47,8 +47,10 @@ export function CoverLetterDialog({ open, onOpenChange, resumeId }: CoverLetterD
   const { checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
 
   const handleGenerate = () => {
-    checkPaywall('premium', async () => {
-      if (!jobDescription.trim()) return;
+    checkPaywall(
+      'premium',
+      async () => {
+        if (!jobDescription.trim()) return;
       setIsGenerating(true);
       setError('');
 
@@ -76,7 +78,14 @@ export function CoverLetterDialog({ open, onOpenChange, resumeId }: CoverLetterD
       } finally {
         setIsGenerating(false);
       }
-    }, { allowByok: true });
+    },
+    {
+      allowByok: true,
+      trigger: 'premium_ai_feature',
+      featureKey: 'cover_letter',
+      returnIntent: { type: 'ai_feature', resumeId, featureKey: 'cover_letter' },
+    }
+  );
   };
 
   const handleCopy = async () => {

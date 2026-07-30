@@ -61,7 +61,12 @@ export function InterviewLobby() {
           onClick={() => {
             checkPaywall('premium', () => {
               router.push('/interview/new');
-            }, { allowByok: true });
+            }, {
+              trigger: 'premium_ai_feature',
+              featureKey: 'interview',
+              allowByok: true,
+              returnIntent: { type: 'ai_feature', featureKey: 'interview' },
+            });
           }}
         >
           <Plus className="mr-2 h-4 w-4" />

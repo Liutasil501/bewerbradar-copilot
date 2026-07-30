@@ -94,7 +94,12 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
                           )}
                           onClick={() => {
                             if (isLocked) {
-                              checkPaywall('pro', () => setTemplate(tpl), { description: tBilling('limitTemplatesDesc') });
+                              checkPaywall('pro', () => setTemplate(tpl), {
+                                trigger: 'paid_template',
+                                templateId: tpl,
+                                description: tBilling('limitTemplatesDesc'),
+                                returnIntent: { type: 'template', templateId: tpl },
+                              });
                             } else {
                               setTemplate(tpl);
                             }

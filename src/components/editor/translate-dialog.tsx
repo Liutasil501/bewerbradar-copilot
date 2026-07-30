@@ -99,93 +99,102 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
   const { checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
 
   const handleTranslate = useCallback(() => {
-    checkPaywall('premium', async () => {
-      setState('translating');
-      setErrorMessage('');
-      setProgress({ completed: 0, total: 0 });
-    setFailedCount(0);
+    checkPaywall(
+      'premium',
+      async () => {
+        setState('translating');
+        setErrorMessage('');
+        setProgress({ completed: 0, total: 0 });
+        setFailedCount(0);
 
-    const controller = new AbortController();
-    abortRef.current = controller;
+        const controller = new AbortController();
+        abortRef.current = controller;
 
-    try {
-      const fingerprint = localStorage.getItem('br_fingerprint');
-      const res = await fetch('/api/ai/translate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(fingerprint ? { 'x-fingerprint': fingerprint } : {}),
-          ...getAIHeaders(),
-        },
-        body: JSON.stringify({ resumeId, targetLanguage, mode }),
-        signal: controller.signal,
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Translation failed');
-      }
-
-      await readNDJSON(res, (data) => {
-        if (data.type === 'progress') {
-          setProgress({
-            completed: data.completed as number,
-            total: data.total as number,
+        try {
+          const fingerprint = localStorage.getItem('br_fingerprint');
+          const res = await fetch('/api/ai/translate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(fingerprint ? { 'x-fingerprint': fingerprint } : {}),
+              ...getAIHeaders(),
+            },
+            body: JSON.stringify({ resumeId, targetLanguage, mode }),
+            signal: controller.signal,
           });
 
-          // In overwrite mode, apply each translated section to the store in real-time
-          if (mode === 'overwrite') {
-            const section = data.section as { sectionId: string; title: string; content: any } | undefined;
-            if (section) {
-              const current = useResumeStore.getState().currentResume;
-              if (current) {
-                useResumeStore.getState().setResume({
-                  ...current,
-                  sections: current.sections.map((s: any) =>
-                    s.id === section.sectionId
-                      ? { ...s, title: section.title, content: section.content }
-                      : s
-                  ),
-                });
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || 'Translation failed');
+          }
+
+          await readNDJSON(res, (data) => {
+            if (data.type === 'progress') {
+              setProgress({
+                completed: data.completed as number,
+                total: data.total as number,
+              });
+
+              // In overwrite mode, apply each translated section to the store in real-time
+              if (mode === 'overwrite') {
+                const section = data.section as { sectionId: string; title: string; content: any } | undefined;
+                if (section) {
+                  const current = useResumeStore.getState().currentResume;
+                  if (current) {
+                    useResumeStore.getState().setResume({
+                      ...current,
+                      sections: current.sections.map((s: any) =>
+                        s.id === section.sectionId
+                          ? { ...s, title: section.title, content: section.content }
+                          : s
+                      ),
+                    });
+                  }
+                }
+              }
+            } else if (data.type === 'done') {
+              const failed = (data.failedCount as number) || 0;
+              setFailedCount(failed);
+              setState('success');
+
+              if (mode === 'copy' && data.newResumeId) {
+                // Copy mode: navigate to the new resume
+                setTimeout(() => {
+                  onOpenChange(false);
+                  router.push(`/editor/${data.newResumeId}`);
+                }, 1500);
+              } else {
+                // Overwrite mode: sync store and close
+                const current = useResumeStore.getState().currentResume;
+                if (current) {
+                  useResumeStore.getState().setResume({
+                    ...current,
+                    language: data.language as string,
+                    sections: data.sections as any,
+                  });
+                }
+
+                setTimeout(() => {
+                  onOpenChange(false);
+                }, 1500);
               }
             }
+          });
+        } catch (err: any) {
+          if (err.name !== 'AbortError') {
+            setState('error');
+            setErrorMessage(err.message === 'apiKeyMissing' ? `${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}` : (err.message || 'Translation failed'));
           }
-        } else if (data.type === 'done') {
-          const failed = (data.failedCount as number) || 0;
-          setFailedCount(failed);
-          setState('success');
-
-          if (mode === 'copy' && data.newResumeId) {
-            // Copy mode: navigate to the new resume
-            setTimeout(() => {
-              onOpenChange(false);
-              router.push(`/editor/${data.newResumeId}`);
-            }, 1500);
-          } else {
-            // Overwrite mode: sync store and close
-            const current = useResumeStore.getState().currentResume;
-            if (current) {
-              useResumeStore.getState().setResume({
-                ...current,
-                language: data.language as string,
-                sections: data.sections as any,
-              });
-            }
-
-              setTimeout(() => {
-                onOpenChange(false);
-              }, 1500);
-            }
-          }
-        });
-      } catch (err: any) {
-        if (err.name !== 'AbortError') {
-          setState('error');
-          setErrorMessage(err.message === 'apiKeyMissing' ? `${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}` : (err.message || 'Translation failed'));
         }
+      },
+      {
+        allowByok: true,
+        trigger: 'premium_ai_feature',
+        featureKey: 'translate',
+        returnIntent: { type: 'ai_feature', resumeId, featureKey: 'translate' },
       }
-    }, { allowByok: true });
-  }, [resumeId, targetLanguage, mode, checkPaywall, onOpenChange, t, router]);
+    );
+  }, [resumeId, targetLanguage, mode, checkPaywall, onOpenChange, t, router, tAi]);
 
   const progressPercent = progress.total > 0
     ? Math.round((progress.completed / progress.total) * 100)

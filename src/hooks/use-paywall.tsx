@@ -3,14 +3,19 @@
 import { useState, useCallback } from 'react';
 import { useSubscriptionStore } from '@/stores/subscription-store';
 import { useSettingsStore } from '@/stores/settings-store';
+import { useUIStore, type PaywallContext } from '@/stores/ui-store';
+import type { PaywallTrigger } from '@/lib/analytics';
 
-export interface PaywallOptions {
+export interface PaywallOptions extends Partial<PaywallContext> {
   allowByok?: boolean;
+  description?: string;
+  trigger?: PaywallTrigger;
 }
 
 export function usePaywall() {
   const { plan, aiImportsCount, isLoading, hydrate } = useSubscriptionStore();
   const aiApiKey = useSettingsStore((s) => s.aiApiKey);
+  const { paywallContext, setPaywallContext } = useUIStore();
   const [showPaywall, setShowPaywall] = useState(false);
   const [requiredTier, setRequiredTier] = useState<'pro' | 'premium'>('pro');
   const [paywallDescription, setPaywallDescription] = useState<string | undefined>(undefined);
@@ -18,9 +23,8 @@ export function usePaywall() {
   const checkPaywall = useCallback((
     tier: 'pro' | 'premium',
     onSuccess: () => void,
-    options?: PaywallOptions & { description?: string }
+    options?: PaywallOptions
   ) => {
-    // Determine if the user meets the tier requirements
     const hasPro = plan === 'pro' || plan === 'premium';
     const hasPremium = plan === 'premium';
 
@@ -36,15 +40,27 @@ export function usePaywall() {
     } else {
       setRequiredTier(tier);
       setPaywallDescription(options?.description);
+      const context: PaywallContext = {
+        trigger: options?.trigger ?? (tier === 'premium' ? 'premium_ai_feature' : 'unknown'),
+        format: options?.format,
+        templateId: options?.templateId,
+        featureKey: options?.featureKey,
+        allowBYOK: options?.allowByok,
+        returnIntent: options?.returnIntent,
+        description: options?.description,
+      };
+      setPaywallContext(context);
       setShowPaywall(true);
     }
-  }, [plan, aiApiKey]);
+  }, [plan, aiApiKey, setPaywallContext]);
 
   return {
     showPaywall,
     setShowPaywall,
     requiredTier,
     paywallDescription,
+    paywallContext,
+    setPaywallContext,
     checkPaywall,
     isLoading,
     currentPlan: plan,

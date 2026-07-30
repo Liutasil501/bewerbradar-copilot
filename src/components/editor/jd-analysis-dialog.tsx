@@ -343,7 +343,12 @@ export function JdAnalysisDialog({ open, onOpenChange, resumeId }: JdAnalysisDia
       } finally {
         setIsAnalyzing(false);
       }
-    }, { allowByok: true });
+    }, {
+      allowByok: true,
+      trigger: 'premium_ai_feature',
+      featureKey: 'jd_analysis',
+      returnIntent: { type: 'ai_feature', resumeId, featureKey: 'jd_analysis' },
+    });
   };
 
   const handleAnalyzeAgain = () => {

@@ -248,7 +248,12 @@ export default function TemplatesPage() {
   const handleUseTemplate = async (template: string) => {
     const isPremium = !FREE_TEMPLATES.has(template as Template);
     if (isPremium && currentPlan === 'free') {
-      checkPaywall('pro', () => {}, { description: tBilling('limitTemplatesDesc') });
+      checkPaywall('pro', () => {}, {
+        trigger: 'paid_template',
+        templateId: template,
+        description: tBilling('limitTemplatesDesc'),
+        returnIntent: { type: 'template', templateId: template },
+      });
       return;
     }
 

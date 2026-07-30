@@ -301,7 +301,12 @@ export function GrammarCheckDialog({ open, onOpenChange, resumeId }: GrammarChec
       } finally {
         setIsChecking(false);
       }
-    }, { allowByok: true });
+    }, {
+      allowByok: true,
+      trigger: 'premium_ai_feature',
+      featureKey: 'grammar_check',
+      returnIntent: { type: 'ai_feature', resumeId, featureKey: 'grammar_check' },
+    });
   };
 
   const handleCheckAgain = () => {

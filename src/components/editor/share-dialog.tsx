@@ -125,8 +125,10 @@ export function ShareDialog({ open, onOpenChange, resumeId }: ShareDialogProps) 
   const { checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
 
   const handleCreate = () => {
-    checkPaywall('pro', async () => {
-      setCreating(true);
+    checkPaywall(
+      'pro',
+      async () => {
+        setCreating(true);
     try {
       const res = await fetch(`/api/resume/${resumeId}/shares`, {
         method: 'POST',
@@ -147,7 +149,12 @@ export function ShareDialog({ open, onOpenChange, resumeId }: ShareDialogProps) 
       } finally {
         setCreating(false);
       }
-    });
+    },
+    {
+      trigger: 'public_share',
+      returnIntent: { type: 'share', resumeId },
+    }
+  );
   };
 
   const handleToggleActive = async (share: ShareItem) => {

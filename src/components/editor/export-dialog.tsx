@@ -125,7 +125,15 @@ export function ExportDialog({ open, onOpenChange, resumeId }: ExportDialogProps
     };
 
     if (isPremiumFormat) {
-      checkPaywall('pro', runExport);
+      checkPaywall('pro', runExport, {
+        trigger: 'export_paid_format',
+        format: selectedFormat === 'pdf-one-page' ? 'pdf' : (selectedFormat as 'pdf' | 'docx' | 'html'),
+        returnIntent: {
+          type: 'export',
+          resumeId,
+          format: selectedFormat === 'pdf-one-page' ? 'pdf' : (selectedFormat as 'pdf' | 'docx' | 'html'),
+        },
+      });
     } else {
       runExport();
     }

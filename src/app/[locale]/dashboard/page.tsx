@@ -28,6 +28,7 @@ import { ResumeListItem } from '@/components/dashboard/resume-list-item';
 import { CreateResumeDialog } from '@/components/dashboard/create-resume-dialog';
 import { GenerateResumeDialog } from '@/components/dashboard/generate-resume-dialog';
 import { usePaywall } from '@/hooks/use-paywall';
+import { useCheckoutReturn } from '@/hooks/use-checkout-return';
 import { PricingModal } from '@/components/billing/pricing-modal';
 import { ImportJsonDialog } from '@/components/dashboard/import-json-dialog';
 import { ShareDialog } from '@/components/editor/share-dialog';
@@ -98,6 +99,7 @@ export default function DashboardPage() {
   const startTour = useTourStore((s) => s.startTour);
   const tBilling = useTranslations('billing');
   const { checkPaywall, showPaywall, setShowPaywall, requiredTier, currentPlan, paywallDescription } = usePaywall();
+  useCheckoutReturn();
 
   const handleCreateAction = <T,>(action: () => T | Promise<T>): T | Promise<T | null> => {
     if (currentPlan === 'free' && resumes.length >= MAX_FREE_RESUMES) {
