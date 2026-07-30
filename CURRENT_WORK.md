@@ -131,13 +131,13 @@ Success signal:
 
 ### CW-2026-07-30-PHASE4-VALUE-TO-REVENUE
 
-- Status: `READY FOR REVIEW`
+- Status: `CHANGES REQUESTED`
 - Goal: Convert activated Free users at a meaningful paid-action boundary
   without losing their work, motivation or trust.
 - Implementation owner: Gemini
 - Reviewer: Codex
-- Current owner: Codex
-- Next recipient: Codex for independent Phase 4 review and verification
+- Current owner: Gemini
+- Next recipient: Codex after Gemini's focused correction handoff
 - Branch: `beta`
 - Planning commit: `cfaff22`
 - Implementation commit: `be7a5f2`
@@ -145,7 +145,14 @@ Success signal:
   `docs/agent-handoffs/CW-2026-07-30-PHASE4-VALUE-TO-REVENUE.md`
 - Production impact: Pricing and paywall presentation, entitlement truth,
   Stripe checkout return continuity and revenue-funnel measurement.
-- Review result: pending
+- Review result: `NO-GO` on candidate `be7a5f2`
+  - release blocker: an old completed Checkout Session can restore a canceled
+    or otherwise inactive subscription to a paid application plan,
+  - release blocker: a Premium AI paywall still offers a Pro purchase even
+    though Pro does not unlock the blocked action,
+  - important: checkout continuation and paid-action analytics do not yet
+    represent the real completed action,
+  - important: trigger and return-intent values are not runtime allowlisted.
 - Deployment required: Yes after independent review and explicit authorization.
 - Deployment status: `NOT DEPLOYED`
 

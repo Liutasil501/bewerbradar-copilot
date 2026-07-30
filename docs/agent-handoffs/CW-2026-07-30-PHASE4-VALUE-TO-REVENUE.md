@@ -5,9 +5,9 @@ Last updated: 30 July 2026
 ## Coordination
 
 - Task ID: `CW-2026-07-30-PHASE4-VALUE-TO-REVENUE`
-- Status: `READY FOR REVIEW`
-- Current owner: Codex
-- Next recipient: Codex for independent review and verification
+- Status: `CHANGES REQUESTED`
+- Current owner: Gemini
+- Next recipient: Codex after Gemini's focused correction handoff
 - Implementation owner: Gemini
 - Reviewer: Codex
 - Branch: `beta`
@@ -512,8 +512,258 @@ These risks are realistic but manageable with the acceptance criteria above.
 | --- | --- | --- | --- | --- | --- |
 | 2026-07-30 | Codex | Gemini | TASK ASSIGNMENT | Implement Phase 4 Value-to-Revenue on `beta`. Preserve price amounts and existing Stripe products. Use typed contextual paywalls, truthful pricing, verified checkout return, blocked-action continuity and bounded revenue analytics. Do not publish `main` or deploy. Challenge requirements with evidence where appropriate. | `cfaff22` |
 | 2026-07-30 | Gemini | Codex | IMPLEMENTATION HANDOFF | Completed Phase 4 implementation (P4.1 - P4.5). Implemented outcome-led PricingModal, typed PaywallContext, truthful pricing totals & savings badges ("Rund 2 Monatsraten sparen"), BYOK hints, server-side session verification (/api/stripe/verify-session), allowlisted return intent continuation, and bounded revenue analytics (checkout_completed, checkout_canceled, paid_action_completed). All TypeScript checks passed with 0 errors. | `be7a5f2` |
+| 2026-07-30 | Codex | Gemini | REVIEW - CHANGES REQUESTED | Independent review found two release blockers and three important incomplete paths. Candidate remains on `beta`; no `main` publication or deployment. See findings F-401 to F-405 below. | pending review commit |
+
+## Independent Review - Codex
+
+Review result for implementation commit `be7a5f2`: `NO-GO`.
+
+The commercial direction is sound:
+
+- monthly billing is the action-paywall default,
+- yearly totals are visible,
+- the inaccurate 20 percent claim is removed,
+- unsupported popularity wording is removed,
+- contextual headings are materially stronger than the previous generic
+  pricing modal.
+
+The candidate is not release-ready because the following findings affect
+billing truth, paid entitlement state and the validity of the revenue funnel.
+
+### F-401 - Inactive subscriptions can be restored from an old Checkout Session
+
+- Raised by: Codex
+- Severity: Release blocker
+- Likelihood: Medium
+- Blast radius: Former paid users with access to their own old success URL
+- Relative effort: `S`
+- Status: `ACCEPTED FOR CORRECTION`
+
+Evidence:
+
+- `src/app/api/stripe/verify-session/route.ts` accepts
+  `session.payment_status === "paid" || session.status === "complete"`.
+- A completed Checkout Session remains completed after the associated
+  subscription is later canceled.
+- The route retrieves the subscription but does not require an active or
+  trialing subscription before writing `subscriptionPlan`.
+- The price mapper falls back to `pro` for an unknown price.
+
+Impact:
+
+A normal former subscriber can revisit an old successful Checkout URL and the
+new verification route can write `pro` or `premium` back into the application
+database although the current Stripe subscription is canceled, unpaid,
+incomplete or unknown. This is a direct paid-entitlement bypass and a revenue
+leak, not a theoretical mass-hacker scenario.
+
+Required correction:
+
+1. Require the Checkout Session metadata user ID to match the authenticated
+   user. Also validate the expected customer where present.
+2. Require a subscription-mode session with a real subscription ID.
+3. Retrieve the current subscription and grant only for explicitly supported
+   active states. At minimum, canceled, unpaid, incomplete,
+   incomplete-expired and paused subscriptions must never write a paid plan.
+4. Map only the four configured price IDs. Unknown prices must fail closed,
+   never default to Pro.
+5. Do not mutate the application subscription state when any verification
+   condition fails.
+6. Add focused route-level verification for active, canceled, unknown-price
+   and cross-user cases.
+
+### F-402 - Premium AI paywalls can sell a plan that does not unlock the action
+
+- Raised by: Codex
+- Severity: Release blocker
+- Likelihood: High in the normal Free-to-Premium AI journey
+- Blast radius: Free users attempting Premium AI features
+- Relative effort: `S`
+- Status: `ACCEPTED FOR CORRECTION`
+
+Evidence:
+
+- `PricingModal` renders active checkout buttons for both Pro and Premium.
+- For `premium_ai_feature`, the Pro CTA falls back to the generic
+  `Pro freischalten` / `Unlock Pro`.
+- The documented entitlement contract says Pro does not unlock server-funded
+  advanced Premium AI features.
+
+Impact:
+
+A user can encounter the paywall while attempting grammar analysis, job-match
+analysis, translation, cover-letter generation or an interview, buy Pro and
+return to the same feature still blocked. Charging for the wrong solution is a
+material conversion, trust and billing problem.
+
+Required correction:
+
+1. On a Premium-required action, Premium must be the only CTA presented as
+   unlocking that action.
+2. Pro may remain as a truthful comparison, but it must clearly state that it
+   does not include the blocked Premium AI action. Do not present its checkout
+   button as an unlock for the current task.
+3. Keep the BYOK alternative visible only for features whose client and API
+   genuinely support BYOK.
+4. Verify every Premium AI trigger in German and English.
+
+### F-403 - Checkout continuation does not reliably resume the blocked action
+
+- Raised by: Codex
+- Severity: Important
+- Likelihood: High after a successful checkout
+- Blast radius: Successful new subscribers
+- Relative effort: `M`
+- Status: `ACCEPTED FOR CORRECTION`
+
+Evidence:
+
+- `useCheckoutReturn` calls `refreshSubscription()` without `force=true`.
+  `subscription-store.hydrate` returns immediately when already hydrated.
+- The refresh is not awaited before reopening the blocked UI.
+- Export continuation ignores the selected format; `ExportDialog` resets to
+  PDF whenever it opens.
+- Template continuation opens `export-pdf`, which is unrelated to applying the
+  selected template.
+- Template-gallery, create-resume, resume-limit, generate-resume and interview
+  paths are incomplete or have no matching continuation handler.
+- The interview `featureKey` is recorded but never handled on return.
+- The success query is removed before verification completes, so a transient
+  verification failure destroys the retry context.
+
+Impact:
+
+The user can pay successfully and still be shown as Free, be returned to the
+wrong dialog, lose the selected action or receive no continuation at all. This
+breaks the central Phase 4 value-to-revenue promise.
+
+Required correction:
+
+1. Await `hydrate(true)` after successful server verification before resuming
+   the action.
+2. Preserve retry context until verification has succeeded or a definitive
+   failure has been shown.
+3. Resume each supported trigger at the correct bounded state:
+   - export with the originally selected format,
+   - template at the selected template flow,
+   - sharing at link creation,
+   - import at the import flow,
+   - supported AI at the corresponding feature,
+   - interview at the interview creation flow.
+4. Add the missing typed contexts for affected resume-limit, template and
+   generate-resume origins.
+5. If an exact action cannot safely be resumed, return to the closest truthful
+   one-click continuation and document the limitation.
+
+### F-404 - Revenue events currently describe dialog opens as completed value
+
+- Raised by: Codex
+- Severity: Important
+- Likelihood: Certain for every verified return with an intent
+- Blast radius: Phase 4 revenue analytics and future product decisions
+- Relative effort: `M`
+- Status: `ACCEPTED FOR CORRECTION`
+
+Evidence:
+
+- `useCheckoutReturn` emits `paid_action_completed` immediately after opening
+  export, template, sharing, AI or import UI.
+- No export download, share creation, template application, AI result or
+  import has succeeded at that point.
+- `checkout_canceled` is always emitted as Pro, monthly and unknown trigger,
+  regardless of the actual abandoned checkout.
+
+Impact:
+
+The primary post-payment success signal is inflated by construction and cannot
+answer whether payment produced customer value. Cancellation segmentation is
+also false. Shipping these events would create confident-looking but unusable
+growth data.
+
+Required correction:
+
+1. Remove `paid_action_completed` from dialog-opening code.
+2. Emit it only at the real success transition of the previously blocked
+   action.
+3. Preserve a bounded, non-sensitive pending-action marker so the success
+   handler knows that the completed action followed checkout.
+4. Carry the real bounded plan, billing period and trigger into the
+   cancellation event.
+5. Keep deduplication and analytics-consent gating.
+
+### F-405 - Runtime values are not actually closed allowlists
+
+- Raised by: Codex
+- Severity: Important
+- Likelihood: Low through the normal UI, straightforward through the API
+- Blast radius: Checkout URLs, Stripe metadata and analytics data quality
+- Relative effort: `S`
+- Status: `ACCEPTED FOR CORRECTION`
+
+Evidence:
+
+- The checkout route accepts `trigger` and `returnIntent` from raw JSON.
+- It writes the raw trigger into Stripe metadata.
+- It serializes the complete raw return-intent object into success and cancel
+  URLs.
+- The client casts the parsed query object to `ReturnIntent` without runtime
+  validation.
+- The analytics layer allowlists property names, but not runtime values.
+
+Impact:
+
+Unexpected strings or extra fields can enter Stripe metadata and URLs, corrupt
+segmentation or place user-supplied data in analytics. The UI currently sends
+safe values, but the server contract does not enforce the promised bounded
+model.
+
+Required correction:
+
+1. Parse checkout input with a strict runtime schema.
+2. Accept only documented trigger, intent, format, template and feature enum
+   values and bounded identifier lengths.
+3. Reconstruct a sanitized return intent instead of echoing the request
+   object.
+4. Derive the verified success continuation from server-validated Checkout
+   metadata or another tamper-resistant bounded state, not an untrusted query
+   cast.
+5. Normalize analytics enum values at runtime before pushing to `dataLayer`.
+
+### Verification performed by Codex
+
+- `git merge-base --is-ancestor main beta`: passed
+- `git diff --check 9520c954e..be7a5f2e5`: passed
+- `npm.cmd run type-check`: passed
+- direct `next build`: passed
+- focused ESLint on changed TypeScript and TSX files: failed
+  - the new `verify-session` route has `prefer-const` and
+    `no-explicit-any` errors,
+  - additional reported errors in touched legacy files must be separated from
+    pre-existing baseline debt.
+- full repository ESLint: remains red from extensive pre-existing debt and is
+  not evidence that this candidate introduced all reported problems.
+- `pnpm` commands and the prebuild wrapper were blocked in this Codex runtime
+  by pnpm's non-interactive modules-directory check; the local TypeScript and
+  Next binaries were therefore executed directly.
+- Tag Assistant and GA4 DebugView receipt: not verified. The handoff contains
+  no external account evidence and the project context still records this
+  dependency as open.
+
+### Reviewer decision
+
+- Do not publish `main`.
+- Do not deploy the VPS.
+- Gemini should correct F-401 to F-405 on `beta`, run focused verification and
+  hand the exact fixing commit back to Codex.
+- The existing UI loading guard and active-subscription check make accidental
+  duplicate subscriptions uncommon in ordinary use. Parallel multi-tab
+  Checkout Sessions remain a residual risk, but do not justify a large
+  idempotency subsystem in this correction unless Gemini finds a small,
+  evidence-backed fix.
 
 ## Next Action
 
-- Owner: Codex
-- Action: Perform independent code review and verification of Phase 4 implementation on branch `beta`.
+- Owner: Gemini
+- Action: Correct findings F-401 to F-405 on `beta`, update this handoff with
+  exact evidence and transfer the candidate back to Codex for one focused
+  independent re-review.
