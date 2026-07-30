@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import {
   Dialog,
@@ -18,6 +18,7 @@ import { Languages, Loader2, CheckCircle2, AlertCircle, FileEdit, FilePlus2 } fr
 import { getAIHeaders } from '@/stores/settings-store';
 import { cn } from '@/lib/utils';
 import { usePaywall } from '@/hooks/use-paywall';
+import { trackEvent } from '@/lib/analytics';
 import { PricingModal } from '@/components/billing/pricing-modal';
 
 interface TranslateDialogProps {
@@ -67,6 +68,7 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
   const t = useTranslations('translate');
   const tAi = useTranslations('ai');
   const router = useRouter();
+  const locale = useLocale();
   const currentResume = useResumeStore((s) => s.currentResume);
 
   const currentLanguage = currentResume?.language || 'en';
@@ -137,15 +139,15 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
 
               // In overwrite mode, apply each translated section to the store in real-time
               if (mode === 'overwrite') {
-                const section = data.section as { sectionId: string; title: string; content: any } | undefined;
+                const section = data.section as { sectionId: string; title: string; content: unknown } | undefined;
                 if (section) {
                   const current = useResumeStore.getState().currentResume;
                   if (current) {
                     useResumeStore.getState().setResume({
                       ...current,
-                      sections: current.sections.map((s: any) =>
+                      sections: current.sections.map((s) =>
                         s.id === section.sectionId
-                          ? { ...s, title: section.title, content: section.content }
+                          ? { ...s, title: section.title, content: section.content as typeof s.content }
                           : s
                       ),
                     });
@@ -156,6 +158,11 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
               const failed = (data.failedCount as number) || 0;
               setFailedCount(failed);
               setState('success');
+
+              // F-404: Emit paid_action_completed upon real AI feature success
+              const pendingAction = typeof window !== 'undefined' ? sessionStorage.getItem('br_pending_paid_action') : null;
+              if (pendingAction) sessionStorage.removeItem('br_pending_paid_action');
+              trackEvent('paid_action_completed', { locale, action: 'premium_ai_feature' });
 
               if (mode === 'copy' && data.newResumeId) {
                 // Copy mode: navigate to the new resume
@@ -170,7 +177,7 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
                   useResumeStore.getState().setResume({
                     ...current,
                     language: data.language as string,
-                    sections: data.sections as any,
+                    sections: data.sections as typeof current.sections,
                   });
                 }
 
@@ -180,10 +187,11 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
               }
             }
           });
-        } catch (err: any) {
-          if (err.name !== 'AbortError') {
+        } catch (err: unknown) {
+          const errorObj = err as Error;
+          if (errorObj?.name !== 'AbortError') {
             setState('error');
-            setErrorMessage(err.message === 'apiKeyMissing' ? `${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}` : (err.message || 'Translation failed'));
+            setErrorMessage(errorObj?.message === 'apiKeyMissing' ? `${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}` : (errorObj?.message || 'Translation failed'));
           }
         }
       },
@@ -194,7 +202,7 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
         returnIntent: { type: 'ai_feature', resumeId, featureKey: 'translate' },
       }
     );
-  }, [resumeId, targetLanguage, mode, checkPaywall, onOpenChange, t, router, tAi]);
+  }, [resumeId, targetLanguage, mode, checkPaywall, onOpenChange, router, tAi, locale]);
 
   const progressPercent = progress.total > 0
     ? Math.round((progress.completed / progress.total) * 100)

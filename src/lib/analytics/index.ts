@@ -1,6 +1,7 @@
 'use client';
 
 import { hasAnalyticsConsent } from './consent';
+import { sanitizePaywallTrigger } from '@/lib/billing/schema';
 
 export type AccessMode = 'free_trial' | 'byok' | 'paid' | 'unknown';
 export type FileKind = 'pdf' | 'image';
@@ -221,7 +222,26 @@ export function trackEvent<K extends EventName>(eventName: K, params: AnalyticsE
 
     for (const key of allowlist) {
       if (key in params && (params as Record<string, unknown>)[key] !== undefined) {
-        sanitizedParams[key] = (params as Record<string, unknown>)[key];
+        const val = (params as Record<string, unknown>)[key];
+        if (key === 'trigger') {
+          sanitizedParams[key] = sanitizePaywallTrigger(val);
+        } else if (key === 'plan') {
+          sanitizedParams[key] = val === 'premium' ? 'premium' : 'pro';
+        } else if (key === 'billing_period') {
+          sanitizedParams[key] = val === 'yearly' ? 'yearly' : 'monthly';
+        } else if (key === 'action' && eventName === 'paid_action_completed') {
+          const allowedActions = [
+            'export_paid_format',
+            'resume_limit',
+            'trial_used',
+            'paid_template',
+            'public_share',
+            'premium_ai_feature',
+          ];
+          sanitizedParams[key] = typeof val === 'string' && allowedActions.includes(val) ? val : 'export_paid_format';
+        } else {
+          sanitizedParams[key] = val;
+        }
       }
     }
 

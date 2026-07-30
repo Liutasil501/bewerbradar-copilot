@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
+import { trackEvent } from '@/lib/analytics';
 import {
   Dialog,
   DialogContent,
@@ -21,7 +22,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import {
   Share2,
@@ -79,6 +79,7 @@ function getLabelColor(label: string) {
 
 export function ShareDialog({ open, onOpenChange, resumeId }: ShareDialogProps) {
   const t = useTranslations('share');
+  const locale = useLocale();
 
   const [loading, setLoading] = useState(true);
   const [shares, setShares] = useState<ShareItem[]>([]);
@@ -143,6 +144,11 @@ export function ShareDialog({ open, onOpenChange, resumeId }: ShareDialogProps) 
         setShares((prev) => [data, ...prev]);
         setNewLabel('');
         setNewPassword('');
+
+        // F-404: Emit paid_action_completed upon real share creation success
+        const pendingAction = typeof window !== 'undefined' ? sessionStorage.getItem('br_pending_paid_action') : null;
+        if (pendingAction) sessionStorage.removeItem('br_pending_paid_action');
+        trackEvent('paid_action_completed', { locale, action: 'public_share' });
       }
     } catch {
       // silent

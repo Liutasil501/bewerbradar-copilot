@@ -27,6 +27,7 @@ interface UIStore {
   theme: 'light' | 'dark' | 'system';
   settingsTab: string;
   paywallContext: PaywallContext | null;
+  preferredExportFormat: 'pdf' | 'docx' | 'html' | null;
 
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
@@ -35,6 +36,7 @@ interface UIStore {
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
   setSettingsTab: (tab: string) => void;
   setPaywallContext: (context: PaywallContext | null) => void;
+  setPreferredExportFormat: (format: 'pdf' | 'docx' | 'html' | null) => void;
 }
 
 export const useUIStore = create<UIStore>((set) => ({
@@ -43,6 +45,7 @@ export const useUIStore = create<UIStore>((set) => ({
   theme: 'light',
   settingsTab: 'ai',
   paywallContext: null,
+  preferredExportFormat: null,
 
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
@@ -51,4 +54,5 @@ export const useUIStore = create<UIStore>((set) => ({
   setTheme: (theme) => set({ theme }),
   setSettingsTab: (tab) => set({ settingsTab: tab }),
   setPaywallContext: (context) => set({ paywallContext: context }),
+  setPreferredExportFormat: (format) => set({ preferredExportFormat: format }),
 }));

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
+import { trackEvent } from '@/lib/analytics';
 import {
   Loader2, RotateCcw, Target, ShieldCheck, Lightbulb, AlertTriangle,
   Wand2, Trash2, FileSearch, ArrowUp, ArrowDown, Minus, ChevronLeft,
@@ -126,7 +127,7 @@ function formatDate(value: string | number): string {
 }
 
 /* ── Result view (shared between new analysis & history detail) ── */
-function JdAnalysisResultView({ result, jobDescription, t }: { result: JdAnalysisResult; jobDescription?: string; t: any }) {
+function JdAnalysisResultView({ result, jobDescription, t }: { result: JdAnalysisResult; jobDescription?: string; t: (key: string) => string }) {
   const [jdExpanded, setJdExpanded] = useState(false);
 
   return (
@@ -269,6 +270,7 @@ export function JdAnalysisDialog({ open, onOpenChange, resumeId }: JdAnalysisDia
   const t = useTranslations('jdAnalysis');
   const tAi = useTranslations('ai');
   const ct = useTranslations('common');
+  const locale = useLocale();
   const { setShowAiChat, setPendingAiMessage } = useEditorStore();
   const [jobDescription, setJobDescription] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -338,8 +340,14 @@ export function JdAnalysisDialog({ open, onOpenChange, resumeId }: JdAnalysisDia
       setResult(data);
       // Refresh history count
       fetchHistory();
-      } catch (err: any) {
-        setError(err.message === 'apiKeyMissing' ? `${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}` : (err.message || 'Failed to analyze'));
+
+      // F-404: Emit paid_action_completed upon real AI feature success
+      const pendingAction = typeof window !== 'undefined' ? sessionStorage.getItem('br_pending_paid_action') : null;
+      if (pendingAction) sessionStorage.removeItem('br_pending_paid_action');
+      trackEvent('paid_action_completed', { locale, action: 'premium_ai_feature' });
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        setError(msg === 'apiKeyMissing' ? `${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}` : (msg || 'Failed to analyze'));
       } finally {
         setIsAnalyzing(false);
       }

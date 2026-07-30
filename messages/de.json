@@ -1081,6 +1081,8 @@
     "ctaAiPremium": "KI-Power mit Premium freischalten",
     "ctaGenericPro": "Pro freischalten",
     "ctaGenericPremium": "Premium freischalten",
+    "ctaProNoAi": "Pro wählen (ohne KI-Feature)",
+    "proNoAiNotice": "Pro schaltet PDFs & Vorlagen frei, beinhaltet jedoch NICHT diese KI-Funktion.",
     "checkoutSuccess": "Abonnement erfolgreich aktiviert! Ihr Feature ist jetzt freigeschaltet.",
     "checkoutCanceled": "Checkout abgebrochen. Ihr Entwurf wurde unverändert gespeichert.",
     "verifyingCheckout": "Zahlung wird verifiziert...",

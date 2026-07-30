@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Loader2, AlertTriangle, Copy, Check, Download, RotateCcw, FileText } from 'lucide-react';
 import {
   Dialog,
@@ -17,6 +17,7 @@ import { LanguageSelect } from '@/components/ui/language-select';
 import { cn } from '@/lib/utils';
 import { getAIHeaders } from '@/stores/settings-store';
 import { usePaywall } from '@/hooks/use-paywall';
+import { trackEvent } from '@/lib/analytics';
 import { PricingModal } from '@/components/billing/pricing-modal';
 
 interface CoverLetterDialogProps {
@@ -35,6 +36,7 @@ type Tone = 'formal' | 'friendly' | 'confident';
 export function CoverLetterDialog({ open, onOpenChange, resumeId }: CoverLetterDialogProps) {
   const t = useTranslations('coverLetter');
   const tAi = useTranslations('ai');
+  const locale = useLocale();
 
   const [jobDescription, setJobDescription] = useState('');
   const [tone, setTone] = useState<Tone>('formal');
@@ -73,8 +75,14 @@ export function CoverLetterDialog({ open, onOpenChange, resumeId }: CoverLetterD
 
         const data: CoverLetterResult = await res.json();
         setResult(data);
-      } catch (err: any) {
-        setError(err.message === 'apiKeyMissing' ? `${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}` : (err.message || t('error')));
+
+        // F-404: Emit paid_action_completed upon real AI feature success
+        const pendingAction = typeof window !== 'undefined' ? sessionStorage.getItem('br_pending_paid_action') : null;
+        if (pendingAction) sessionStorage.removeItem('br_pending_paid_action');
+        trackEvent('paid_action_completed', { locale, action: 'premium_ai_feature' });
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        setError(msg === 'apiKeyMissing' ? `${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}` : (msg || t('error')));
       } finally {
         setIsGenerating(false);
       }
@@ -174,7 +182,7 @@ export function CoverLetterDialog({ open, onOpenChange, resumeId }: CoverLetterD
                     onClick={() => setTone(t_tone)}
                     disabled={isGenerating}
                   >
-                    {t(`tone${t_tone.charAt(0).toUpperCase() + t_tone.slice(1)}` as any)}
+                    {t(`tone${(t_tone.charAt(0).toUpperCase() + t_tone.slice(1)) as 'Formal' | 'Friendly' | 'Confident'}`)}
                   </button>
                 ))}
               </div>

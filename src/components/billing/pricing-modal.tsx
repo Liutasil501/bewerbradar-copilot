@@ -8,7 +8,8 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useUIStore } from '@/stores/ui-store';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { trackEvent, type PaywallTrigger } from '@/lib/analytics';
+import { trackEvent } from '@/lib/analytics';
+import type { PaywallTrigger } from '@/lib/billing/schema';
 
 interface PricingModalProps {
   open: boolean;
@@ -35,7 +36,7 @@ export function PricingModal({
   const effectiveTrigger: PaywallTrigger =
     paywallContext?.trigger ?? analyticsTrigger ?? (requiredTier === 'premium' ? 'premium_ai_feature' : 'unknown');
 
-  const isPremiumDominant = effectiveTrigger === 'premium_ai_feature' || requiredTier === 'premium';
+  const isPremiumDominant = effectiveTrigger === 'premium_ai_feature' || effectiveTrigger === 'premium_feature' || requiredTier === 'premium';
 
   useEffect(() => {
     if (open) {
@@ -120,6 +121,9 @@ export function PricingModal({
   };
 
   const getProCtaText = () => {
+    if (isPremiumDominant) {
+      return t('ctaProNoAi');
+    }
     switch (effectiveTrigger) {
       case 'export_paid_format':
         return t('ctaExportPro');
@@ -137,7 +141,7 @@ export function PricingModal({
   };
 
   const getPremiumCtaText = () => {
-    if (effectiveTrigger === 'premium_ai_feature' || effectiveTrigger === 'premium_feature') {
+    if (isPremiumDominant) {
       return t('ctaAiPremium');
     }
     return t('ctaGenericPremium');
@@ -219,12 +223,19 @@ export function PricingModal({
               </p>
             </div>
 
-            <ul className="mb-8 flex-1 space-y-3.5 text-xs text-zinc-600 dark:text-zinc-400">
+            <ul className="mb-6 flex-1 space-y-3.5 text-xs text-zinc-600 dark:text-zinc-400">
               <li className="flex gap-x-2.5"><Check className="h-4 w-4 flex-none text-brand" /> {t('proFeat1')}</li>
               <li className="flex gap-x-2.5"><Check className="h-4 w-4 flex-none text-brand" /> {t('proFeat2')}</li>
               <li className="flex gap-x-2.5"><Check className="h-4 w-4 flex-none text-brand" /> {t('proFeat3')}</li>
               <li className="flex gap-x-2.5"><Check className="h-4 w-4 flex-none text-brand" /> {t('proFeat4')}</li>
             </ul>
+
+            {/* F-402 Truthful Disclaimer when Pro is viewed during a Premium AI paywall */}
+            {isPremiumDominant && (
+              <div className="mb-4 rounded-lg bg-amber-50 p-2.5 text-[11px] text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-900">
+                {t('proNoAiNotice')}
+              </div>
+            )}
 
             <div className="space-y-2">
               <Button
@@ -233,7 +244,7 @@ export function PricingModal({
                   "w-full h-11 text-xs font-semibold cursor-pointer gap-2 transition-all",
                   !isPremiumDominant
                     ? "bg-brand text-white shadow-md shadow-brand/20 hover:bg-brand-hover"
-                    : "border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                    : "border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700"
                 )}
                 onClick={() => handleCheckout('pro')}
                 disabled={isLoading !== null}
@@ -301,7 +312,7 @@ export function PricingModal({
               </p>
             </div>
 
-            {/* BYOK Secondary Path */}
+            {/* BYOK Secondary Path - ONLY shown when allowBYOK is true */}
             {paywallContext?.allowBYOK && (
               <div className="mt-4 text-center pt-3 border-t border-zinc-200 dark:border-zinc-800">
                 <button

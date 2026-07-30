@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,8 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useResumeStore } from '@/stores/resume-store';
 import { usePaywall } from '@/hooks/use-paywall';
+import { useUIStore } from '@/stores/ui-store';
+import { trackEvent } from '@/lib/analytics';
 import { PricingModal } from '@/components/billing/pricing-modal';
 import {
   FileDown,
@@ -53,6 +55,7 @@ const FORMAT_OPTIONS: {
 
 export function ExportDialog({ open, onOpenChange, resumeId }: ExportDialogProps) {
   const t = useTranslations('export');
+  const locale = useLocale();
   const { currentResume, isDirty, save } = useResumeStore();
 
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('pdf');
@@ -63,7 +66,13 @@ export function ExportDialog({ open, onOpenChange, resumeId }: ExportDialogProps
     if (open) {
       setState('idle');
       setErrorMessage('');
-      setSelectedFormat('pdf');
+      const pref = useUIStore.getState().preferredExportFormat;
+      if (pref) {
+        setSelectedFormat(pref);
+        useUIStore.getState().setPreferredExportFormat(null);
+      } else {
+        setSelectedFormat('pdf');
+      }
     }
   }, [open]);
 
@@ -78,49 +87,57 @@ export function ExportDialog({ open, onOpenChange, resumeId }: ExportDialogProps
 
       try {
         // Save first if dirty
-      if (isDirty) await save();
+        if (isDirty) await save();
 
-      const fingerprint = localStorage.getItem('br_fingerprint');
-      const queryFormat = selectedFormat === 'pdf-one-page' ? 'pdf' : selectedFormat;
-      const fitParam = selectedFormat === 'pdf-one-page' ? '&fitOnePage=true' : '';
-      const res = await fetch(`/api/resume/${resumeId}/export?format=${queryFormat}${fitParam}`, {
-        headers: {
-          ...(fingerprint ? { 'x-fingerprint': fingerprint } : {}),
-        },
-      });
+        const fingerprint = localStorage.getItem('br_fingerprint');
+        const queryFormat = selectedFormat === 'pdf-one-page' ? 'pdf' : selectedFormat;
+        const fitParam = selectedFormat === 'pdf-one-page' ? '&fitOnePage=true' : '';
+        const res = await fetch(`/api/resume/${resumeId}/export?format=${queryFormat}${fitParam}`, {
+          headers: {
+            ...(fingerprint ? { 'x-fingerprint': fingerprint } : {}),
+          },
+        });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Export failed');
-      }
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || 'Export failed');
+        }
 
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
 
-      const title = currentResume?.title || 'resume';
-      const now = new Date();
-      const ts = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
-      const extMap: Record<ExportFormat, string> = {
-        'pdf': 'pdf',
-        'pdf-one-page': 'pdf',
-        'docx': 'docx',
-        'html': 'html',
-        'txt': 'txt',
-        'json': 'json',
-      };
-      a.download = `${title}-${ts}.${extMap[selectedFormat]}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+        const title = currentResume?.title || 'resume';
+        const now = new Date();
+        const ts = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+        const extMap: Record<ExportFormat, string> = {
+          'pdf': 'pdf',
+          'pdf-one-page': 'pdf',
+          'docx': 'docx',
+          'html': 'html',
+          'txt': 'txt',
+          'json': 'json',
+        };
+        a.download = `${title}-${ts}.${extMap[selectedFormat]}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
 
-      setState('success');
-      setTimeout(() => onOpenChange(false), 1500);
-      } catch (err: any) {
+        setState('success');
+
+        // F-404: Emit paid_action_completed ONLY upon real export download completion
+        const pendingAction = typeof window !== 'undefined' ? sessionStorage.getItem('br_pending_paid_action') : null;
+        if (pendingAction || isPremiumFormat) {
+          if (pendingAction) sessionStorage.removeItem('br_pending_paid_action');
+          trackEvent('paid_action_completed', { locale, action: 'export_paid_format' });
+        }
+
+        setTimeout(() => onOpenChange(false), 1500);
+      } catch (err: unknown) {
         setState('error');
-        setErrorMessage(err.message || t('error'));
+        setErrorMessage(err instanceof Error ? err.message : t('error'));
       }
     };
 
@@ -137,7 +154,7 @@ export function ExportDialog({ open, onOpenChange, resumeId }: ExportDialogProps
     } else {
       runExport();
     }
-  }, [resumeId, selectedFormat, currentResume, isDirty, save, onOpenChange, t, checkPaywall]);
+  }, [resumeId, selectedFormat, currentResume, isDirty, save, onOpenChange, t, checkPaywall, locale]);
 
   const isLoading = state === 'exporting';
 

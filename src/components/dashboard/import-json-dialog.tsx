@@ -264,6 +264,14 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
       }
 
       setState('success');
+
+      // F-404: Emit paid_action_completed if import followed checkout
+      const pendingAction = typeof window !== 'undefined' ? sessionStorage.getItem('br_pending_paid_action') : null;
+      if (pendingAction) {
+        sessionStorage.removeItem('br_pending_paid_action');
+        trackEvent('paid_action_completed', { locale, action: 'trial_used' });
+      }
+
       setTimeout(() => {
         onOpenChange(false);
         router.push(`/editor/${newResume.id}`);

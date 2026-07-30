@@ -1081,6 +1081,8 @@
     "ctaAiPremium": "Unlock AI Power with Premium",
     "ctaGenericPro": "Unlock Pro",
     "ctaGenericPremium": "Unlock Premium",
+    "ctaProNoAi": "Select Pro (without AI feature)",
+    "proNoAiNotice": "Pro unlocks PDFs & templates, but DOES NOT include this AI feature.",
     "checkoutSuccess": "Subscription successfully activated! Your feature is now unlocked.",
     "checkoutCanceled": "Checkout canceled. Your draft has been preserved.",
     "verifyingCheckout": "Verifying payment...",
