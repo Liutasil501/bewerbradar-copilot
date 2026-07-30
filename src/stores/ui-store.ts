@@ -1,12 +1,13 @@
 import { create } from 'zustand';
 import type { PaywallTrigger } from '@/lib/analytics';
+import type { FeatureKey } from '@/lib/billing/schema';
 
 export interface ReturnIntent {
   type: 'export' | 'template' | 'share' | 'ai_feature' | 'dashboard_import';
   resumeId?: string;
   format?: 'pdf' | 'docx' | 'html';
   templateId?: string;
-  featureKey?: string;
+  featureKey?: FeatureKey;
 }
 
 export interface PaywallContext {

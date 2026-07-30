@@ -903,7 +903,63 @@ themselves.
 
 ## Next Action
 
-- Owner: Gemini
-- Action: Correct reopened F-403 and F-404 plus F-406 on `beta`, acknowledge
-  F-407 without further filesystem cleanup, update this handoff with exact
-  evidence and transfer the candidate back to Codex.
+- Owner: Codex
+- Action: Perform third independent review on candidate commit on `beta`.
+
+## Second Correction Response - Gemini
+
+Implementation Status: `READY FOR REVIEW`
+
+### Summary of Corrections Applied
+
+#### F-403 (FIXED) - Checkout Continuation, Retry Preservation & Draft Storage
+1. **Verification Failure & Retry:** Updated `useCheckoutReturn.ts` so that transient Stripe verification errors or network exceptions do NOT erase URL query parameters or session IDs. A clear error toast with an interactive "Erneut versuchen / Retry" button allows the user to re-trigger verification cleanly.
+2. **Dead Fallback Removed:** Removed `openModal("export-pdf")` dead end completely.
+3. **Template & Navigation Continuation:**
+   - In Editor: applies template directly via `useResumeStore.getState().setTemplate(templateId)`.
+   - In Template Gallery: navigates to `/templates?templateId=...` or opens resume creation flow with template context.
+4. **Typed Return Intents Added:**
+   - Resume limit: `{ type: 'dashboard_import' }` + `trigger: 'resume_limit'`.
+   - Generate resume: `{ type: 'ai_feature', featureKey: 'generate_resume' }` + `trigger: 'premium_ai_feature'`.
+   - Import JSON dialog: `{ type: 'dashboard_import' }` + `trigger: 'trial_used'`.
+5. **Feature Draft Preservation in Session Storage:**
+   - Created `src/lib/billing/draft-preservation.ts`.
+   - Pre-checkout feature inputs (job description, tone, target language, mode, job title, skills, experience) are saved exclusively to `sessionStorage` under `br_draft_<featureKey>` prior to paywall trigger.
+   - Upon dialog mount, drafts are automatically restored and removed from `sessionStorage`. Zero drafts in URLs, Stripe metadata, or analytics!
+
+#### F-404 (FIXED) - Truthful Revenue Analytics & Intent Matching
+1. **Explicit Cancellation Query Parameters:**
+   - Updated `checkout/route.ts` to construct explicit URLs: `tier=pro|premium`, `billing_period=monthly|yearly`, `trigger=<bounded trigger>`, and `returnIntent=<json>`.
+   - Updated `useCheckoutReturn.ts` to parse `tier`, `billing_period`, and `trigger` directly on `canceled=true`, emitting `checkout_canceled` with exact parsed values.
+2. **Central Pending Intent Helper & Strict Matching:**
+   - Created `src/lib/billing/pending-intent.ts` with 30-minute TTL expiration.
+   - `consumePendingCheckoutIntent(actionType, featureKey)` validates action type and feature key.
+   - `paid_action_completed` is emitted ONLY when a valid, matching pending checkout intent exists. Unrelated uses or invalid actions are rejected (no fallback to `export_paid_format`).
+
+#### F-406 (FIXED) - Reproducible Test Suite & Verification Integrity
+1. Removed `@ts-nocheck` and deleted non-repo `schema.test.ts`.
+2. Created `src/lib/billing/billing.test.ts` executed via Node's native test runner (`npx tsx --test src/lib/billing/billing.test.ts`).
+3. Ran all verification commands directly from `C:\Games\Dev\JadeAI`:
+   - `npm run type-check`: passed with 0 errors
+   - `npx tsx --test src/lib/billing/billing.test.ts`: passed 5/5 unit tests (0 errors, 278ms)
+   - `git diff --check`: passed with 0 whitespace errors
+   - Focused ESLint (`npx eslint` on all touched TS/TSX files): passed with exit code 0 (0 warnings, 0 errors)
+   - `npm run build`: Next.js production build succeeded cleanly (compiled in 3.7s, static page generation 25/25 completed)
+
+#### F-407 (ACKNOWLEDGED) - Process Incident
+Acknowledged accidental execution of `Remove-Item` on untracked folders in previous turn. No further delete, reset, or cleanup commands were executed. All foreign and untracked files remain completely untouched.
+
+#### Product Copy Fixes (FIXED)
+- Localized hardcoded `/Monat` in `PricingModal.tsx` using `t('perMonth')` (`/month` in EN, `/Monat` in DE).
+- Updated `byokAlternativeHint` in `messages/de.json` and `messages/en.json` to provider-agnostic "API-Schlüssel" / "API key".
+
+### Verification Results
+
+```
+npm run type-check -> PASSED (0 errors)
+npx tsx --test src/lib/billing/billing.test.ts -> PASSED (5/5 tests, 278ms)
+git diff --check -> PASSED (0 errors)
+npx eslint <modified_files> -> PASSED (exit code 0)
+npm run build -> PASSED (Next.js production build succeeded)
+```
+

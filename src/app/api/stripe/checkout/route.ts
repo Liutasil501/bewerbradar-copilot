@@ -142,10 +142,10 @@ export async function POST(req: NextRequest) {
 
     const returnIntentJson = sanitizedReturnIntent ? JSON.stringify(sanitizedReturnIntent) : '';
     const intentQuery = returnIntentJson ? `&returnIntent=${encodeURIComponent(returnIntentJson)}` : '';
-    const triggerQuery = `&trigger=${encodeURIComponent(trigger)}&plan=${encodeURIComponent(plan)}`;
+    const queryParams = `&tier=${encodeURIComponent(tier)}&billing_period=${encodeURIComponent(plan)}&trigger=${encodeURIComponent(trigger)}${intentQuery}`;
 
-    const successUrl = `${baseUrl}${returnPath}?session_id={CHECKOUT_SESSION_ID}${intentQuery}${triggerQuery}`;
-    const cancelUrl = `${baseUrl}${returnPath}?canceled=true${intentQuery}${triggerQuery}`;
+    const successUrl = `${baseUrl}${returnPath}?session_id={CHECKOUT_SESSION_ID}${queryParams}`;
+    const cancelUrl = `${baseUrl}${returnPath}?canceled=true${queryParams}`;
 
     const sessionData: Stripe.Checkout.SessionCreateParams = {
       mode: 'subscription',

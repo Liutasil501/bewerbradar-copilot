@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { trackEvent } from '@/lib/analytics';
+import { saveFeatureDraft, getAndClearFeatureDraft } from '@/lib/billing/draft-preservation';
+import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
 import {
   Loader2, RotateCcw, Target, ShieldCheck, Lightbulb, AlertTriangle,
   Wand2, Trash2, FileSearch, ArrowUp, ArrowDown, Minus, ChevronLeft,
@@ -316,9 +318,19 @@ export function JdAnalysisDialog({ open, onOpenChange, resumeId }: JdAnalysisDia
     }
   }, [open, activeTab, fetchHistory]);
 
+  useEffect(() => {
+    if (open) {
+      const draft = getAndClearFeatureDraft<{ jobDescription?: string }>('jd_analysis');
+      if (draft?.jobDescription) {
+        setJobDescription(draft.jobDescription);
+      }
+    }
+  }, [open]);
+
   const { checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
 
   const handleAnalyze = () => {
+    saveFeatureDraft('jd_analysis', { jobDescription });
     checkPaywall('premium', async () => {
       if (!jobDescription.trim()) return;
       setIsAnalyzing(true);
@@ -336,15 +348,15 @@ export function JdAnalysisDialog({ open, onOpenChange, resumeId }: JdAnalysisDia
         throw new Error(data.error || 'Analysis failed');
       }
 
-      const data: JdAnalysisResult = await res.json();
-      setResult(data);
-      // Refresh history count
-      fetchHistory();
+        const data: JdAnalysisResult = await res.json();
+        setResult(data);
+        // Refresh history count
+        fetchHistory();
 
-      // F-404: Emit paid_action_completed upon real AI feature success
-      const pendingAction = typeof window !== 'undefined' ? sessionStorage.getItem('br_pending_paid_action') : null;
-      if (pendingAction) sessionStorage.removeItem('br_pending_paid_action');
-      trackEvent('paid_action_completed', { locale, action: 'premium_ai_feature' });
+        // F-404: Emit paid_action_completed ONLY when matching pending checkout intent exists
+        if (consumePendingCheckoutIntent('ai_feature', 'jd_analysis')) {
+          trackEvent('paid_action_completed', { locale, action: 'premium_ai_feature' });
+        }
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
         setError(msg === 'apiKeyMissing' ? `${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}` : (msg || 'Failed to analyze'));

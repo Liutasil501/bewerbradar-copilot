@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
-import { Loader2, CheckCircle2, AlertTriangle, Sparkles } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertTriangle, Sparkles, Lock } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -21,7 +21,9 @@ import { TemplateThumbnail } from './template-thumbnail';
 import { templateLabelsMap } from '@/lib/template-labels';
 import { getAIHeaders } from '@/stores/settings-store';
 import { usePaywall } from '@/hooks/use-paywall';
-import { Lock } from 'lucide-react';
+import { trackEvent } from '@/lib/analytics';
+import { saveFeatureDraft, getAndClearFeatureDraft } from '@/lib/billing/draft-preservation';
+import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
 
 interface GenerateResumeDialogProps {
   open: boolean;
@@ -48,48 +50,98 @@ export function GenerateResumeDialog({ open, onOpenChange, onCreated }: Generate
   const [state, setState] = useState<GenerateState>('form');
   const [error, setError] = useState('');
   const [result, setResult] = useState<{ resumeId: string; title: string } | null>(null);
-  const { currentPlan } = usePaywall();
+  const { checkPaywall, currentPlan } = usePaywall();
 
-  const handleGenerate = async () => {
-    if (!jobTitle.trim()) return;
-    setState('generating');
-    setError('');
-
-    try {
-      const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
-      const res = await fetch('/api/ai/generate-resume', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(fingerprint ? { 'x-fingerprint': fingerprint } : {}),
-          ...getAIHeaders(),
-        },
-        body: JSON.stringify({
-          jobTitle: jobTitle.trim(),
-          yearsOfExperience: yearsOfExperience === '' ? undefined : yearsOfExperience,
-          skills: skills.trim()
-            ? skills.split(/[\s,，、]+/).map(s => s.trim()).filter(Boolean)
-            : undefined,
-          industry: industry.trim() || undefined,
-          experience: experience.trim() || undefined,
-          template,
-          language,
-        }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Generation failed');
+  useEffect(() => {
+    if (open) {
+      const draft = getAndClearFeatureDraft<{
+        jobTitle?: string;
+        skills?: string;
+        industry?: string;
+        experience?: string;
+        template?: string;
+        language?: string;
+      }>('generate_resume');
+      if (draft) {
+        if (draft.jobTitle) setJobTitle(draft.jobTitle);
+        if (draft.skills) setSkills(draft.skills);
+        if (draft.industry) setIndustry(draft.industry);
+        if (draft.experience) setExperience(draft.experience);
+        if (draft.template) setTemplate(draft.template);
+        if (draft.language) setLanguage(draft.language);
       }
-
-      const data = await res.json();
-      setResult(data);
-      setState('success');
-      onCreated?.();
-    } catch (err: any) {
-      setError(err.message === 'apiKeyMissing' ? `${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}` : (err.message || 'Failed to generate resume'));
-      setState('error');
     }
+  }, [open]);
+
+  const handleGenerate = () => {
+    saveFeatureDraft('generate_resume', {
+      jobTitle,
+      skills,
+      industry,
+      experience,
+      template,
+      language,
+    });
+    checkPaywall(
+      'premium',
+      async () => {
+        if (!jobTitle.trim()) return;
+        setState('generating');
+        setError('');
+
+        try {
+          const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
+          const res = await fetch('/api/ai/generate-resume', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(fingerprint ? { 'x-fingerprint': fingerprint } : {}),
+              ...getAIHeaders(),
+            },
+            body: JSON.stringify({
+              jobTitle: jobTitle.trim(),
+              yearsOfExperience: yearsOfExperience === '' ? undefined : yearsOfExperience,
+              skills: skills.trim()
+                ? skills.split(/[\s,，、]+/).map((s) => s.trim()).filter(Boolean)
+                : undefined,
+              industry: industry.trim() || undefined,
+              experience: experience.trim() || undefined,
+              template,
+              language,
+            }),
+          });
+
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || 'Generation failed');
+          }
+
+          const data = await res.json();
+          setResult(data);
+          setState('success');
+          onCreated?.();
+
+          // F-404: Emit paid_action_completed ONLY when matching pending checkout intent exists
+          if (consumePendingCheckoutIntent('ai_feature', 'generate_resume')) {
+            trackEvent('paid_action_completed', { locale, action: 'premium_ai_feature' });
+          }
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err);
+          setError(
+            msg === 'apiKeyMissing'
+              ? `${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}`
+              : msg || 'Failed to generate resume'
+          );
+          setState('error');
+        }
+      },
+      {
+        allowByok: true,
+        trigger: 'premium_ai_feature',
+        featureKey: 'generate_resume',
+        returnIntent: { type: 'ai_feature', featureKey: 'generate_resume' },
+      }
+    );
   };
 
   const handleOpenResume = () => {

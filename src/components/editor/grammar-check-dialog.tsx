@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { trackEvent } from '@/lib/analytics';
+import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
 import {
   Loader2, AlertTriangle, RotateCcw, SpellCheck, Wand2,
   Trash2, ArrowUp, ArrowDown, Minus, ChevronLeft,
@@ -299,10 +300,10 @@ export function GrammarCheckDialog({ open, onOpenChange, resumeId }: GrammarChec
       setResult(data);
       fetchHistory();
 
-      // F-404: Emit paid_action_completed upon real AI feature success
-      const pendingAction = typeof window !== 'undefined' ? sessionStorage.getItem('br_pending_paid_action') : null;
-      if (pendingAction) sessionStorage.removeItem('br_pending_paid_action');
-      trackEvent('paid_action_completed', { locale, action: 'premium_ai_feature' });
+      // F-404: Emit paid_action_completed ONLY when matching pending checkout intent exists
+      if (consumePendingCheckoutIntent('ai_feature', 'grammar_check')) {
+        trackEvent('paid_action_completed', { locale, action: 'premium_ai_feature' });
+      }
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
         setError(msg === 'apiKeyMissing' ? `${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}` : (msg || 'Failed to check grammar'));

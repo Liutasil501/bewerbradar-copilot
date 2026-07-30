@@ -16,6 +16,7 @@ import { useResumeStore } from '@/stores/resume-store';
 import { usePaywall } from '@/hooks/use-paywall';
 import { useUIStore } from '@/stores/ui-store';
 import { trackEvent } from '@/lib/analytics';
+import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
 import { PricingModal } from '@/components/billing/pricing-modal';
 import {
   FileDown,
@@ -127,10 +128,8 @@ export function ExportDialog({ open, onOpenChange, resumeId }: ExportDialogProps
 
         setState('success');
 
-        // F-404: Emit paid_action_completed ONLY upon real export download completion
-        const pendingAction = typeof window !== 'undefined' ? sessionStorage.getItem('br_pending_paid_action') : null;
-        if (pendingAction || isPremiumFormat) {
-          if (pendingAction) sessionStorage.removeItem('br_pending_paid_action');
+        // F-404: Emit paid_action_completed ONLY when matching pending checkout intent exists
+        if (consumePendingCheckoutIntent('export')) {
           trackEvent('paid_action_completed', { locale, action: 'export_paid_format' });
         }
 

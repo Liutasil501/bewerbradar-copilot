@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Loader2, AlertTriangle, Copy, Check, Download, RotateCcw, FileText } from 'lucide-react';
 import {
@@ -18,6 +18,8 @@ import { cn } from '@/lib/utils';
 import { getAIHeaders } from '@/stores/settings-store';
 import { usePaywall } from '@/hooks/use-paywall';
 import { trackEvent } from '@/lib/analytics';
+import { saveFeatureDraft, getAndClearFeatureDraft } from '@/lib/billing/draft-preservation';
+import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
 import { PricingModal } from '@/components/billing/pricing-modal';
 
 interface CoverLetterDialogProps {
@@ -48,52 +50,64 @@ export function CoverLetterDialog({ open, onOpenChange, resumeId }: CoverLetterD
 
   const { checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
 
+  useEffect(() => {
+    if (open) {
+      const draft = getAndClearFeatureDraft<{ jobDescription?: string; tone?: Tone; language?: string }>('cover_letter');
+      if (draft) {
+        if (draft.jobDescription) setJobDescription(draft.jobDescription);
+        if (draft.tone) setTone(draft.tone);
+        if (draft.language) setLanguage(draft.language);
+      }
+    }
+  }, [open]);
+
   const handleGenerate = () => {
+    saveFeatureDraft('cover_letter', { jobDescription, tone, language });
     checkPaywall(
       'premium',
       async () => {
         if (!jobDescription.trim()) return;
-      setIsGenerating(true);
-      setError('');
+        setIsGenerating(true);
+        setError('');
 
-      try {
-      const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
-      const res = await fetch('/api/ai/cover-letter', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(fingerprint ? { 'x-fingerprint': fingerprint } : {}),
-          ...getAIHeaders(),
-        },
-        body: JSON.stringify({ resumeId, jobDescription, tone, language }),
-      });
+        try {
+          const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
+          const res = await fetch('/api/ai/cover-letter', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(fingerprint ? { 'x-fingerprint': fingerprint } : {}),
+              ...getAIHeaders(),
+            },
+            body: JSON.stringify({ resumeId, jobDescription, tone, language }),
+          });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Generation failed');
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || 'Generation failed');
+          }
+
+          const data: CoverLetterResult = await res.json();
+          setResult(data);
+
+          // F-404: Emit paid_action_completed ONLY when matching pending checkout intent exists
+          if (consumePendingCheckoutIntent('ai_feature', 'cover_letter')) {
+            trackEvent('paid_action_completed', { locale, action: 'premium_ai_feature' });
+          }
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err);
+          setError(msg === 'apiKeyMissing' ? `${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}` : (msg || t('error')));
+        } finally {
+          setIsGenerating(false);
+        }
+      },
+      {
+        allowByok: true,
+        trigger: 'premium_ai_feature',
+        featureKey: 'cover_letter',
+        returnIntent: { type: 'ai_feature', resumeId, featureKey: 'cover_letter' },
       }
-
-        const data: CoverLetterResult = await res.json();
-        setResult(data);
-
-        // F-404: Emit paid_action_completed upon real AI feature success
-        const pendingAction = typeof window !== 'undefined' ? sessionStorage.getItem('br_pending_paid_action') : null;
-        if (pendingAction) sessionStorage.removeItem('br_pending_paid_action');
-        trackEvent('paid_action_completed', { locale, action: 'premium_ai_feature' });
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : String(err);
-        setError(msg === 'apiKeyMissing' ? `${tAi('apiKeyMissing')}: ${tAi('apiKeyMissingHint')}` : (msg || t('error')));
-      } finally {
-        setIsGenerating(false);
-      }
-    },
-    {
-      allowByok: true,
-      trigger: 'premium_ai_feature',
-      featureKey: 'cover_letter',
-      returnIntent: { type: 'ai_feature', resumeId, featureKey: 'cover_letter' },
-    }
-  );
+    );
   };
 
   const handleCopy = async () => {

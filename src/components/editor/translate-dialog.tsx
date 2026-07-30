@@ -19,6 +19,8 @@ import { getAIHeaders } from '@/stores/settings-store';
 import { cn } from '@/lib/utils';
 import { usePaywall } from '@/hooks/use-paywall';
 import { trackEvent } from '@/lib/analytics';
+import { saveFeatureDraft, getAndClearFeatureDraft } from '@/lib/billing/draft-preservation';
+import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
 import { PricingModal } from '@/components/billing/pricing-modal';
 
 interface TranslateDialogProps {
@@ -89,9 +91,15 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
       setErrorMessage('');
       setProgress({ completed: 0, total: 0 });
       setFailedCount(0);
-      setMode('overwrite');
-      const lang = useResumeStore.getState().currentResume?.language || 'en';
-      setTargetLanguage(lang === 'en' ? 'de' : 'en');
+      const draft = getAndClearFeatureDraft<{ targetLanguage?: string; mode?: TranslateMode }>('translate');
+      if (draft) {
+        if (draft.targetLanguage) setTargetLanguage(draft.targetLanguage);
+        if (draft.mode) setMode(draft.mode);
+      } else {
+        setMode('overwrite');
+        const lang = useResumeStore.getState().currentResume?.language || 'en';
+        setTargetLanguage(lang === 'en' ? 'de' : 'en');
+      }
     } else {
       abortRef.current?.abort();
       abortRef.current = null;
@@ -101,6 +109,7 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
   const { checkPaywall, showPaywall, setShowPaywall, requiredTier } = usePaywall();
 
   const handleTranslate = useCallback(() => {
+    saveFeatureDraft('translate', { targetLanguage, mode });
     checkPaywall(
       'premium',
       async () => {
@@ -159,10 +168,10 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
               setFailedCount(failed);
               setState('success');
 
-              // F-404: Emit paid_action_completed upon real AI feature success
-              const pendingAction = typeof window !== 'undefined' ? sessionStorage.getItem('br_pending_paid_action') : null;
-              if (pendingAction) sessionStorage.removeItem('br_pending_paid_action');
-              trackEvent('paid_action_completed', { locale, action: 'premium_ai_feature' });
+              // F-404: Emit paid_action_completed ONLY when matching pending checkout intent exists
+              if (consumePendingCheckoutIntent('ai_feature', 'translate')) {
+                trackEvent('paid_action_completed', { locale, action: 'premium_ai_feature' });
+              }
 
               if (mode === 'copy' && data.newResumeId) {
                 // Copy mode: navigate to the new resume

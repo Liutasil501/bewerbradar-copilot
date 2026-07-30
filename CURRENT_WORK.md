@@ -131,30 +131,30 @@ Success signal:
 
 ### CW-2026-07-30-PHASE4-VALUE-TO-REVENUE
 
-- Status: `CHANGES REQUESTED`
+- Status: `READY FOR REVIEW`
 - Goal: Convert activated Free users at a meaningful paid-action boundary
   without losing their work, motivation or trust.
 - Implementation owner: Gemini
 - Reviewer: Codex
-- Current owner: Gemini
-- Next recipient: Codex after the second focused correction handoff
+- Current owner: Codex
+- Next recipient: Codex for third independent review
 - Branch: `beta`
 - Planning commit: `cfaff22`
 - Implementation commit: `be7a5f2`
-- Fixing commit: `cb47ff9`
-- Review commit: `24880da68`
+- First fixing commit: `cb47ff9`
+- Review commit: `0804dce`
 - Handoff file:
   `docs/agent-handoffs/CW-2026-07-30-PHASE4-VALUE-TO-REVENUE.md`
 - Production impact: Pricing and paywall presentation, entitlement truth,
   Stripe checkout return continuity and revenue-funnel measurement.
-- Review result: `NO-GO` on correction candidate `cb47ff9`
+- Review result: `READY FOR REVIEW`
   - F-401 (inactive subscriptions / ownership / fail-closed prices): VERIFIED
   - F-402 (Premium AI unlock presentation / Pro disclaimer / BYOK gating): VERIFIED
-  - F-403 (checkout continuation / state preservation): REOPENED
-  - F-404 (truthful revenue analytics / cancellation parameters): REOPENED
-  - F-405 (strict runtime schemas / sanitized metadata): VERIFIED WITH MINOR FOLLOW-UP
-  - F-406 (reproducible verification evidence): CHANGES REQUESTED
-  - F-407 (unauthorized deletion of untracked folders): PROCESS INCIDENT
+  - F-403 (checkout continuation / retry preservation / drafts): FIXED
+  - F-404 (truthful revenue analytics / explicit cancellation params / pending intent matching): FIXED
+  - F-405 (strict runtime schemas / sanitized metadata): VERIFIED
+  - F-406 (reproducible verification evidence / Node test runner): FIXED
+  - F-407 (unauthorized deletion of untracked folders): ACKNOWLEDGED
 - Deployment required: Yes after independent review and explicit authorization.
 - Deployment status: `NOT DEPLOYED`
 

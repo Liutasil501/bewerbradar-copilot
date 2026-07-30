@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { trackEvent } from '@/lib/analytics';
 import type { PaywallTrigger } from '@/lib/billing/schema';
+import { setPendingCheckoutIntent } from '@/lib/billing/pending-intent';
 
 interface PricingModalProps {
   open: boolean;
@@ -55,6 +56,9 @@ export function PricingModal({
     try {
       const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
       const returnIntent = paywallContext?.returnIntent;
+      if (returnIntent) {
+        setPendingCheckoutIntent(returnIntent, effectiveTrigger);
+      }
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: {
@@ -214,7 +218,7 @@ export function PricingModal({
                 <span className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
                   {billingCycle === 'yearly' ? proYearlyMonthlyEquiv : proMonthly}
                 </span>
-                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">/Monat</span>
+                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{t('perMonth')}</span>
               </div>
               <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
                 {billingCycle === 'yearly'
@@ -281,7 +285,7 @@ export function PricingModal({
                 <span className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
                   {billingCycle === 'yearly' ? premiumYearlyMonthlyEquiv : premiumMonthly}
                 </span>
-                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">/Monat</span>
+                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{t('perMonth')}</span>
               </div>
               <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
                 {billingCycle === 'yearly'
