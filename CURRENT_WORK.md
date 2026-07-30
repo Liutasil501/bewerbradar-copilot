@@ -136,10 +136,10 @@ Success signal:
   without losing their work, motivation or trust.
 - Implementation owner: Gemini
 - Reviewer: Codex
-- Current owner: Codex
-- Next recipient: Gemini
+- Current owner: Gemini
+- Next recipient: Codex after Gemini's implementation handoff
 - Branch: `beta`
-- Planning commit: pending
+- Planning commit: `cfaff22`
 - Handoff file:
   `docs/agent-handoffs/CW-2026-07-30-PHASE4-VALUE-TO-REVENUE.md`
 - Production impact: Pricing and paywall presentation, entitlement truth,
