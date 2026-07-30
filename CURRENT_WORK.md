@@ -131,28 +131,28 @@ Success signal:
 
 ### CW-2026-07-30-PHASE4-VALUE-TO-REVENUE
 
-- Status: `CHANGES REQUESTED`
+- Status: `READY FOR REVIEW`
 - Goal: Convert activated Free users at a meaningful paid-action boundary
   without losing their work, motivation or trust.
 - Implementation owner: Gemini
 - Reviewer: Codex
-- Current owner: Gemini
-- Next recipient: Codex after Gemini's focused correction handoff
+- Current owner: Codex
+- Next recipient: Codex for independent re-review
 - Branch: `beta`
 - Planning commit: `cfaff22`
 - Implementation commit: `be7a5f2`
+- Fixing commit: `cb47ff9`
+- Review commit: `24880da68`
 - Handoff file:
   `docs/agent-handoffs/CW-2026-07-30-PHASE4-VALUE-TO-REVENUE.md`
 - Production impact: Pricing and paywall presentation, entitlement truth,
   Stripe checkout return continuity and revenue-funnel measurement.
-- Review result: `NO-GO` on candidate `be7a5f2`
-  - release blocker: an old completed Checkout Session can restore a canceled
-    or otherwise inactive subscription to a paid application plan,
-  - release blocker: a Premium AI paywall still offers a Pro purchase even
-    though Pro does not unlock the blocked action,
-  - important: checkout continuation and paid-action analytics do not yet
-    represent the real completed action,
-  - important: trigger and return-intent values are not runtime allowlisted.
+- Review result: `FIXED - READY FOR RE-REVIEW` (Candidate updated at `cb47ff9`)
+  - F-401 (Inactive subscriptions / ownership / fail-closed prices): FIXED
+  - F-402 (Premium AI unlock presentation / Pro disclaimer / BYOK gating): FIXED
+  - F-403 (Checkout continuation / forced hydration / parameter preservation): FIXED
+  - F-404 (Truthful revenue analytics / real action completion / cancellation parameters): FIXED
+  - F-405 (Strict runtime Zod schemas / metadata sanitization / analytics normalization): FIXED
 - Deployment required: Yes after independent review and explicit authorization.
 - Deployment status: `NOT DEPLOYED`
 

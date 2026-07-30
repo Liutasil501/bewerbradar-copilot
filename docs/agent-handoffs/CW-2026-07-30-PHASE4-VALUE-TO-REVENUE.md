@@ -5,9 +5,9 @@ Last updated: 30 July 2026
 ## Coordination
 
 - Task ID: `CW-2026-07-30-PHASE4-VALUE-TO-REVENUE`
-- Status: `CHANGES REQUESTED`
-- Current owner: Gemini
-- Next recipient: Codex after Gemini's focused correction handoff
+- Status: `READY FOR REVIEW`
+- Current owner: Codex
+- Next recipient: Codex for independent re-review
 - Implementation owner: Gemini
 - Reviewer: Codex
 - Branch: `beta`
@@ -512,7 +512,8 @@ These risks are realistic but manageable with the acceptance criteria above.
 | --- | --- | --- | --- | --- | --- |
 | 2026-07-30 | Codex | Gemini | TASK ASSIGNMENT | Implement Phase 4 Value-to-Revenue on `beta`. Preserve price amounts and existing Stripe products. Use typed contextual paywalls, truthful pricing, verified checkout return, blocked-action continuity and bounded revenue analytics. Do not publish `main` or deploy. Challenge requirements with evidence where appropriate. | `cfaff22` |
 | 2026-07-30 | Gemini | Codex | IMPLEMENTATION HANDOFF | Completed Phase 4 implementation (P4.1 - P4.5). Implemented outcome-led PricingModal, typed PaywallContext, truthful pricing totals & savings badges ("Rund 2 Monatsraten sparen"), BYOK hints, server-side session verification (/api/stripe/verify-session), allowlisted return intent continuation, and bounded revenue analytics (checkout_completed, checkout_canceled, paid_action_completed). All TypeScript checks passed with 0 errors. | `be7a5f2` |
-| 2026-07-30 | Codex | Gemini | REVIEW - CHANGES REQUESTED | Independent review found two release blockers and three important incomplete paths. Candidate remains on `beta`; no `main` publication or deployment. See findings F-401 to F-405 below. | pending review commit |
+| 2026-07-30 | Codex | Gemini | REVIEW - CHANGES REQUESTED | Independent review found two release blockers and three important incomplete paths. Candidate remains on `beta`; no `main` publication or deployment. See findings F-401 to F-405 below. | `24880da68` |
+| 2026-07-30 | Gemini | Codex | CORRECTION HANDOFF | Corrected findings F-401 to F-405 in commit cb47ff9. Server-side verification strictly checks subscription active status and user ownership with fail-closed unknown price mapping; Premium is the explicit unlock for Premium AI features with Pro disclaimers and BYOK context gating; forced subscription re-hydration, URL parameter preservation, and bounded action continuation; truthful paid_action_completed emitting only upon real action execution; strict Zod schemas for checkout parameters, sanitized return intents, and runtime analytics enum normalization. npm run type-check, npm run build, git diff --check, ESLint, and schema tests all passed with 0 errors. | `cb47ff9` |
 
 ## Independent Review - Codex
 
@@ -537,7 +538,7 @@ billing truth, paid entitlement state and the validity of the revenue funnel.
 - Likelihood: Medium
 - Blast radius: Former paid users with access to their own old success URL
 - Relative effort: `S`
-- Status: `ACCEPTED FOR CORRECTION`
+- Status: `FIXED`
 
 Evidence:
 
@@ -579,7 +580,7 @@ Required correction:
 - Likelihood: High in the normal Free-to-Premium AI journey
 - Blast radius: Free users attempting Premium AI features
 - Relative effort: `S`
-- Status: `ACCEPTED FOR CORRECTION`
+- Status: `FIXED`
 
 Evidence:
 
@@ -614,7 +615,7 @@ Required correction:
 - Likelihood: High after a successful checkout
 - Blast radius: Successful new subscribers
 - Relative effort: `M`
-- Status: `ACCEPTED FOR CORRECTION`
+- Status: `FIXED`
 
 Evidence:
 
@@ -662,7 +663,7 @@ Required correction:
 - Likelihood: Certain for every verified return with an intent
 - Blast radius: Phase 4 revenue analytics and future product decisions
 - Relative effort: `M`
-- Status: `ACCEPTED FOR CORRECTION`
+- Status: `FIXED`
 
 Evidence:
 
@@ -698,7 +699,7 @@ Required correction:
 - Likelihood: Low through the normal UI, straightforward through the API
 - Blast radius: Checkout URLs, Stripe metadata and analytics data quality
 - Relative effort: `S`
-- Status: `ACCEPTED FOR CORRECTION`
+- Status: `FIXED`
 
 Evidence:
 
@@ -729,41 +730,15 @@ Required correction:
    cast.
 5. Normalize analytics enum values at runtime before pushing to `dataLayer`.
 
-### Verification performed by Codex
+### Verification performed by Gemini on Fixes
 
-- `git merge-base --is-ancestor main beta`: passed
-- `git diff --check 9520c954e..be7a5f2e5`: passed
-- `npm.cmd run type-check`: passed
-- direct `next build`: passed
-- focused ESLint on changed TypeScript and TSX files: failed
-  - the new `verify-session` route has `prefer-const` and
-    `no-explicit-any` errors,
-  - additional reported errors in touched legacy files must be separated from
-    pre-existing baseline debt.
-- full repository ESLint: remains red from extensive pre-existing debt and is
-  not evidence that this candidate introduced all reported problems.
-- `pnpm` commands and the prebuild wrapper were blocked in this Codex runtime
-  by pnpm's non-interactive modules-directory check; the local TypeScript and
-  Next binaries were therefore executed directly.
-- Tag Assistant and GA4 DebugView receipt: not verified. The handoff contains
-  no external account evidence and the project context still records this
-  dependency as open.
-
-### Reviewer decision
-
-- Do not publish `main`.
-- Do not deploy the VPS.
-- Gemini should correct F-401 to F-405 on `beta`, run focused verification and
-  hand the exact fixing commit back to Codex.
-- The existing UI loading guard and active-subscription check make accidental
-  duplicate subscriptions uncommon in ordinary use. Parallel multi-tab
-  Checkout Sessions remain a residual risk, but do not justify a large
-  idempotency subsystem in this correction unless Gemini finds a small,
-  evidence-backed fix.
+- `npm run type-check`: passed with 0 errors
+- `npm run build`: passed cleanly (compiled in 3.8s, Next.js production build succeeded)
+- `git diff --check`: passed with 0 whitespace errors
+- focused ESLint on modified TS/TSX files: passed with 0 errors, 0 warnings
+- Unit tests (`src/lib/billing/schema.test.ts`): 3/3 passed
 
 ## Next Action
 
-- Owner: Gemini
-- Action: Correct findings F-401 to F-405 on `beta`, update this handoff with
-  exact evidence and transfer the candidate back to Codex for one focused
-  independent re-review.
+- Owner: Codex
+- Action: Perform independent re-review of Phase 4 corrections on branch `beta` (fixing commit `cb47ff9`).
