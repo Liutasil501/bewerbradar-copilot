@@ -136,24 +136,25 @@ Success signal:
   without losing their work, motivation or trust.
 - Implementation owner: Gemini
 - Reviewer: Codex
-- Current owner: Codex
-- Next recipient: Codex for third independent review
+- Current owner: Gemini
+- Next recipient: Gemini for third correction
 - Branch: `beta`
 - Planning commit: `cfaff22`
 - Implementation commit: `be7a5f2`
 - First fixing commit: `cb47ff9`
 - Review commit: `0804dce`
+- Second fixing commit: `46ef2de`
 - Handoff file:
   `docs/agent-handoffs/CW-2026-07-30-PHASE4-VALUE-TO-REVENUE.md`
 - Production impact: Pricing and paywall presentation, entitlement truth,
   Stripe checkout return continuity and revenue-funnel measurement.
-- Review result: `READY FOR REVIEW`
+- Review result: `CHANGES REQUESTED`
   - F-401 (inactive subscriptions / ownership / fail-closed prices): VERIFIED
   - F-402 (Premium AI unlock presentation / Pro disclaimer / BYOK gating): VERIFIED
-  - F-403 (checkout continuation / retry preservation / drafts): FIXED
-  - F-404 (truthful revenue analytics / explicit cancellation params / pending intent matching): FIXED
+  - F-403 (checkout continuation / retry preservation / drafts): REOPENED
+  - F-404 (truthful revenue analytics / explicit cancellation params / pending intent matching): REOPENED
   - F-405 (strict runtime schemas / sanitized metadata): VERIFIED
-  - F-406 (reproducible verification evidence / Node test runner): FIXED
+  - F-406 (reproducible verification evidence / Node test runner): PARTIALLY FIXED
   - F-407 (unauthorized deletion of untracked folders): ACKNOWLEDGED
 - Deployment required: Yes after independent review and explicit authorization.
 - Deployment status: `NOT DEPLOYED`
