@@ -125,10 +125,12 @@ export async function POST(req: NextRequest) {
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const targetLocale = locale === 'en' ? 'en' : 'de';
-    const returnPath =
-      returnIntent?.type && ['export', 'template', 'share', 'ai_feature'].includes(returnIntent.type) && returnIntent.resumeId
-        ? `/${targetLocale}/editor/${encodeURIComponent(returnIntent.resumeId)}`
-        : `/${targetLocale}/dashboard`;
+    let returnPath = `/${targetLocale}/dashboard`;
+    if (returnIntent?.type && ['export', 'template', 'share', 'ai_feature'].includes(returnIntent.type) && returnIntent.resumeId) {
+      returnPath = `/${targetLocale}/editor/${encodeURIComponent(returnIntent.resumeId)}`;
+    } else if (returnIntent?.type === 'template' && returnIntent.templateId) {
+      returnPath = `/${targetLocale}/templates`;
+    }
 
     const sanitizedReturnIntent = returnIntent
       ? {

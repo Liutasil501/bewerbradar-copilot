@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils';
 import { getAIHeaders } from '@/stores/settings-store';
 import { usePaywall } from '@/hooks/use-paywall';
 import { trackEvent } from '@/lib/analytics';
-import { saveFeatureDraft, getAndClearFeatureDraft } from '@/lib/billing/draft-preservation';
+import { saveFeatureDraft, getAndClearFeatureDraft, clearFeatureDraft } from '@/lib/billing/draft-preservation';
 import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
 import { PricingModal } from '@/components/billing/pricing-modal';
 
@@ -66,6 +66,7 @@ export function CoverLetterDialog({ open, onOpenChange, resumeId }: CoverLetterD
     checkPaywall(
       'premium',
       async () => {
+        clearFeatureDraft('cover_letter');
         if (!jobDescription.trim()) return;
         setIsGenerating(true);
         setError('');

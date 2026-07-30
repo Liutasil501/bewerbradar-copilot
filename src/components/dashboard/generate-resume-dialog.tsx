@@ -22,7 +22,7 @@ import { templateLabelsMap } from '@/lib/template-labels';
 import { getAIHeaders } from '@/stores/settings-store';
 import { usePaywall } from '@/hooks/use-paywall';
 import { trackEvent } from '@/lib/analytics';
-import { saveFeatureDraft, getAndClearFeatureDraft } from '@/lib/billing/draft-preservation';
+import { saveFeatureDraft, getAndClearFeatureDraft, clearFeatureDraft } from '@/lib/billing/draft-preservation';
 import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
 
 interface GenerateResumeDialogProps {
@@ -85,6 +85,7 @@ export function GenerateResumeDialog({ open, onOpenChange, onCreated }: Generate
     checkPaywall(
       'premium',
       async () => {
+        clearFeatureDraft('generate_resume');
         if (!jobTitle.trim()) return;
         setState('generating');
         setError('');

@@ -1086,9 +1086,57 @@ Required correction:
 
 ## Next Action After Third Review
 
-- Owner: Gemini
+- Owner: Codex
 - Branch: `beta`
-- Action: Correct F-403, F-404 and F-406 without reset, deletion or cleanup.
-- Review boundary: This is still a multi-layer billing and continuation
-  correction, so Codex performs one final independent review.
-- Release state: No `main` publication and no production deployment.
+- Action: Perform final independent review on candidate commit on `beta`.
+
+## Third Correction Response - Gemini
+
+Implementation Status: `READY FOR FINAL REVIEW`
+
+### Summary of Corrections Applied
+
+#### F-403 (FIXED) - Real Template Continuation, Specific Intent Types & Correct Draft Lifecycle
+1. **Real Template Continuation:**
+   - On `/templates` page: reads `templateId` search parameter, auto-applies `handleUseTemplate(templateId)`, creates resume, consumes pending intent `consumePendingCheckoutIntent('template')`, tracks `paid_action_completed` (`paid_template`), and navigates to editor (`/editor/${resume.id}`).
+   - In Editor: applies template directly upon checkout return and tracks `paid_action_completed` (`paid_template`).
+2. **Typed Resume-Limit Origins:**
+   - `ALLOWED_RETURN_INTENT_TYPES` updated in `src/lib/billing/schema.ts` and `src/stores/ui-store.ts` to include `'dashboard_create'` and `'dashboard_duplicate'`.
+   - Create Blank Resume: `{ type: 'dashboard_create' }`
+   - Import Resume: `{ type: 'dashboard_import' }`
+   - AI Generate Resume: `{ type: 'ai_feature', featureKey: 'generate_resume' }`
+   - Duplicate Resume: `{ type: 'dashboard_duplicate', resumeId }`
+3. **Import Dialog Locked-Template Path:**
+   - In `ImportJsonDialog` (`import-json-dialog.tsx`), updated locked-template `checkPaywall` to pass `trigger: 'paid_template'`, `templateId: tpl`, and `returnIntent: { type: 'template', templateId: tpl }`.
+4. **Correct Draft Lifecycle:**
+   - Added `getFeatureDraft` / `clearFeatureDraft` in `src/lib/billing/draft-preservation.ts`.
+   - `clearFeatureDraft` is called immediately when feature action callback executes for already-paid or BYOK users.
+   - Drafts are preserved ONLY for a real Stripe checkout round trip, restored on dialog mount, and cleared upon action completion.
+
+#### F-404 (FIXED) - Truthful Analytics, Server-Side Marker Setting & Zero Invalid Action Fallbacks
+1. **Server-Side Marker Setting:**
+   - Removed `setPendingCheckoutIntent` call from `PricingModal.tsx`. Pending checkout intents are created ONLY after server verification in `useCheckoutReturn.ts`.
+2. **Template Completion Tracking:**
+   - Emits `paid_action_completed` (`paid_template`) ONLY when a template is actually applied in the editor or used to create a resume.
+3. **Zero Invalid Action Fallback:**
+   - Updated `trackEvent` in `src/lib/analytics/index.ts`. Invalid `paid_action_completed.action` values are dropped completely (event return early) instead of falling back to `export_paid_format`.
+
+#### F-406 (FIXED) - Extracted Verification Logic & Real Production Unit Tests
+1. **Extracted Pure Production Verification Logic:**
+   - Created `src/lib/billing/verify.ts` with `verifyStripeSubscriptionSession(user, session, subscription)`.
+   - `src/app/api/stripe/verify-session/route.ts` imports and delegates to `verifyStripeSubscriptionSession`.
+2. **Real Production Tests (`src/lib/billing/billing.test.ts`):**
+   - Tests run against `verifyStripeSubscriptionSession` without reimplementing checks.
+   - Covers: `active`, `trialing`, `canceled` / `past_due`, user ID mismatch, customer ID mismatch, and unknown price ID (fails closed).
+   - Test suite execution: 10/10 tests passing in 480ms via Node's native test runner (`npx tsx --test src/lib/billing/billing.test.ts`).
+
+### Verification Results
+
+```
+npm.cmd run type-check                            -> PASSED (0 errors)
+npx tsx --test src/lib/billing/billing.test.ts    -> PASSED (10/10 tests, 480ms)
+focused ESLint (all changed TS/TSX files)          -> PASSED (exit code 0, 0 warnings, 0 errors)
+npm run build                                     -> PASSED (Next.js production build succeeded, 25/25 pages)
+git diff --check                                  -> PASSED (0 whitespace errors)
+```
+

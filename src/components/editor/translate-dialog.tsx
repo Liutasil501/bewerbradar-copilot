@@ -19,7 +19,7 @@ import { getAIHeaders } from '@/stores/settings-store';
 import { cn } from '@/lib/utils';
 import { usePaywall } from '@/hooks/use-paywall';
 import { trackEvent } from '@/lib/analytics';
-import { saveFeatureDraft, getAndClearFeatureDraft } from '@/lib/billing/draft-preservation';
+import { saveFeatureDraft, getAndClearFeatureDraft, clearFeatureDraft } from '@/lib/billing/draft-preservation';
 import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
 import { PricingModal } from '@/components/billing/pricing-modal';
 
@@ -113,6 +113,7 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
     checkPaywall(
       'premium',
       async () => {
+        clearFeatureDraft('translate');
         setState('translating');
         setErrorMessage('');
         setProgress({ completed: 0, total: 0 });

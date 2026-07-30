@@ -10,7 +10,6 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { trackEvent } from '@/lib/analytics';
 import type { PaywallTrigger } from '@/lib/billing/schema';
-import { setPendingCheckoutIntent } from '@/lib/billing/pending-intent';
 
 interface PricingModalProps {
   open: boolean;
@@ -56,9 +55,6 @@ export function PricingModal({
     try {
       const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
       const returnIntent = paywallContext?.returnIntent;
-      if (returnIntent) {
-        setPendingCheckoutIntent(returnIntent, effectiveTrigger);
-      }
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: {

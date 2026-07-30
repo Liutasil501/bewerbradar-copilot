@@ -9,7 +9,7 @@ import { useUIStore } from '@/stores/ui-store';
 import { useResumeStore } from '@/stores/resume-store';
 import { trackEvent } from '@/lib/analytics';
 import { sanitizePaywallTrigger, type ReturnIntent } from '@/lib/billing/schema';
-import { setPendingCheckoutIntent, clearPendingCheckoutIntent } from '@/lib/billing/pending-intent';
+import { setPendingCheckoutIntent, consumePendingCheckoutIntent, clearPendingCheckoutIntent } from '@/lib/billing/pending-intent';
 import { useRouter } from '@/i18n/routing';
 
 export function useCheckoutReturn() {
@@ -76,6 +76,9 @@ export function useCheckoutReturn() {
               const currentResume = useResumeStore.getState().currentResume;
               if (currentResume && returnIntent.templateId) {
                 useResumeStore.getState().setTemplate(returnIntent.templateId);
+                if (consumePendingCheckoutIntent('template')) {
+                  trackEvent('paid_action_completed', { locale, action: 'paid_template' });
+                }
               } else if (returnIntent.templateId) {
                 router.push(`/templates?templateId=${encodeURIComponent(returnIntent.templateId)}`);
               } else {
@@ -93,6 +96,10 @@ export function useCheckoutReturn() {
               else if (key === 'interview') router.push('/interview/new');
             } else if (actionType === 'dashboard_import') {
               openModal('import');
+            } else if (actionType === 'dashboard_create') {
+              openModal('create-resume');
+            } else if (actionType === 'dashboard_duplicate') {
+              toast.info(tBilling('checkoutSuccess'));
             }
           }
         } else {

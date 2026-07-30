@@ -11,6 +11,8 @@ import {
   consumePendingCheckoutIntent,
   clearPendingCheckoutIntent,
 } from './pending-intent';
+import { verifyStripeSubscriptionSession } from './verify';
+import { STRIPE_CONFIG } from '@/lib/stripe/config';
 
 // Mock sessionStorage for Node environment test runner
 if (typeof globalThis.sessionStorage === 'undefined') {
@@ -87,41 +89,77 @@ describe('Billing Schema, Sanitizers & Pending Intent Logic (F-405, F-404)', () 
     // Subsequent calls should fail because intent was already consumed
     assert.strictEqual(consumePendingCheckoutIntent('ai_feature', 'cover_letter'), false);
   });
+});
 
-  it('enforces server-side Stripe session verification rules (F-401)', () => {
-    // 1. Active subscription + matching user ownership + valid price ID => verified true
-    const activeSession = {
-      metadata: { userId: 'user_1' },
-      customer: 'cus_1',
-      mode: 'subscription',
-      subscription: 'sub_1',
+describe('Real Production Stripe Verification Logic (F-401, F-406)', () => {
+  const validUser = { id: 'usr_100', stripeCustomerId: 'cus_100' };
+  const validSession = {
+    mode: 'subscription',
+    customer: 'cus_100',
+    subscription: 'sub_100',
+    metadata: { userId: 'usr_100', trigger: 'export_paid_format' },
+  };
+  const validSub = {
+    status: 'active',
+    items: {
+      data: [{ price: { id: STRIPE_CONFIG.prices.pro.monthly } }],
+    },
+  };
+
+  it('verifies active subscription with matching ownership and price ID', () => {
+    const res = verifyStripeSubscriptionSession(validUser, validSession, validSub);
+    assert.strictEqual(res.verified, true);
+    if (res.verified) {
+      assert.strictEqual(res.plan, 'pro');
+      assert.strictEqual(res.trigger, 'export_paid_format');
+    }
+  });
+
+  it('verifies trialing subscription', () => {
+    const trialingSub = { ...validSub, status: 'trialing' };
+    const res = verifyStripeSubscriptionSession(validUser, validSession, trialingSub);
+    assert.strictEqual(res.verified, true);
+  });
+
+  it('rejects canceled or inactive subscription', () => {
+    const canceledSub = { ...validSub, status: 'canceled' };
+    const resCanceled = verifyStripeSubscriptionSession(validUser, validSession, canceledSub);
+    assert.strictEqual(resCanceled.verified, false);
+    assert.strictEqual(resCanceled.error, 'Subscription is not active');
+
+    const pastDueSub = { ...validSub, status: 'past_due' };
+    const resPastDue = verifyStripeSubscriptionSession(validUser, validSession, pastDueSub);
+    assert.strictEqual(resPastDue.verified, false);
+    assert.strictEqual(resPastDue.error, 'Subscription is not active');
+  });
+
+  it('rejects session with user ID mismatch', () => {
+    const wrongUserSession = {
+      ...validSession,
+      metadata: { userId: 'usr_hacker' },
     };
-    const activeSub = { status: 'active', items: { data: [{ price: { id: 'price_1TcOg0D0cevOfghZBZMitg30' } }] } };
-    const user = { id: 'user_1', stripeCustomerId: 'cus_1' };
+    const res = verifyStripeSubscriptionSession(validUser, wrongUserSession, validSub);
+    assert.strictEqual(res.verified, false);
+    assert.strictEqual(res.error, 'Session ownership mismatch');
+  });
 
-    const isOwnerMatch = activeSession.metadata.userId === user.id && activeSession.customer === user.stripeCustomerId;
-    const isActiveSub = ['active', 'trialing'].includes(activeSub.status);
-    assert.strictEqual(isOwnerMatch && isActiveSub, true);
+  it('rejects session with Stripe customer ID mismatch', () => {
+    const wrongCustomerSession = {
+      ...validSession,
+      customer: 'cus_hacker',
+    };
+    const res = verifyStripeSubscriptionSession(validUser, wrongCustomerSession, validSub);
+    assert.strictEqual(res.verified, false);
+    assert.strictEqual(res.error, 'Session ownership mismatch');
+  });
 
-    // 2. Canceled / inactive subscription => fails verification
-    const canceledSub = { status: 'canceled', items: { data: [{ price: { id: 'price_1TcOg0D0cevOfghZBZMitg30' } }] } };
-    const isCanceledActive = ['active', 'trialing'].includes(canceledSub.status);
-    assert.strictEqual(isCanceledActive, false);
-
-    // 3. Cross-user ownership mismatch => fails verification
-    const otherUser = { id: 'user_2', stripeCustomerId: 'cus_2' };
-    const isOtherOwnerMatch = activeSession.metadata.userId === otherUser.id;
-    assert.strictEqual(isOtherOwnerMatch, false);
-
-    // 4. Unknown price ID => fails closed
-    const unknownPriceId = 'price_unknown_hacker_id';
-    const knownPrices = [
-      'price_1TcOg0D0cevOfghZBZMitg30',
-      'price_1TcOg6D0cevOfghZ8bc5Q4PJ',
-      'price_1TcOgBD0cevOfghZo1XlQcjO',
-      'price_1TcOgFD0cevOfghZnDIGi73j',
-    ];
-    const isKnownPrice = knownPrices.includes(unknownPriceId);
-    assert.strictEqual(isKnownPrice, false);
+  it('rejects session with unknown or unconfigured price ID (fails closed)', () => {
+    const unknownPriceSub = {
+      status: 'active',
+      items: { data: [{ price: { id: 'price_unknown_hacker_price_id' } }] },
+    };
+    const res = verifyStripeSubscriptionSession(validUser, validSession, unknownPriceSub);
+    assert.strictEqual(res.verified, false);
+    assert.strictEqual(res.error, 'Unknown or unconfigured price ID');
   });
 });

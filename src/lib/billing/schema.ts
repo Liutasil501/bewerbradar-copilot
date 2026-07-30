@@ -19,6 +19,8 @@ export const ALLOWED_RETURN_INTENT_TYPES = [
   'share',
   'ai_feature',
   'dashboard_import',
+  'dashboard_create',
+  'dashboard_duplicate',
 ] as const;
 
 export type ReturnIntentType = (typeof ALLOWED_RETURN_INTENT_TYPES)[number];

@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useEffect, useState, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useTranslations, useLocale } from 'next-intl';
 import { ArrowLeft, Eye, Loader2, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,13 +14,14 @@ import {
 import { TEMPLATES, FREE_TEMPLATES, type Template } from '@/lib/constants';
 import { useResume } from '@/hooks/use-resume';
 import { Link, useRouter } from '@/i18n/routing';
-import { useFingerprint } from '@/hooks/use-fingerprint';
 import { ResumePreview } from '@/components/preview/resume-preview';
 import { TourOverlay, type TourStepConfig } from '@/components/tour/tour-overlay';
 import { useTourStore, hasCompletedTour } from '@/stores/tour-store';
 import { templateLabelsMap as templateLabelKeys } from '@/lib/template-labels';
 import type { Resume } from '@/types/resume';
 import { usePaywall } from '@/hooks/use-paywall';
+import { trackEvent } from '@/lib/analytics';
+import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
 import { PricingModal } from '@/components/billing/pricing-modal';
 
 const TEMPLATES_TOUR_STEPS: TourStepConfig[] = [
@@ -230,13 +232,16 @@ export default function TemplatesPage() {
   const ts = useTranslations('sections');
   const router = useRouter();
   const { createResume } = useResume();
-  const { fingerprint } = useFingerprint();
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
   const [creatingTemplate, setCreatingTemplate] = useState<string | null>(null);
   const startTour = useTourStore((s) => s.startTour);
   const tBilling = useTranslations('billing');
   const { checkPaywall, showPaywall, setShowPaywall, requiredTier, currentPlan, paywallDescription } = usePaywall();
   const isPreviewLocked = previewTemplate ? (currentPlan === 'free' && !FREE_TEMPLATES.has(previewTemplate as Template)) : false;
+
+  const searchParams = useSearchParams();
+  const locale = useLocale();
+  const templateIdParam = searchParams.get('templateId');
 
   useEffect(() => {
     if (hasCompletedTour('templates')) return;
@@ -245,7 +250,7 @@ export default function TemplatesPage() {
     return () => clearTimeout(timer);
   }, [startTour]);
 
-  const handleUseTemplate = async (template: string) => {
+  const handleUseTemplate = useCallback(async (template: string) => {
     const isPremium = !FREE_TEMPLATES.has(template as Template);
     if (isPremium && currentPlan === 'free') {
       checkPaywall('pro', () => {}, {
@@ -269,12 +274,24 @@ export default function TemplatesPage() {
       }));
       const resume = await createResume({ template, sections });
       if (resume) {
+        if (consumePendingCheckoutIntent('template')) {
+          trackEvent('paid_action_completed', { locale, action: 'paid_template' });
+        }
         router.push(`/editor/${resume.id}`);
       }
     } finally {
       setCreatingTemplate(null);
     }
-  };
+  }, [currentPlan, checkPaywall, tBilling, tm, ts, createResume, locale, router]);
+
+  useEffect(() => {
+    if (templateIdParam && TEMPLATES.includes(templateIdParam as Template)) {
+      void handleUseTemplate(templateIdParam);
+      const url = new URL(window.location.href);
+      url.searchParams.delete('templateId');
+      window.history.replaceState({}, '', url.pathname + url.search);
+    }
+  }, [templateIdParam, handleUseTemplate]);
 
   return (
     <div>

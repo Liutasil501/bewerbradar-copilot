@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useResume } from '@/hooks/use-resume';
-import { useUIStore } from '@/stores/ui-store';
+import { useUIStore, type ReturnIntent } from '@/stores/ui-store';
 import { useFingerprint } from '@/hooks/use-fingerprint';
 import { useRuntimeConfig } from '@/components/providers/runtime-config-provider';
 import { ResumeGrid } from '@/components/dashboard/resume-grid';
@@ -101,9 +101,16 @@ export default function DashboardPage() {
   const { checkPaywall, showPaywall, setShowPaywall, requiredTier, currentPlan, paywallDescription } = usePaywall();
   useCheckoutReturn();
 
-  const handleCreateAction = <T,>(action: () => T | Promise<T>): T | Promise<T | null> => {
+  const handleCreateAction = <T,>(
+    action: () => T | Promise<T>,
+    returnIntent: ReturnIntent = { type: 'dashboard_create' }
+  ): T | Promise<T | null> => {
     if (currentPlan === 'free' && resumes.length >= MAX_FREE_RESUMES) {
-      checkPaywall('pro', action, { description: tBilling('limitResumesDesc') });
+      checkPaywall('pro', action, {
+        trigger: 'resume_limit',
+        returnIntent,
+        description: tBilling('limitResumesDesc'),
+      });
       return Promise.resolve(null);
     } else {
       return action();
@@ -210,8 +217,8 @@ export default function DashboardPage() {
               handleCreateAction(() => {
                 checkPaywall('premium', () => {
                   openModal('generate-resume');
-                }, { allowByok: true });
-              });
+                }, { allowByok: true, trigger: 'premium_ai_feature', featureKey: 'generate_resume', returnIntent: { type: 'ai_feature', featureKey: 'generate_resume' } });
+              }, { type: 'ai_feature', featureKey: 'generate_resume' });
             }}
             className="cursor-pointer gap-2"
           >
@@ -220,7 +227,7 @@ export default function DashboardPage() {
           </Button>
           <Button
             variant="outline"
-            onClick={() => handleCreateAction(() => openImportDialog('dashboard_action'))}
+            onClick={() => handleCreateAction(() => openImportDialog('dashboard_action'), { type: 'dashboard_import' })}
             className="cursor-pointer gap-2"
           >
             <Upload className="h-4 w-4" />
@@ -228,7 +235,7 @@ export default function DashboardPage() {
           </Button>
           <Button
             data-tour="dash-create"
-            onClick={() => handleCreateAction(() => openModal('create-resume'))}
+            onClick={() => handleCreateAction(() => openModal('create-resume'), { type: 'dashboard_create' })}
             className="cursor-pointer gap-2 bg-brand hover:bg-brand-hover"
           >
             <Plus className="h-4 w-4" />
@@ -326,7 +333,7 @@ export default function DashboardPage() {
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Button
-              onClick={() => handleCreateAction(() => openImportDialog('dashboard_empty'))}
+              onClick={() => handleCreateAction(() => openImportDialog('dashboard_empty'), { type: 'dashboard_import' })}
               className="cursor-pointer gap-2 bg-brand px-6 hover:bg-brand-hover"
             >
               <Upload className="h-4 w-4" />
@@ -334,7 +341,7 @@ export default function DashboardPage() {
             </Button>
             <Button
               variant="outline"
-              onClick={() => handleCreateAction(() => openModal('create-resume'))}
+              onClick={() => handleCreateAction(() => openModal('create-resume'), { type: 'dashboard_create' })}
               className="cursor-pointer gap-2 px-6"
             >
               <Plus className="h-4 w-4" />
@@ -350,7 +357,7 @@ export default function DashboardPage() {
         <ResumeGrid
           resumes={filteredResumes}
           onDelete={deleteResume}
-          onDuplicate={(id) => handleCreateAction(() => duplicateResume(id))}
+          onDuplicate={(id) => handleCreateAction(() => duplicateResume(id), { type: 'dashboard_duplicate', resumeId: id })}
           onRename={renameResume}
           onShare={(id) => setShareResumeId(id)}
         />
@@ -361,7 +368,7 @@ export default function DashboardPage() {
               key={resume.id}
               resume={resume}
               onDelete={() => deleteResume(resume.id)}
-              onDuplicate={() => handleCreateAction(() => duplicateResume(resume.id))}
+              onDuplicate={() => handleCreateAction(() => duplicateResume(resume.id), { type: 'dashboard_duplicate', resumeId: resume.id })}
               onRename={(title) => renameResume(resume.id, title)}
             />
           ))}

@@ -238,7 +238,12 @@ export function trackEvent<K extends EventName>(eventName: K, params: AnalyticsE
             'public_share',
             'premium_ai_feature',
           ];
-          sanitizedParams[key] = typeof val === 'string' && allowedActions.includes(val) ? val : 'export_paid_format';
+          if (typeof val === 'string' && allowedActions.includes(val)) {
+            sanitizedParams[key] = val;
+          } else {
+            // Discard invalid completion action completely - never fall back to export_paid_format
+            return;
+          }
         } else {
           sanitizedParams[key] = val;
         }
