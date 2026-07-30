@@ -1,6 +1,6 @@
 # BewerbRadar Copilot – Current Work
 
-Last updated: 29 July 2026
+Last updated: 30 July 2026
 
 This file is the shared operational board for active Gemini, Codex and human
 work.
@@ -128,3 +128,62 @@ Success signal:
   rates, bounded import failures and selected first-result action
 - Guardrails: no increase in login or import failures, no PII in analytics and
   no regression in direct login
+
+### CW-2026-07-30-PHASE4-VALUE-TO-REVENUE
+
+- Status: `PLANNED`
+- Goal: Convert activated Free users at a meaningful paid-action boundary
+  without losing their work, motivation or trust.
+- Implementation owner: Gemini
+- Reviewer: Codex
+- Current owner: Codex
+- Next recipient: Gemini
+- Branch: `beta`
+- Planning commit: pending
+- Handoff file:
+  `docs/agent-handoffs/CW-2026-07-30-PHASE4-VALUE-TO-REVENUE.md`
+- Production impact: Pricing and paywall presentation, entitlement truth,
+  Stripe checkout return continuity and revenue-funnel measurement.
+- Review result: pending
+- Deployment required: Yes after independent review and explicit authorization.
+- Deployment status: `NOT DEPLOYED`
+
+In scope:
+
+- close the external GA4 measurement dependency where authorized,
+- make paywalls outcome-led and specific to the blocked action,
+- correct annual-price and savings communication without changing prices,
+- preserve editor work and resume the blocked action after checkout,
+- verify checkout success server-side before showing paid state,
+- align the monetization surface with the documented Pro, Premium and BYOK
+  contract,
+- measure checkout completion and first paid value without PII.
+
+Out of scope:
+
+- new Stripe products or price changes,
+- one-time purchase passes,
+- application tracking,
+- lifecycle e-mails,
+- referral systems,
+- broad landing-page redesign,
+- A/B-testing infrastructure,
+- database migrations,
+- production deployment.
+
+T-shirt size:
+
+- Phase 4 overall: `L`
+- measurement closure: `S`
+- entitlement and paywall-context contract: `M`
+- outcome-led pricing experience: `M`
+- verified checkout return and action continuation: `M`
+- bounded revenue analytics: `S`
+
+Success signal:
+
+- Primary: `checkout_completed / paywall_viewed`, segmented by bounded trigger
+- Supporting: checkout start rate, checkout completion rate, paid-action
+  completion and plan/billing-period mix
+- Guardrails: no double billing, no false paid state, no lost editor work, no
+  PII in analytics and no entitlement regression
