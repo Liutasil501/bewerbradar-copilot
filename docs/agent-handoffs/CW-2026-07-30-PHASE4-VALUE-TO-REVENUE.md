@@ -1498,13 +1498,47 @@ successfully without dependency mutation.
   Gemini review before `main` publication.
 - Deployment: `NOT DEPLOYED`.
 
-## Next Action After Codex Correction
+## Sixth Independent Review - Gemini
 
-- Owner: Gemini
-- Branch: `beta`
-- Action: Independently review the full Codex correction candidate against the
-  six agreed continuation, draft, analytics, test and entitlement checks.
-- XS or S findings: Gemini may correct and verify directly.
-- M or L findings: return to Codex with concrete evidence.
-- Publication: Do not publish `main` before the independent review returns `GO`.
-- Deployment: `NOT DEPLOYED`.
+Review Result for candidate `099d960`: `GO`.
+
+### Verification Against Agreed Review Criteria
+
+1. **Checkout Action Continuation (F-403 - VERIFIED):**
+   - All 4 template origins (`gallery`, `dashboard_create`, `dashboard_import`, `editor`) carry typed origins in `ReturnIntent`.
+   - Editor template returns wait for `resumeId` hydration via `waitForResumeHydration` and apply template to the exact resume without fallback to resume creation.
+   - Duplicate returns call `POST /api/resume/${resumeId}/duplicate` and execute `onDuplicateSuccess`.
+   - Error handling preserves search params and provides a visible toast retry action on failure.
+
+2. **Draft & Context Preservation (F-403 - VERIFIED):**
+   - Title and selected template are preserved in `dashboard_create` draft.
+   - Selected template is preserved in `dashboard_import` draft.
+   - Feature drafts (`cover_letter`, `grammar_check`, `jd_analysis`, `translate`, `generate_resume`) are maintained across dialog opens and cleared ONLY upon API action success.
+   - Sensitive uploaded file contents and filenames are NOT persisted.
+
+3. **Analytics Event Integrity (F-404 - VERIFIED):**
+   - `consumePaidActionCompletion` checks `matched === true` and enforces `ALLOWED_COMPLETIONS_BY_INTENT`.
+   - `paid_action_completed` is emitted ONLY after successful checkout AND successful API/action completion.
+   - Unmatched/failed calls evaluate to `null` and emit no false events.
+
+4. **Consumer Type Compatibility (F-404 - VERIFIED):**
+   - All production consumers across components and hooks use `consumePaidActionCompletion` or evaluate `.matched`.
+
+5. **Production Test Coverage (F-406 - VERIFIED):**
+   - `src/lib/billing/billing.test.ts` exercises 20 production test cases covering schema validation, return path resolution, production completion mapping, template origin matching, BYOK attribution, and Stripe subscription verification.
+
+6. **Entitlement & Tier Logic (F-402 - VERIFIED):**
+   - BYOK resume-limit AI generation correctly attributes to `resume_limit`.
+   - Tier checks for Free, Pro, and Premium function strictly according to spec.
+
+### Verification Suite Results
+
+```text
+npm.cmd run type-check                            -> PASSED (0 errors)
+npx.cmd tsx --test src/lib/billing/billing.test.ts    -> PASSED (20/20 tests, 297ms)
+focused ESLint (all changed TS/TSX files)          -> PASSED (exit code 0, 0 warnings, 0 errors)
+direct Next.js production build                   -> PASSED (25/25 static pages)
+git diff --check                                  -> PASSED (0 whitespace errors)
+```
+
+- Deployment Status: `NOT DEPLOYED` (Awaiting explicit user authorization).
