@@ -46,6 +46,9 @@ below only when the active task touches them.
 - Stripe synchronizes paid-plan state into the local user record.
 - GTM, the Phase 2 DE/EN consent choice, consent updates and the bounded funnel
   events are live on the VPS from release `d98de14e`.
+- Phase 4 contextual paywalls, truthful annual-price communication, verified
+  Stripe checkout returns, blocked-action continuation and bounded revenue
+  events are live on the VPS from release `54e371b`.
 - External GA4 tag configuration, Tag Assistant and DebugView validation remain
   open. Other high-value follow-ups include legal routes, external Studio
   exposure and the remaining dependency advisories.
@@ -366,6 +369,19 @@ Stripe self-healing behavior:
   subscription.
 
 The webhook synchronizes checkout completion and subscription changes.
+
+Current checkout continuation behavior:
+
+- action-triggered paywalls carry a validated, bounded return intent,
+- successful subscription checkout sessions are verified server-side against
+  the authenticated user, Stripe customer, active subscription and configured
+  price,
+- verified returns resume the exact supported blocked action,
+- locally preserved drafts contain only bounded non-sensitive context,
+- uploaded files, filenames and resume content are not persisted for checkout
+  continuation,
+- `checkout_completed`, `checkout_canceled` and `paid_action_completed` use
+  bounded metadata and contain no resume content or user PII.
 
 Required production variables include:
 

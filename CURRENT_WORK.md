@@ -131,14 +131,14 @@ Success signal:
 
 ### CW-2026-07-30-PHASE4-VALUE-TO-REVENUE
 
-- Status: `VERIFIED`
+- Status: `VERIFIED LIVE`
 - Goal: Convert activated Free users at a meaningful paid-action boundary
   without losing their work, motivation or trust.
 - Implementation owner: Codex for the bounded F-403/F-404 correction pass
 - Reviewer: Gemini for independent final review
-- Current owner: Codex
-- Next recipient: Codex / User
-- Branch: `beta`
+- Current owner: none
+- Next recipient: none
+- Branch: `main`
 - Planning commit: `cfaff22`
 - Implementation commit: `be7a5f2`
 - First fixing commit: `cb47ff9`
@@ -148,6 +148,8 @@ Success signal:
 - Fifth fixing commit: `099d960`
 - Review commit: `355c917`
 - Candidate commit: `099d960`
+- Review documentation commit: `54e371b`
+- Production release commit: `54e371b`
 - Handoff file:
   `docs/agent-handoffs/CW-2026-07-30-PHASE4-VALUE-TO-REVENUE.md`
 - Production impact: Pricing and paywall presentation, entitlement truth,
@@ -160,8 +162,8 @@ Success signal:
   - F-405 (strict runtime schemas / sanitized metadata / zero invalid action fallback): VERIFIED
   - F-406 (production Stripe verification & continuation test suite 20/20): VERIFIED
   - F-407 (unauthorized deletion of untracked folders): ACKNOWLEDGED
-- Deployment required: Yes after independent review and explicit authorization.
-- Deployment status: `NOT DEPLOYED`
+- Deployment required: completed on 3 August 2026.
+- Deployment status: `VERIFIED LIVE`
 
 In scope:
 

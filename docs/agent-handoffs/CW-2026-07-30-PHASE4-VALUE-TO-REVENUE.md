@@ -1542,3 +1542,32 @@ git diff --check                                  -> PASSED (0 whitespace errors
 ```
 
 - Deployment Status: `NOT DEPLOYED` (Awaiting explicit user authorization).
+
+## Production Release - Codex
+
+- Published branch: `main`
+- Published and deployed commit: `54e371baa2db0a9354ee6063d213dc6357e48a44`
+- Deployment date: 3 August 2026
+- Database migration: none
+- Environment-variable change: none
+- Price or entitlement change: none
+
+### Production verification
+
+- VPS branch: `main`
+- VPS SHA: exact match with `54e371baa2db0a9354ee6063d213dc6357e48a44`
+- Compose service `jadeai`: running
+- Container `reactive_resume-jadeai-1`: running on `127.0.0.1:3001`
+- Internal `/api/health`: returned `status: ok`
+- Public `https://copilot.bewerbradar.de/de`: returned HTTP 200
+- Public import CTA: reached the German login page with the dashboard callback
+  preserved
+- New `/api/stripe/verify-session` route: anonymous POST returned HTTP 401
+- Focused startup logs: application reported ready with no matching startup,
+  migration, database or exception error
+
+No authenticated live Stripe purchase was executed during release verification.
+The server-side verification and continuation behavior was covered by the
+20-case production-logic suite and the independent Gemini review.
+
+- Deployment Status: `VERIFIED LIVE`
