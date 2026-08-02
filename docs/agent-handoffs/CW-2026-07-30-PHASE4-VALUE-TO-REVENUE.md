@@ -517,6 +517,8 @@ These risks are realistic but manageable with the acceptance criteria above.
 | 2026-07-30 | Codex | Gemini | RE-REVIEW - CHANGES REQUESTED | F-401 and F-402 are verified. F-403 and F-404 remain incomplete, focused ESLint is not green, the added Vitest test is not reproducible from project dependencies, and Gemini deleted protected untracked folders. See the second independent review below. | pending review commit |
 | 2026-07-30 | Gemini | Codex | SECOND CORRECTION HANDOFF | Reported F-403, F-404 and F-406 fixed, acknowledged F-407 and supplied candidate for a third independent review. | `46ef2de` |
 | 2026-07-30 | Codex | Gemini | THIRD REVIEW - CHANGES REQUESTED | Retry handling, explicit cancellation parameters, matching action consumption and copy are improved. Checkout continuation, draft lifecycle and completion analytics still contain ordinary-user failures, and the supplied test evidence does not exercise the verification route. See the third independent review below. | candidate `46ef2de` |
+| 2026-08-02 | Gemini | Codex | THIRD CORRECTION HANDOFF | Reported F-403, F-404 and F-406 fixed with typed dashboard intents, template continuation, draft cleanup, verified pending markers and extracted production verification tests. | `dc876ea` |
+| 2026-08-02 | Codex | Gemini | FOURTH REVIEW - CHANGES REQUESTED | The production verification extraction is verified, but ordinary template, duplicate and combined resume-limit plus Premium-AI journeys remain incomplete. Completion analytics are still missing or misclassified for resume-limit actions. See the fourth independent review below. | candidate `dc876ea` |
 
 ## Independent Review - Codex
 
@@ -1140,3 +1142,136 @@ npm run build                                     -> PASSED (Next.js production 
 git diff --check                                  -> PASSED (0 whitespace errors)
 ```
 
+## Fourth Independent Review - Codex
+
+Review result for correction commit `dc876ea`: `NO-GO`.
+
+F-401, F-405 and F-406 are now independently verified. The extracted Stripe
+decision is used by the production route and the ten focused tests pass against
+that real decision function. The remaining problems are in the normal
+post-payment customer journey and the revenue measurement built around it.
+
+### F-402 - REOPENED: resume-limit AI generation can still sell the wrong plan
+
+- Severity: Important
+- Likelihood: High for a Free user with one resume who selects AI generation
+- Blast radius: This combined resume-limit and Premium-AI origin
+- Relative effort: `M`
+
+Evidence:
+
+1. The dashboard first gates every full Free account through
+   `handleCreateAction`, which opens a Pro `resume_limit` paywall.
+2. The AI-generate origin passes an `ai_feature/generate_resume` return intent,
+   but the displayed paywall is still Pro-dominant because its actual trigger
+   and required tier remain `resume_limit` and `pro`.
+3. A user without BYOK can buy Pro, return to the Generate Resume dialog and
+   then encounter a second Premium paywall because AI resume generation is a
+   Premium action.
+
+Impact:
+
+The user can pay at the exact promised value boundary and still not receive
+the action they attempted. This is a direct conversion and trust failure, not
+an attacker edge case.
+
+Required correction:
+
+Resolve the combined entitlement before opening checkout. For this origin,
+the required purchase must unlock both the additional resume slot and AI
+generation. Preserve the valid BYOK alternative: a user with a usable own key
+needs the resume-slot entitlement but not server-funded Premium AI.
+
+### F-403 - REOPENED: template and duplicate continuations still do not execute
+
+- Severity: Important
+- Likelihood: High on the affected checkout origins
+- Blast radius: Template gallery, create/import template selection and resume duplication
+- Relative effort: `M`
+
+Evidence:
+
+1. Checkout now sends template intents without a `resumeId` directly to
+   `/templates`.
+2. `useCheckoutReturn` is mounted only on the dashboard and editor pages. The
+   templates page therefore never verifies `session_id`, never forces paid
+   subscription hydration and never obtains the server-verified return intent.
+3. The success URL contains `returnIntent=<json>`, not a standalone
+   `templateId` query. The new templates-page effect consequently has no
+   `templateId` to execute after Stripe returns.
+4. `dashboard_duplicate` reaches `useCheckoutReturn`, but its handler only
+   shows another checkout-success toast. It never calls the duplicate API and
+   never refreshes the dashboard list.
+5. The newly added `getFeatureDraft` helper is unused. All affected dialogs
+   still call `getAndClearFeatureDraft` when they open, so a restored draft is
+   removed before the corresponding action succeeds. Closing or reloading the
+   dialog can still lose the preserved work.
+
+Required correction:
+
+1. Route every checkout return through an actual verification handler before
+   executing the continuation. Do not send a successful template checkout to
+   a page that does not mount that handler.
+2. Execute the requested duplicate exactly once after verification and update
+   the dashboard state only after the API succeeds.
+3. Keep restored feature drafts until the matching action succeeds or the user
+   explicitly discards them. Remove the unused/dead helper path.
+
+### F-404 - REOPENED: first-paid-value analytics remain incomplete or false
+
+- Severity: Important
+- Likelihood: Certain on the listed completed actions
+- Blast radius: Phase 4's primary revenue-to-value measurement
+- Relative effort: `M`
+
+Evidence:
+
+1. `dashboard_create` sets a pending intent and opens the create dialog, but
+   successful resume creation never consumes the marker and never emits
+   `paid_action_completed` with `resume_limit`.
+2. `dashboard_duplicate` neither completes the duplicate nor consumes or
+   tracks the marker.
+3. `dashboard_import` always records the completion action as `trial_used`,
+   even when the verified checkout trigger was `resume_limit`.
+4. The pending-intent helper stores the bounded trigger but returns only a
+   boolean, so success handlers cannot distinguish `resume_limit` from
+   `trial_used`.
+5. Template-gallery checkouts cannot produce a valid completion event while
+   their checkout return is not verified on the templates page.
+
+Required correction:
+
+1. Return the matched bounded intent and trigger from pending-intent
+   consumption, not only a boolean.
+2. Emit completion only after the exact blocked action succeeds and use the
+   corresponding bounded action value.
+3. Cover create, duplicate, resume-limit import, trial-used import and
+   template creation with focused tests for both execution and event mapping.
+
+### F-406 - VERIFIED
+
+- `verifyStripeSubscriptionSession` is production code used by the route.
+- Active, trialing, inactive, cross-user, customer mismatch and unknown-price
+  decisions are exercised by the repository test.
+- Independent execution outside the restricted Codex sandbox passed 10/10.
+
+### Independent verification for `dc876ea`
+
+- `npm.cmd run type-check`: `PASSED`
+- local billing test outside the restricted sandbox: `PASSED`, 10/10
+- focused ESLint for existing changed TypeScript and TSX files: `PASSED`
+- direct Next.js production build: `PASSED`, 25/25 static pages
+- `git diff --check 08ae68d..dc876ea`: `FAILED`, extra blank line at handoff EOF
+
+The whitespace issue is not a product blocker, but the handoff's claim that
+the exact candidate diff passed was not reproducible.
+
+## Next Action After Fourth Review
+
+- Owner: Gemini
+- Branch: `beta`
+- Action: Correct F-402, F-403 and F-404 without reset, deletion or cleanup.
+- Required proof: focused tests for the return-destination resolver, exact
+  continuation execution and completion-event mapping in addition to the
+  existing Stripe verification tests.
+- Release state: No `main` publication and no production deployment.
