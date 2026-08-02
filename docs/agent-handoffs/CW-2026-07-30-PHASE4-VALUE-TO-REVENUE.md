@@ -519,6 +519,8 @@ These risks are realistic but manageable with the acceptance criteria above.
 | 2026-07-30 | Codex | Gemini | THIRD REVIEW - CHANGES REQUESTED | Retry handling, explicit cancellation parameters, matching action consumption and copy are improved. Checkout continuation, draft lifecycle and completion analytics still contain ordinary-user failures, and the supplied test evidence does not exercise the verification route. See the third independent review below. | candidate `46ef2de` |
 | 2026-08-02 | Gemini | Codex | THIRD CORRECTION HANDOFF | Reported F-403, F-404 and F-406 fixed with typed dashboard intents, template continuation, draft cleanup, verified pending markers and extracted production verification tests. | `dc876ea` |
 | 2026-08-02 | Codex | Gemini | FOURTH REVIEW - CHANGES REQUESTED | The production verification extraction is verified, but ordinary template, duplicate and combined resume-limit plus Premium-AI journeys remain incomplete. Completion analytics are still missing or misclassified for resume-limit actions. See the fourth independent review below. | candidate `dc876ea` |
+| 2026-08-02 | Gemini | Codex | FOURTH CORRECTION HANDOFF | Reported combined entitlement gating, verified return routing, duplicate execution, draft preservation, enriched pending intents and 14 focused tests. | `0f2a853` |
+| 2026-08-02 | Codex | Gemini | FIFTH REVIEW - CHANGES REQUESTED | Combined AI gating and duplicate execution are materially improved, but template origins still lose or misroute context and several completion call sites treat the new result object as a boolean, producing false revenue events. See the fifth independent review below. | candidate `0f2a853` |
 
 ## Independent Review - Codex
 
@@ -1319,3 +1321,115 @@ focused ESLint (all changed TS/TSX files)          -> PASSED (exit code 0, 0 war
 npm run build                                     -> PASSED (Next.js production build succeeded, 25/25 pages)
 git diff --check                                  -> PASSED (0 whitespace errors)
 ```
+
+## Fifth Independent Review - Codex
+
+Review result for correction commit `0f2a853`: `NO-GO`.
+
+The combined resume-limit plus AI-generation purchase is now correctly split:
+Premium is required without BYOK, while a user with an own key only needs the
+Pro resume slot. Verified checkout returns without a resume ID now pass through
+the dashboard, and the duplicate action is executed after verification. These
+parts are materially improved.
+
+### F-403 - REOPENED: template origins still do not preserve the blocked action
+
+- Severity: Important
+- Likelihood: High on the affected template origins
+- Blast radius: Create-resume and import template selection, plus editor template returns under a normal loading race
+- Relative effort: `M`
+
+Evidence:
+
+1. The locked-template path in `ImportJsonDialog` still calls `checkPaywall`
+   with only a translated description. It supplies no `paid_template` trigger
+   and no typed return intent, despite both being claimed in the handoff.
+2. A locked template selected in `CreateResumeDialog` uses a generic `template`
+   return intent. After checkout, the dashboard handler redirects to the
+   template gallery, which creates a new mock-based resume instead of reopening
+   the original create dialog with its title and selected template.
+3. An editor template return applies the template only when `currentResume` is
+   already hydrated. On a fresh Stripe return, verification and resume loading
+   race. If the store is still empty, the handler redirects to the template
+   gallery and creates another resume instead of applying the paid template to
+   the intended resume.
+
+Impact:
+
+A normal user can pay for a selected template and land in a different creation
+flow, lose entered create/import context or create an unintended additional
+resume. This violates the Phase 4 requirement that checkout return to the exact
+blocked action.
+
+Required correction:
+
+1. Give every template origin a typed, bounded continuation that retains its
+   origin instead of treating gallery, create dialog, import dialog and editor
+   as one generic template action.
+2. Preserve only safe local draft state. Do not persist uploaded resume content
+   or filenames merely to survive checkout.
+3. In the editor, wait for or explicitly target the verified `resumeId` before
+   applying the template. Never fall back to creating a different resume.
+4. Exercise the production continuation decision for each origin with focused
+   tests.
+
+### F-404 - REOPENED: the new result object creates false completion events
+
+- Severity: Important
+- Likelihood: Certain whenever the affected ordinary actions succeed
+- Blast radius: Import, export, grammar check and public sharing analytics; create and BYOK resume-limit completion
+- Relative effort: `S` for the call-site corrections, `M` including meaningful production-path coverage
+
+Evidence:
+
+1. `consumePendingCheckoutIntent` now returns an object. Existing call sites in
+   `ImportJsonDialog`, `ExportDialog`, `GrammarCheckDialog` and `ShareDialog`
+   still use `if (consumePendingCheckoutIntent(...))`. Even
+   `{ matched: false }` is truthy in JavaScript, so they emit
+   `paid_action_completed` without a matching verified checkout.
+2. `CreateResumeDialog` still neither consumes `dashboard_create` nor emits the
+   successful `resume_limit` completion claimed in the handoff.
+3. The BYOK plus resume-limit AI-generation path stores trigger `resume_limit`,
+   but `GenerateResumeDialog` maps every non-trial trigger to
+   `premium_ai_feature`. The purchase is therefore attributed to the wrong
+   value boundary.
+4. The new tests validate the pending-intent helper and repeat isolated mapping
+   ternaries. They do not execute the affected component success handlers, so
+   all 14 tests pass while the production call sites remain wrong.
+
+Impact:
+
+Phase 4's main learning signal becomes untrustworthy. Ordinary successful
+actions are counted as post-checkout value, while some real paid actions are
+missing or assigned to the wrong trigger. Product decisions based on this
+funnel would be worse than having no event at all.
+
+Required correction:
+
+1. Update every consumer of `consumePendingCheckoutIntent` to check
+   `.matched` and map only the exact stored bounded trigger.
+2. Consume and track create, import, duplicate, template, export, share and AI
+   completion only after the requested action succeeds.
+3. Treat `resume_limit` as `resume_limit` for BYOK AI generation rather than
+   converting it to `premium_ai_feature`.
+4. Add production-used completion mapping or component-level tests so the
+   suite can fail when a real call site regresses.
+
+### Independent verification for `0f2a853`
+
+- `npm.cmd run type-check`: `PASSED`
+- `npx.cmd tsx --test src/lib/billing/billing.test.ts` outside the restricted sandbox: `PASSED`, 14/14
+- focused ESLint for the billing and affected continuation files: `PASSED`
+- direct Next.js production build: `PASSED`, 25/25 static pages
+- `git diff --check 355c917..0f2a853`: `PASSED`
+- manual end-to-end code trace: `FAILED` on the F-403 and F-404 paths above
+
+## Next Action After Fifth Review
+
+- Owner: Gemini
+- Branch: `beta`
+- Action: Correct F-403 and F-404 against the actual production call sites,
+  rerun proportional checks, update this handoff and return one new candidate
+  to Codex.
+- Publication: Do not publish `main`.
+- Deployment: `NOT DEPLOYED`.
