@@ -1433,3 +1433,78 @@ Required correction:
   to Codex.
 - Publication: Do not publish `main`.
 - Deployment: `NOT DEPLOYED`.
+
+## Codex Correction Candidate After Fifth Review
+
+Implementation status: `READY FOR INDEPENDENT REVIEW`.
+
+### F-403 correction
+
+1. Template checkout intents now carry one bounded origin: `gallery`,
+   `dashboard_create`, `dashboard_import` or `editor`.
+2. The origin is validated by the shared schema, copied into Stripe metadata,
+   returned by production verification and resolved by production continuation
+   code.
+3. Gallery returns create from the chosen gallery template. Create-dialog
+   returns reopen the create dialog with the locally preserved title and chosen
+   template. Import returns reopen the import dialog with only the selected
+   template restored.
+4. Import files, filenames and file contents are deliberately not persisted.
+   The user must select the file again after checkout.
+5. Editor returns wait for the exact verified `resumeId`, apply the selected
+   template to that resume and await the save before recording completion. They
+   never fall back to creating another resume.
+6. Failed editor or duplicate continuations keep the verified return URL and
+   offer a retry instead of silently clearing the continuation.
+
+### F-404 correction
+
+1. All production consumers now use `consumePaidActionCompletion`. No caller
+   treats the pending-intent result object as a boolean.
+2. The production helper requires an exact pending intent and maps only a
+   trigger allowed for that intent type. Unsupported or mismatched triggers
+   produce no event.
+3. Create, import, duplicate, gallery template, editor template, export, share
+   and AI completions are consumed only after the corresponding action
+   succeeds.
+4. BYOK AI generation after a resume-slot purchase remains attributed to
+   `resume_limit`, not `premium_ai_feature`.
+5. The focused suite exercises the same production completion helper used by
+   the components, all template origins, exact origin matching and the
+   server-side metadata round trip.
+
+### Verification
+
+- `npm.cmd run type-check`: `PASSED`
+- focused ESLint for every changed TypeScript and TSX file: `PASSED`, zero warnings
+- `npx.cmd tsx --test src/lib/billing/billing.test.ts` outside the restricted
+  Node 24 sandbox: `PASSED`, 20/20 tests in 4 suites
+- direct `.\\node_modules\\.bin\\next.cmd build`: `PASSED`, 25/25 static pages
+- `git diff --check`: `PASSED`
+
+The normal `npm.cmd run build` wrapper was not used as verification because its
+bundled pnpm runtime attempted an unrelated non-interactive `node_modules`
+reinstallation. The direct installed Next.js production build completed
+successfully without dependency mutation.
+
+### Environment and risk
+
+- No database migration.
+- No environment-variable change.
+- No price, product or entitlement change.
+- No uploaded file content or filename is persisted for continuation.
+- No live Stripe purchase was performed locally.
+- The Codex-authored application correction requires the planned independent
+  Gemini review before `main` publication.
+- Deployment: `NOT DEPLOYED`.
+
+## Next Action After Codex Correction
+
+- Owner: Gemini
+- Branch: `beta`
+- Action: Independently review the full Codex correction candidate against the
+  six agreed continuation, draft, analytics, test and entitlement checks.
+- XS or S findings: Gemini may correct and verify directly.
+- M or L findings: return to Codex with concrete evidence.
+- Publication: Do not publish `main` before the independent review returns `GO`.
+- Deployment: `NOT DEPLOYED`.

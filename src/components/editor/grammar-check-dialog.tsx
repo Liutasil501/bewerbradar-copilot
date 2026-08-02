@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { trackEvent } from '@/lib/analytics';
-import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
+import { consumePaidActionCompletion } from '@/lib/billing/completion';
 import {
   Loader2, AlertTriangle, RotateCcw, SpellCheck, Wand2,
   Trash2, ArrowUp, ArrowDown, Minus, ChevronLeft,
@@ -301,8 +301,9 @@ export function GrammarCheckDialog({ open, onOpenChange, resumeId }: GrammarChec
       fetchHistory();
 
       // F-404: Emit paid_action_completed ONLY when matching pending checkout intent exists
-      if (consumePendingCheckoutIntent('ai_feature', 'grammar_check')) {
-        trackEvent('paid_action_completed', { locale, action: 'premium_ai_feature' });
+      const completion = consumePaidActionCompletion('ai_feature', 'grammar_check');
+      if (completion) {
+        trackEvent('paid_action_completed', { locale, action: completion });
       }
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);

@@ -1,14 +1,8 @@
 import { create } from 'zustand';
 import type { PaywallTrigger } from '@/lib/analytics';
-import type { FeatureKey, ReturnIntentType } from '@/lib/billing/schema';
+import type { ReturnIntent } from '@/lib/billing/schema';
 
-export interface ReturnIntent {
-  type: ReturnIntentType;
-  resumeId?: string;
-  format?: 'pdf' | 'docx' | 'html';
-  templateId?: string;
-  featureKey?: FeatureKey;
-}
+export type { ReturnIntent } from '@/lib/billing/schema';
 
 export interface PaywallContext {
   trigger: PaywallTrigger;

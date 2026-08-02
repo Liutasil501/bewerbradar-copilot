@@ -11,7 +11,12 @@ import {
   type DurationBucket,
   type ImportDialogSource,
 } from '@/lib/analytics';
-import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
+import { consumePaidActionCompletion } from '@/lib/billing/completion';
+import {
+  clearFeatureDraft,
+  getFeatureDraft,
+  saveFeatureDraft,
+} from '@/lib/billing/draft-preservation';
 import {
   Dialog,
   DialogContent,
@@ -56,6 +61,11 @@ type FileType = 'json' | 'pdf' | 'image';
 
 const ACCEPTED_EXTENSIONS = '.json,.pdf,.png,.jpg,.jpeg,.webp';
 const ACCEPTED_TYPES = ['application/json', 'application/pdf', 'image/png', 'image/jpeg', 'image/webp'];
+const IMPORT_DRAFT_KEY = 'dashboard_import';
+
+interface ImportDraft {
+  template?: string;
+}
 
 function getHeaders() {
   const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
@@ -111,12 +121,17 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
 
   useEffect(() => {
     if (open) {
+      const draft = getFeatureDraft<ImportDraft>(IMPORT_DRAFT_KEY);
       setState('idle');
       setErrorCode(null);
       setErrorMessage('');
       setSelectedFile(null);
       setFileType(null);
-      setTemplate('classic');
+      setTemplate(
+        draft?.template && (TEMPLATES as readonly string[]).includes(draft.template)
+          ? draft.template
+          : 'classic'
+      );
       trackEvent('import_dialog_opened', { locale, source });
     }
   }, [open, locale, source]);
@@ -266,10 +281,13 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
 
       setState('success');
 
-      // F-404: Emit paid_action_completed ONLY when matching pending checkout intent exists
-      if (consumePendingCheckoutIntent('dashboard_import')) {
-        trackEvent('paid_action_completed', { locale, action: 'trial_used' });
+      const completion =
+        consumePaidActionCompletion('dashboard_import') ??
+        consumePaidActionCompletion('template', undefined, 'dashboard_import');
+      if (completion) {
+        trackEvent('paid_action_completed', { locale, action: completion });
       }
+      clearFeatureDraft(IMPORT_DRAFT_KEY);
 
       setTimeout(() => {
         onOpenChange(false);
@@ -326,7 +344,12 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
 
   return (
     <>
-      <Dialog open={open} onOpenChange={(o) => { if (!o && !isLoading) onOpenChange(false); }}>
+      <Dialog open={open} onOpenChange={(o) => {
+        if (!o && !isLoading) {
+          clearFeatureDraft(IMPORT_DRAFT_KEY);
+          onOpenChange(false);
+        }
+      }}>
         <DialogContent className="sm:max-w-4xl p-0 gap-0 overflow-hidden max-h-[90vh] flex flex-col">
           <DialogHeader className="px-6 pt-6 pb-0 flex-shrink-0">
             <div className="flex items-center justify-between gap-4">
@@ -405,6 +428,7 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
                       <Button
                         type="button"
                         onClick={() => {
+                          saveFeatureDraft(IMPORT_DRAFT_KEY, { template });
                           onOpenChange(false);
                           checkPaywall('pro', () => {}, {
                             trigger: 'resume_limit',
@@ -435,6 +459,7 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
                       <Button
                         type="button"
                         onClick={() => {
+                          saveFeatureDraft(IMPORT_DRAFT_KEY, { template });
                           onOpenChange(false);
                           checkPaywall('pro', () => {}, {
                             trigger: 'trial_used',
@@ -451,6 +476,7 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
                         type="button"
                         variant="outline"
                         onClick={() => {
+                          clearFeatureDraft(IMPORT_DRAFT_KEY);
                           onOpenChange(false);
                           openModal('settings');
                         }}
@@ -477,6 +503,7 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
                       <Button
                         type="button"
                         onClick={() => {
+                          clearFeatureDraft(IMPORT_DRAFT_KEY);
                           onOpenChange(false);
                           setShowPaywall(true);
                         }}
@@ -489,6 +516,7 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
                         type="button"
                         variant="outline"
                         onClick={() => {
+                          clearFeatureDraft(IMPORT_DRAFT_KEY);
                           onOpenChange(false);
                           openModal('settings');
                         }}
@@ -516,6 +544,7 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
                         type="button"
                         variant="outline"
                         onClick={() => {
+                          clearFeatureDraft(IMPORT_DRAFT_KEY);
                           onOpenChange(false);
                           openModal('settings');
                         }}
@@ -624,7 +653,17 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
                           )}
                           onClick={() => {
                             if (isLocked) {
-                              checkPaywall('pro', () => setTemplate(tpl), { description: tBilling('limitTemplatesDesc') });
+                              saveFeatureDraft(IMPORT_DRAFT_KEY, { template: tpl });
+                              checkPaywall('pro', () => setTemplate(tpl), {
+                                trigger: 'paid_template',
+                                templateId: tpl,
+                                description: tBilling('limitTemplatesDesc'),
+                                returnIntent: {
+                                  type: 'template',
+                                  templateId: tpl,
+                                  origin: 'dashboard_import',
+                                },
+                              });
                             } else {
                               setTemplate(tpl);
                             }
@@ -677,7 +716,10 @@ export function ImportJsonDialog({ open, onOpenChange, source }: ImportJsonDialo
               <>
                 <Button
                   variant="outline"
-                  onClick={() => onOpenChange(false)}
+                  onClick={() => {
+                    clearFeatureDraft(IMPORT_DRAFT_KEY);
+                    onOpenChange(false);
+                  }}
                   className="cursor-pointer"
                   disabled={isLoading}
                 >

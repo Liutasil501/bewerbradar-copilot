@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import {
@@ -19,6 +19,20 @@ import { usePaywall } from '@/hooks/use-paywall';
 import { TemplateThumbnail } from './template-thumbnail';
 import { templateLabelsMap } from '@/lib/template-labels';
 import { PricingModal } from '@/components/billing/pricing-modal';
+import { trackEvent } from '@/lib/analytics';
+import {
+  clearFeatureDraft,
+  getFeatureDraft,
+  saveFeatureDraft,
+} from '@/lib/billing/draft-preservation';
+import { consumePaidActionCompletion } from '@/lib/billing/completion';
+
+const CREATE_RESUME_DRAFT_KEY = 'dashboard_create';
+
+interface CreateResumeDraft {
+  title?: string;
+  template?: string;
+}
 
 interface CreateResumeDialogProps {
   open: boolean;
@@ -36,11 +50,30 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
   const tBilling = useTranslations('billing');
   const { currentPlan, checkPaywall, showPaywall, setShowPaywall, requiredTier, paywallDescription } = usePaywall();
 
+  useEffect(() => {
+    if (!open) return;
+
+    const draft = getFeatureDraft<CreateResumeDraft>(CREATE_RESUME_DRAFT_KEY);
+    if (!draft) return;
+
+    setTitle(draft.title ?? '');
+    if (draft.template && (TEMPLATES as readonly string[]).includes(draft.template)) {
+      setTemplate(draft.template);
+    }
+  }, [open]);
+
   const handleCreate = async () => {
     setIsCreating(true);
     try {
       const resume = await onCreate({ title: title || undefined, template, language: locale });
       if (resume) {
+        const completion =
+          consumePaidActionCompletion('dashboard_create') ??
+          consumePaidActionCompletion('template', undefined, 'dashboard_create');
+        if (completion) {
+          trackEvent('paid_action_completed', { locale, action: completion });
+        }
+        clearFeatureDraft(CREATE_RESUME_DRAFT_KEY);
         resetAndClose();
         router.push(`/editor/${resume.id}`);
       }
@@ -50,6 +83,7 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
   };
 
   const resetAndClose = () => {
+    clearFeatureDraft(CREATE_RESUME_DRAFT_KEY);
     onClose();
     setTitle('');
     setTemplate('classic');
@@ -94,11 +128,19 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
                           )}
                           onClick={() => {
                             if (isLocked) {
+                              saveFeatureDraft(CREATE_RESUME_DRAFT_KEY, {
+                                title,
+                                template: tpl,
+                              });
                               checkPaywall('pro', () => setTemplate(tpl), {
                                 trigger: 'paid_template',
                                 templateId: tpl,
                                 description: tBilling('limitTemplatesDesc'),
-                                returnIntent: { type: 'template', templateId: tpl },
+                                returnIntent: {
+                                  type: 'template',
+                                  templateId: tpl,
+                                  origin: 'dashboard_create',
+                                },
                               });
                             } else {
                               setTemplate(tpl);

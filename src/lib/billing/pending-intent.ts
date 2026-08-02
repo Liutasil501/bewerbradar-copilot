@@ -1,4 +1,9 @@
-import type { ReturnIntent, PaywallTrigger, ReturnIntentType } from './schema';
+import type {
+  ReturnIntent,
+  PaywallTrigger,
+  ReturnIntentType,
+  TemplateOrigin,
+} from './schema';
 
 const PENDING_INTENT_KEY = 'br_pending_checkout_intent';
 const INTENT_TTL_MS = 30 * 60 * 1000; // 30 minutes
@@ -31,7 +36,8 @@ export function setPendingCheckoutIntent(intent: ReturnIntent, trigger: PaywallT
 
 export function consumePendingCheckoutIntent(
   expectedAction: ReturnIntentType,
-  expectedFeatureKey?: string
+  expectedFeatureKey?: string,
+  expectedOrigin?: TemplateOrigin
 ): ConsumeIntentResult {
   if (typeof sessionStorage === 'undefined') return { matched: false };
   try {
@@ -49,8 +55,9 @@ export function consumePendingCheckoutIntent(
     const { intent, trigger } = parsed;
     const actionMatches = intent.type === expectedAction;
     const featureMatches = !expectedFeatureKey || intent.featureKey === expectedFeatureKey;
+    const originMatches = !expectedOrigin || intent.origin === expectedOrigin;
 
-    if (actionMatches && featureMatches) {
+    if (actionMatches && featureMatches && originMatches) {
       sessionStorage.removeItem(PENDING_INTENT_KEY);
       return { matched: true, trigger, intent };
     }

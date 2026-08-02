@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { trackEvent } from '@/lib/analytics';
 import { saveFeatureDraft, getFeatureDraft, clearFeatureDraft } from '@/lib/billing/draft-preservation';
-import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
+import { consumePaidActionCompletion } from '@/lib/billing/completion';
 import {
   Loader2, RotateCcw, Target, ShieldCheck, Lightbulb, AlertTriangle,
   Wand2, Trash2, FileSearch, ArrowUp, ArrowDown, Minus, ChevronLeft,
@@ -355,10 +355,9 @@ export function JdAnalysisDialog({ open, onOpenChange, resumeId }: JdAnalysisDia
         fetchHistory();
 
         // F-404: Emit paid_action_completed ONLY when matching pending checkout intent exists
-        const resIntent = consumePendingCheckoutIntent('ai_feature', 'jd_analysis');
-        if (resIntent.matched) {
-          const action = resIntent.trigger === 'trial_used' ? 'trial_used' : 'premium_ai_feature';
-          trackEvent('paid_action_completed', { locale, action });
+        const completion = consumePaidActionCompletion('ai_feature', 'jd_analysis');
+        if (completion) {
+          trackEvent('paid_action_completed', { locale, action: completion });
         }
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);

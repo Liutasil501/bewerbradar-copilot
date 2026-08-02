@@ -21,7 +21,7 @@ import { templateLabelsMap as templateLabelKeys } from '@/lib/template-labels';
 import type { Resume } from '@/types/resume';
 import { usePaywall } from '@/hooks/use-paywall';
 import { trackEvent } from '@/lib/analytics';
-import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
+import { consumePaidActionCompletion } from '@/lib/billing/completion';
 import { PricingModal } from '@/components/billing/pricing-modal';
 
 const TEMPLATES_TOUR_STEPS: TourStepConfig[] = [
@@ -257,7 +257,11 @@ export default function TemplatesPage() {
         trigger: 'paid_template',
         templateId: template,
         description: tBilling('limitTemplatesDesc'),
-        returnIntent: { type: 'template', templateId: template },
+        returnIntent: {
+          type: 'template',
+          templateId: template,
+          origin: 'gallery',
+        },
       });
       return;
     }
@@ -274,9 +278,13 @@ export default function TemplatesPage() {
       }));
       const resume = await createResume({ template, sections });
       if (resume) {
-        const resIntent = consumePendingCheckoutIntent('template');
-        if (resIntent.matched) {
-          trackEvent('paid_action_completed', { locale, action: 'paid_template' });
+        const completion = consumePaidActionCompletion(
+          'template',
+          undefined,
+          'gallery'
+        );
+        if (completion) {
+          trackEvent('paid_action_completed', { locale, action: completion });
         }
         router.push(`/editor/${resume.id}`);
       }

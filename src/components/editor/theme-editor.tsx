@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Palette,
@@ -258,20 +258,19 @@ function ThemeSection({
 
 // -- Main Theme Editor --
 
-interface ThemeEditorProps {
-  onClose?: () => void;
-}
-
-export function ThemeEditor({ onClose }: ThemeEditorProps) {
+export function ThemeEditor() {
   const t = useTranslations('themeEditor');
   const tRoot = useTranslations();
   const { currentResume } = useResumeStore();
   const { currentPlan, checkPaywall, showPaywall, setShowPaywall, requiredTier, paywallDescription } = usePaywall();
 
-  const themeConfig: ThemeConfig = {
-    ...DEFAULT_THEME,
-    ...(currentResume?.themeConfig || {}),
-  };
+  const themeConfig: ThemeConfig = useMemo(
+    () => ({
+      ...DEFAULT_THEME,
+      ...(currentResume?.themeConfig || {}),
+    }),
+    [currentResume?.themeConfig]
+  );
 
   const updateTheme = useCallback(
     (updates: Partial<ThemeConfig>) => {
@@ -362,6 +361,7 @@ export function ThemeEditor({ onClose }: ThemeEditorProps) {
                             type: 'template',
                             resumeId: currentResume?.id,
                             templateId: tpl,
+                            origin: 'editor',
                           },
                         });
                       } else {

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { trackEvent } from '@/lib/analytics';
-import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
+import { consumePaidActionCompletion } from '@/lib/billing/completion';
 import {
   Dialog,
   DialogContent,
@@ -147,8 +147,9 @@ export function ShareDialog({ open, onOpenChange, resumeId }: ShareDialogProps) 
         setNewPassword('');
 
         // F-404: Emit paid_action_completed ONLY when matching pending checkout intent exists
-        if (consumePendingCheckoutIntent('share')) {
-          trackEvent('paid_action_completed', { locale, action: 'public_share' });
+        const completion = consumePaidActionCompletion('share');
+        if (completion) {
+          trackEvent('paid_action_completed', { locale, action: completion });
         }
       }
     } catch {

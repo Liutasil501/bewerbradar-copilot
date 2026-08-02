@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 import { usePaywall } from '@/hooks/use-paywall';
 import { trackEvent } from '@/lib/analytics';
 import { saveFeatureDraft, getFeatureDraft, clearFeatureDraft } from '@/lib/billing/draft-preservation';
-import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
+import { consumePaidActionCompletion } from '@/lib/billing/completion';
 import { PricingModal } from '@/components/billing/pricing-modal';
 
 interface TranslateDialogProps {
@@ -170,10 +170,9 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
               clearFeatureDraft('translate');
 
               // F-404: Emit paid_action_completed ONLY when matching pending checkout intent exists
-              const resIntent = consumePendingCheckoutIntent('ai_feature', 'translate');
-              if (resIntent.matched) {
-                const action = resIntent.trigger === 'trial_used' ? 'trial_used' : 'premium_ai_feature';
-                trackEvent('paid_action_completed', { locale, action });
+              const completion = consumePaidActionCompletion('ai_feature', 'translate');
+              if (completion) {
+                trackEvent('paid_action_completed', { locale, action: completion });
               }
 
               if (mode === 'copy' && data.newResumeId) {

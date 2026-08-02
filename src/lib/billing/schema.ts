@@ -25,6 +25,15 @@ export const ALLOWED_RETURN_INTENT_TYPES = [
 
 export type ReturnIntentType = (typeof ALLOWED_RETURN_INTENT_TYPES)[number];
 
+export const ALLOWED_TEMPLATE_ORIGINS = [
+  'gallery',
+  'dashboard_create',
+  'dashboard_import',
+  'editor',
+] as const;
+
+export type TemplateOrigin = (typeof ALLOWED_TEMPLATE_ORIGINS)[number];
+
 export const ALLOWED_EXPORT_FORMATS = ['pdf', 'docx', 'html'] as const;
 export type ExportFormat = (typeof ALLOWED_EXPORT_FORMATS)[number];
 
@@ -44,6 +53,7 @@ export const ReturnIntentSchema = z.object({
   templateId: z.string().max(50).regex(/^[a-zA-Z0-9_-]+$/).optional(),
   featureKey: z.enum(ALLOWED_FEATURE_KEYS).optional(),
   resumeId: z.string().max(100).regex(/^[a-zA-Z0-9_-]+$/).optional(),
+  origin: z.enum(ALLOWED_TEMPLATE_ORIGINS).optional(),
 });
 
 export type ReturnIntent = z.infer<typeof ReturnIntentSchema>;

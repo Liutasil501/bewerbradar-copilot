@@ -134,6 +134,7 @@ export async function POST(req: NextRequest) {
           ...(returnIntent.templateId && { templateId: returnIntent.templateId }),
           ...(returnIntent.featureKey && { featureKey: returnIntent.featureKey }),
           ...(returnIntent.resumeId && { resumeId: returnIntent.resumeId }),
+          ...(returnIntent.origin && { origin: returnIntent.origin }),
         }
       : undefined;
 

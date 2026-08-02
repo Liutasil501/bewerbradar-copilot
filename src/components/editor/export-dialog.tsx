@@ -16,7 +16,7 @@ import { useResumeStore } from '@/stores/resume-store';
 import { usePaywall } from '@/hooks/use-paywall';
 import { useUIStore } from '@/stores/ui-store';
 import { trackEvent } from '@/lib/analytics';
-import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
+import { consumePaidActionCompletion } from '@/lib/billing/completion';
 import { PricingModal } from '@/components/billing/pricing-modal';
 import {
   FileDown,
@@ -129,8 +129,9 @@ export function ExportDialog({ open, onOpenChange, resumeId }: ExportDialogProps
         setState('success');
 
         // F-404: Emit paid_action_completed ONLY when matching pending checkout intent exists
-        if (consumePendingCheckoutIntent('export')) {
-          trackEvent('paid_action_completed', { locale, action: 'export_paid_format' });
+        const completion = consumePaidActionCompletion('export');
+        if (completion) {
+          trackEvent('paid_action_completed', { locale, action: completion });
         }
 
         setTimeout(() => onOpenChange(false), 1500);

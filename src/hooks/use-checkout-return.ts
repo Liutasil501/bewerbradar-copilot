@@ -9,8 +9,48 @@ import { useUIStore } from '@/stores/ui-store';
 import { useResumeStore } from '@/stores/resume-store';
 import { trackEvent } from '@/lib/analytics';
 import { sanitizePaywallTrigger, type ReturnIntent } from '@/lib/billing/schema';
-import { setPendingCheckoutIntent, consumePendingCheckoutIntent, clearPendingCheckoutIntent } from '@/lib/billing/pending-intent';
+import { setPendingCheckoutIntent, clearPendingCheckoutIntent } from '@/lib/billing/pending-intent';
+import { consumePaidActionCompletion } from '@/lib/billing/completion';
+import { resolveTemplateContinuation } from '@/lib/billing/return-resolver';
 import { useRouter } from '@/i18n/routing';
+
+const CHECKOUT_QUERY_PARAMS = [
+  'session_id',
+  'canceled',
+  'returnIntent',
+  'trigger',
+  'tier',
+  'billing_period',
+  'plan',
+] as const;
+
+function clearCheckoutQueryParams(): void {
+  const url = new URL(window.location.href);
+  for (const param of CHECKOUT_QUERY_PARAMS) {
+    url.searchParams.delete(param);
+  }
+  window.history.replaceState({}, '', url.pathname + url.search);
+}
+
+async function waitForResumeHydration(
+  resumeId: string,
+  timeoutMs = 15_000
+): Promise<boolean> {
+  if (useResumeStore.getState().currentResume?.id === resumeId) return true;
+
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      unsubscribe();
+      resolve(false);
+    }, timeoutMs);
+    const unsubscribe = useResumeStore.subscribe((state) => {
+      if (state.currentResume?.id !== resumeId) return;
+      clearTimeout(timeout);
+      unsubscribe();
+      resolve(true);
+    });
+  });
+}
 
 export interface UseCheckoutReturnOptions {
   onDuplicateSuccess?: () => void | Promise<void>;
@@ -41,17 +81,6 @@ export function useCheckoutReturn(options?: UseCheckoutReturnOptions) {
           // Await forced hydration of subscription state
           await refreshSubscription(true);
 
-          // Clear query params from URL ONLY upon successful verification
-          const url = new URL(window.location.href);
-          url.searchParams.delete('session_id');
-          url.searchParams.delete('canceled');
-          url.searchParams.delete('returnIntent');
-          url.searchParams.delete('trigger');
-          url.searchParams.delete('tier');
-          url.searchParams.delete('billing_period');
-          url.searchParams.delete('plan');
-          window.history.replaceState({}, '', url.pathname + url.search);
-
           toast.success(tBilling('checkoutSuccess'));
 
           // Track checkout_completed event once per session
@@ -77,17 +106,37 @@ export function useCheckoutReturn(options?: UseCheckoutReturnOptions) {
               }
               openModal('export');
             } else if (actionType === 'template') {
-              const currentResume = useResumeStore.getState().currentResume;
-              if (currentResume && returnIntent.templateId) {
-                useResumeStore.getState().setTemplate(returnIntent.templateId);
-                const resIntent = consumePendingCheckoutIntent('template');
-                if (resIntent.matched) {
-                  trackEvent('paid_action_completed', { locale, action: 'paid_template' });
+              const continuation = resolveTemplateContinuation(returnIntent);
+              if (!continuation) {
+                throw new Error('CHECKOUT_CONTINUATION_INVALID_TEMPLATE');
+              }
+
+              if (continuation.origin === 'editor' && continuation.resumeId) {
+                const isReady = await waitForResumeHydration(continuation.resumeId);
+                if (!isReady) {
+                  throw new Error('CHECKOUT_CONTINUATION_RESUME_NOT_READY');
                 }
-              } else if (returnIntent.templateId) {
-                router.push(`/templates?templateId=${encodeURIComponent(returnIntent.templateId)}`);
-              } else {
+
+                const resumeStore = useResumeStore.getState();
+                resumeStore.setTemplate(continuation.templateId);
+                await useResumeStore.getState().save();
+
+                const completion = consumePaidActionCompletion(
+                  'template',
+                  undefined,
+                  'editor'
+                );
+                if (completion) {
+                  trackEvent('paid_action_completed', { locale, action: completion });
+                }
+              } else if (continuation.origin === 'dashboard_create') {
                 openModal('create-resume');
+              } else if (continuation.origin === 'dashboard_import') {
+                openModal('import');
+              } else if (continuation.origin === 'gallery') {
+                router.push(
+                  `/templates?templateId=${encodeURIComponent(continuation.templateId)}`
+                );
               }
             } else if (actionType === 'share') {
               openModal('share');
@@ -103,52 +152,58 @@ export function useCheckoutReturn(options?: UseCheckoutReturnOptions) {
               openModal('import');
             } else if (actionType === 'dashboard_create') {
               openModal('create-resume');
-            } else if (actionType === 'dashboard_duplicate' && returnIntent.resumeId) {
-              try {
-                const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
-                const dupRes = await fetch(`/api/resume/${returnIntent.resumeId}/duplicate`, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    ...(fingerprint ? { 'x-fingerprint': fingerprint } : {}),
-                  },
-                });
-                if (dupRes.ok) {
-                  const resIntent = consumePendingCheckoutIntent('dashboard_duplicate');
-                  if (resIntent.matched) {
-                    const action = resIntent.trigger === 'trial_used' ? 'trial_used' : 'resume_limit';
-                    trackEvent('paid_action_completed', { locale, action });
-                  }
-                  if (options?.onDuplicateSuccess) {
-                    await options.onDuplicateSuccess();
-                  }
-                } else {
-                  const errData = await dupRes.json().catch(() => ({}));
-                  toast.error(errData.error || 'Failed to duplicate resume');
-                }
-              } catch (e) {
-                console.error('Failed to execute post-checkout duplicate:', e);
+            } else if (actionType === 'dashboard_duplicate') {
+              if (!returnIntent.resumeId) {
+                throw new Error('CHECKOUT_CONTINUATION_DUPLICATE_ID_MISSING');
+              }
+
+              const fingerprint = localStorage.getItem('br_fingerprint');
+              const dupRes = await fetch(`/api/resume/${returnIntent.resumeId}/duplicate`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  ...(fingerprint ? { 'x-fingerprint': fingerprint } : {}),
+                },
+              });
+              if (!dupRes.ok) {
+                throw new Error('CHECKOUT_CONTINUATION_DUPLICATE_FAILED');
+              }
+
+              const completion = consumePaidActionCompletion('dashboard_duplicate');
+              if (completion) {
+                trackEvent('paid_action_completed', { locale, action: completion });
+              }
+              if (options?.onDuplicateSuccess) {
+                await options.onDuplicateSuccess();
               }
             }
           }
+
+          clearCheckoutQueryParams();
         } else {
           // F-403: Do NOT delete URL searchParams on verification failure! Offer visible retry.
-          toast.error(data.error || 'Zahlungsverifikation fehlgeschlagen', {
+          toast.error(data.error || tBilling('checkoutVerificationFailed'), {
             action: {
-              label: 'Erneut versuchen',
+              label: tBilling('retry'),
               onClick: () => performVerification(sessionId),
             },
           });
         }
       } catch (err) {
         console.error('Error verifying Stripe checkout:', err);
-        // F-403: Do NOT delete URL searchParams on network error! Offer visible retry.
-        toast.error('Netzwerkfehler bei der Verifikation', {
-          action: {
-            label: 'Erneut versuchen',
-            onClick: () => performVerification(sessionId),
-          },
-        });
+        const isContinuationError =
+          err instanceof Error && err.message.startsWith('CHECKOUT_CONTINUATION_');
+        toast.error(
+          isContinuationError
+            ? tBilling('checkoutContinuationFailed')
+            : tBilling('checkoutVerificationFailed'),
+          {
+            action: {
+              label: tBilling('retry'),
+              onClick: () => performVerification(sessionId),
+            },
+          }
+        );
       } finally {
         setIsVerifying(false);
       }
@@ -176,16 +231,7 @@ export function useCheckoutReturn(options?: UseCheckoutReturnOptions) {
       const canceledBillingPeriod = rawBillingPeriod === 'yearly' ? 'yearly' : 'monthly';
       const canceledTrigger = sanitizePaywallTrigger(rawTrigger);
 
-      // Clear search params from URL
-      const url = new URL(window.location.href);
-      url.searchParams.delete('session_id');
-      url.searchParams.delete('canceled');
-      url.searchParams.delete('returnIntent');
-      url.searchParams.delete('trigger');
-      url.searchParams.delete('tier');
-      url.searchParams.delete('billing_period');
-      url.searchParams.delete('plan');
-      window.history.replaceState({}, '', url.pathname + url.search);
+      clearCheckoutQueryParams();
 
       clearPendingCheckoutIntent();
       toast.info(tBilling('checkoutCanceled'));

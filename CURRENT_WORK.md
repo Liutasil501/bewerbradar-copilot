@@ -131,13 +131,13 @@ Success signal:
 
 ### CW-2026-07-30-PHASE4-VALUE-TO-REVENUE
 
-- Status: `CHANGES REQUESTED`
+- Status: `READY FOR REVIEW`
 - Goal: Convert activated Free users at a meaningful paid-action boundary
   without losing their work, motivation or trust.
-- Implementation owner: Gemini
-- Reviewer: Codex
+- Implementation owner: Codex for the bounded F-403/F-404 correction pass
+- Reviewer: Gemini for the next independent review
 - Current owner: Gemini
-- Next recipient: Gemini for focused Phase 4 continuation and analytics corrections
+- Next recipient: Gemini for one independent review of the Codex correction candidate
 - Branch: `beta`
 - Planning commit: `cfaff22`
 - Implementation commit: `be7a5f2`
@@ -146,15 +146,16 @@ Success signal:
 - Third fixing commit: `dc876ea`
 - Fourth fixing commit: `0f2a853`
 - Review commit: `355c917`
+- Codex correction candidate: commit containing this handoff update
 - Handoff file:
   `docs/agent-handoffs/CW-2026-07-30-PHASE4-VALUE-TO-REVENUE.md`
 - Production impact: Pricing and paywall presentation, entitlement truth,
   Stripe checkout return continuity and revenue-funnel measurement.
-- Review result: `NO-GO` for candidate `0f2a853`
+- Review result: Codex corrected the reopened F-403 and F-404 paths; independent Gemini review pending
   - F-401 (inactive subscriptions / ownership / fail-closed prices): VERIFIED
   - F-402 (combined resume-limit and Premium AI purchase): VERIFIED
-  - F-403 (checkout continuation / template continuation / typed intents / draft lifecycle): REOPENED
-  - F-404 (truthful revenue analytics / server-side marker setting / completion mapping): REOPENED
+  - F-403 (checkout continuation / template continuation / typed intents / draft lifecycle): CORRECTED, AWAITING REVIEW
+  - F-404 (truthful revenue analytics / server-side marker setting / completion mapping): CORRECTED, AWAITING REVIEW
   - F-405 (strict runtime schemas / sanitized metadata / zero invalid action fallback): VERIFIED
   - F-406 (production Stripe verification): VERIFIED; continuation coverage remains incomplete
   - F-407 (unauthorized deletion of untracked folders): ACKNOWLEDGED

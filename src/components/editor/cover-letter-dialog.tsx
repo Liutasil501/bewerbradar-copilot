@@ -19,7 +19,7 @@ import { getAIHeaders } from '@/stores/settings-store';
 import { usePaywall } from '@/hooks/use-paywall';
 import { trackEvent } from '@/lib/analytics';
 import { saveFeatureDraft, getFeatureDraft, clearFeatureDraft } from '@/lib/billing/draft-preservation';
-import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
+import { consumePaidActionCompletion } from '@/lib/billing/completion';
 import { PricingModal } from '@/components/billing/pricing-modal';
 
 interface CoverLetterDialogProps {
@@ -92,10 +92,9 @@ export function CoverLetterDialog({ open, onOpenChange, resumeId }: CoverLetterD
           clearFeatureDraft('cover_letter');
 
           // F-404: Emit paid_action_completed ONLY when matching pending checkout intent exists
-          const resIntent = consumePendingCheckoutIntent('ai_feature', 'cover_letter');
-          if (resIntent.matched) {
-            const action = resIntent.trigger === 'trial_used' ? 'trial_used' : 'premium_ai_feature';
-            trackEvent('paid_action_completed', { locale, action });
+          const completion = consumePaidActionCompletion('ai_feature', 'cover_letter');
+          if (completion) {
+            trackEvent('paid_action_completed', { locale, action: completion });
           }
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : String(err);
