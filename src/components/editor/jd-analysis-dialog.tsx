@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { trackEvent } from '@/lib/analytics';
-import { saveFeatureDraft, getAndClearFeatureDraft, clearFeatureDraft } from '@/lib/billing/draft-preservation';
+import { saveFeatureDraft, getFeatureDraft, clearFeatureDraft } from '@/lib/billing/draft-preservation';
 import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
 import {
   Loader2, RotateCcw, Target, ShieldCheck, Lightbulb, AlertTriangle,
@@ -320,7 +320,7 @@ export function JdAnalysisDialog({ open, onOpenChange, resumeId }: JdAnalysisDia
 
   useEffect(() => {
     if (open) {
-      const draft = getAndClearFeatureDraft<{ jobDescription?: string }>('jd_analysis');
+      const draft = getFeatureDraft<{ jobDescription?: string }>('jd_analysis');
       if (draft?.jobDescription) {
         setJobDescription(draft.jobDescription);
       }
@@ -332,7 +332,6 @@ export function JdAnalysisDialog({ open, onOpenChange, resumeId }: JdAnalysisDia
   const handleAnalyze = () => {
     saveFeatureDraft('jd_analysis', { jobDescription });
     checkPaywall('premium', async () => {
-      clearFeatureDraft('jd_analysis');
       if (!jobDescription.trim()) return;
       setIsAnalyzing(true);
       setError('');
@@ -351,12 +350,15 @@ export function JdAnalysisDialog({ open, onOpenChange, resumeId }: JdAnalysisDia
 
         const data: JdAnalysisResult = await res.json();
         setResult(data);
+        clearFeatureDraft('jd_analysis');
         // Refresh history count
         fetchHistory();
 
         // F-404: Emit paid_action_completed ONLY when matching pending checkout intent exists
-        if (consumePendingCheckoutIntent('ai_feature', 'jd_analysis')) {
-          trackEvent('paid_action_completed', { locale, action: 'premium_ai_feature' });
+        const resIntent = consumePendingCheckoutIntent('ai_feature', 'jd_analysis');
+        if (resIntent.matched) {
+          const action = resIntent.trigger === 'trial_used' ? 'trial_used' : 'premium_ai_feature';
+          trackEvent('paid_action_completed', { locale, action });
         }
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);

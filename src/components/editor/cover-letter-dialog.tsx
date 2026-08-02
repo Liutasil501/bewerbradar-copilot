@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils';
 import { getAIHeaders } from '@/stores/settings-store';
 import { usePaywall } from '@/hooks/use-paywall';
 import { trackEvent } from '@/lib/analytics';
-import { saveFeatureDraft, getAndClearFeatureDraft, clearFeatureDraft } from '@/lib/billing/draft-preservation';
+import { saveFeatureDraft, getFeatureDraft, clearFeatureDraft } from '@/lib/billing/draft-preservation';
 import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
 import { PricingModal } from '@/components/billing/pricing-modal';
 
@@ -52,7 +52,7 @@ export function CoverLetterDialog({ open, onOpenChange, resumeId }: CoverLetterD
 
   useEffect(() => {
     if (open) {
-      const draft = getAndClearFeatureDraft<{ jobDescription?: string; tone?: Tone; language?: string }>('cover_letter');
+      const draft = getFeatureDraft<{ jobDescription?: string; tone?: Tone; language?: string }>('cover_letter');
       if (draft) {
         if (draft.jobDescription) setJobDescription(draft.jobDescription);
         if (draft.tone) setTone(draft.tone);
@@ -66,7 +66,6 @@ export function CoverLetterDialog({ open, onOpenChange, resumeId }: CoverLetterD
     checkPaywall(
       'premium',
       async () => {
-        clearFeatureDraft('cover_letter');
         if (!jobDescription.trim()) return;
         setIsGenerating(true);
         setError('');
@@ -90,10 +89,13 @@ export function CoverLetterDialog({ open, onOpenChange, resumeId }: CoverLetterD
 
           const data: CoverLetterResult = await res.json();
           setResult(data);
+          clearFeatureDraft('cover_letter');
 
           // F-404: Emit paid_action_completed ONLY when matching pending checkout intent exists
-          if (consumePendingCheckoutIntent('ai_feature', 'cover_letter')) {
-            trackEvent('paid_action_completed', { locale, action: 'premium_ai_feature' });
+          const resIntent = consumePendingCheckoutIntent('ai_feature', 'cover_letter');
+          if (resIntent.matched) {
+            const action = resIntent.trigger === 'trial_used' ? 'trial_used' : 'premium_ai_feature';
+            trackEvent('paid_action_completed', { locale, action });
           }
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : String(err);

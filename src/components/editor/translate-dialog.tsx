@@ -19,7 +19,7 @@ import { getAIHeaders } from '@/stores/settings-store';
 import { cn } from '@/lib/utils';
 import { usePaywall } from '@/hooks/use-paywall';
 import { trackEvent } from '@/lib/analytics';
-import { saveFeatureDraft, getAndClearFeatureDraft, clearFeatureDraft } from '@/lib/billing/draft-preservation';
+import { saveFeatureDraft, getFeatureDraft, clearFeatureDraft } from '@/lib/billing/draft-preservation';
 import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
 import { PricingModal } from '@/components/billing/pricing-modal';
 
@@ -91,10 +91,10 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
       setErrorMessage('');
       setProgress({ completed: 0, total: 0 });
       setFailedCount(0);
-      const draft = getAndClearFeatureDraft<{ targetLanguage?: string; mode?: TranslateMode }>('translate');
+      const draft = getFeatureDraft<{ targetLanguage?: string; mode?: 'full' | 'summary' | 'overwrite' | 'copy' }>('translate');
       if (draft) {
         if (draft.targetLanguage) setTargetLanguage(draft.targetLanguage);
-        if (draft.mode) setMode(draft.mode);
+        if (draft.mode) setMode(draft.mode as 'overwrite' | 'copy');
       } else {
         setMode('overwrite');
         const lang = useResumeStore.getState().currentResume?.language || 'en';
@@ -113,7 +113,6 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
     checkPaywall(
       'premium',
       async () => {
-        clearFeatureDraft('translate');
         setState('translating');
         setErrorMessage('');
         setProgress({ completed: 0, total: 0 });
@@ -168,10 +167,13 @@ export function TranslateDialog({ open, onOpenChange, resumeId }: TranslateDialo
               const failed = (data.failedCount as number) || 0;
               setFailedCount(failed);
               setState('success');
+              clearFeatureDraft('translate');
 
               // F-404: Emit paid_action_completed ONLY when matching pending checkout intent exists
-              if (consumePendingCheckoutIntent('ai_feature', 'translate')) {
-                trackEvent('paid_action_completed', { locale, action: 'premium_ai_feature' });
+              const resIntent = consumePendingCheckoutIntent('ai_feature', 'translate');
+              if (resIntent.matched) {
+                const action = resIntent.trigger === 'trial_used' ? 'trial_used' : 'premium_ai_feature';
+                trackEvent('paid_action_completed', { locale, action });
               }
 
               if (mode === 'copy' && data.newResumeId) {

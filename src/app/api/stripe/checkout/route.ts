@@ -7,6 +7,7 @@ import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import Stripe from 'stripe';
 import { CheckoutInputSchema } from '@/lib/billing/schema';
+import { resolveCheckoutReturnPath } from '@/lib/billing/return-resolver';
 
 export async function POST(req: NextRequest) {
   try {
@@ -124,13 +125,7 @@ export async function POST(req: NextRequest) {
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const targetLocale = locale === 'en' ? 'en' : 'de';
-    let returnPath = `/${targetLocale}/dashboard`;
-    if (returnIntent?.type && ['export', 'template', 'share', 'ai_feature'].includes(returnIntent.type) && returnIntent.resumeId) {
-      returnPath = `/${targetLocale}/editor/${encodeURIComponent(returnIntent.resumeId)}`;
-    } else if (returnIntent?.type === 'template' && returnIntent.templateId) {
-      returnPath = `/${targetLocale}/templates`;
-    }
+    const returnPath = resolveCheckoutReturnPath(locale, returnIntent);
 
     const sanitizedReturnIntent = returnIntent
       ? {

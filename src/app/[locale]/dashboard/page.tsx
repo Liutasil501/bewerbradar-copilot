@@ -33,6 +33,7 @@ import { PricingModal } from '@/components/billing/pricing-modal';
 import { ImportJsonDialog } from '@/components/dashboard/import-json-dialog';
 import { ShareDialog } from '@/components/editor/share-dialog';
 import { SettingsDialog } from '@/components/settings/settings-dialog';
+import { useSettingsStore } from '@/stores/settings-store';
 import { TourOverlay, type TourStepConfig } from '@/components/tour/tour-overlay';
 import { useTourStore, hasCompletedTour } from '@/stores/tour-store';
 import { cn } from '@/lib/utils';
@@ -99,7 +100,8 @@ export default function DashboardPage() {
   const startTour = useTourStore((s) => s.startTour);
   const tBilling = useTranslations('billing');
   const { checkPaywall, showPaywall, setShowPaywall, requiredTier, currentPlan, paywallDescription } = usePaywall();
-  useCheckoutReturn();
+  const aiApiKey = useSettingsStore((s) => s.aiApiKey);
+  useCheckoutReturn({ onDuplicateSuccess: fetchResumes });
 
   const handleCreateAction = <T,>(
     action: () => T | Promise<T>,
@@ -214,11 +216,36 @@ export default function DashboardPage() {
             data-tour="dash-ai-generate"
             variant="outline"
             onClick={() => {
-              handleCreateAction(() => {
+              const isAtResumeLimit = currentPlan === 'free' && resumes.length >= MAX_FREE_RESUMES;
+              if (isAtResumeLimit) {
+                if (aiApiKey) {
+                  checkPaywall('pro', () => {
+                    openModal('generate-resume');
+                  }, {
+                    trigger: 'resume_limit',
+                    returnIntent: { type: 'ai_feature', featureKey: 'generate_resume' },
+                    description: tBilling('limitResumesDesc'),
+                  });
+                } else {
+                  checkPaywall('premium', () => {
+                    openModal('generate-resume');
+                  }, {
+                    allowByok: true,
+                    trigger: 'premium_ai_feature',
+                    featureKey: 'generate_resume',
+                    returnIntent: { type: 'ai_feature', featureKey: 'generate_resume' },
+                  });
+                }
+              } else {
                 checkPaywall('premium', () => {
                   openModal('generate-resume');
-                }, { allowByok: true, trigger: 'premium_ai_feature', featureKey: 'generate_resume', returnIntent: { type: 'ai_feature', featureKey: 'generate_resume' } });
-              }, { type: 'ai_feature', featureKey: 'generate_resume' });
+                }, {
+                  allowByok: true,
+                  trigger: 'premium_ai_feature',
+                  featureKey: 'generate_resume',
+                  returnIntent: { type: 'ai_feature', featureKey: 'generate_resume' },
+                });
+              }
             }}
             className="cursor-pointer gap-2"
           >

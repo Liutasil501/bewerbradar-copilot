@@ -12,6 +12,7 @@ import {
   clearPendingCheckoutIntent,
 } from './pending-intent';
 import { verifyStripeSubscriptionSession } from './verify';
+import { resolveCheckoutReturnPath } from './return-resolver';
 import { STRIPE_CONFIG } from '@/lib/stripe/config';
 
 // Mock sessionStorage for Node environment test runner
@@ -69,7 +70,7 @@ describe('Billing Schema, Sanitizers & Pending Intent Logic (F-405, F-404)', () 
     assert.strictEqual(CheckoutInputSchema.safeParse(invalidTier).success, false);
   });
 
-  it('matches pending checkout intents accurately and prevents false events (F-404)', () => {
+  it('matches pending checkout intents accurately and returns stored trigger and intent (F-404)', () => {
     clearPendingCheckoutIntent();
 
     setPendingCheckoutIntent(
@@ -78,16 +79,81 @@ describe('Billing Schema, Sanitizers & Pending Intent Logic (F-405, F-404)', () 
     );
 
     // Mismatched action type should fail and NOT consume
-    assert.strictEqual(consumePendingCheckoutIntent('export'), false);
+    assert.strictEqual(consumePendingCheckoutIntent('export').matched, false);
 
     // Mismatched feature key should fail and NOT consume
-    assert.strictEqual(consumePendingCheckoutIntent('ai_feature', 'grammar_check'), false);
+    assert.strictEqual(consumePendingCheckoutIntent('ai_feature', 'grammar_check').matched, false);
 
-    // Matching action type AND feature key should succeed and consume
-    assert.strictEqual(consumePendingCheckoutIntent('ai_feature', 'cover_letter'), true);
+    // Matching action type AND feature key should succeed and return stored trigger
+    const res = consumePendingCheckoutIntent('ai_feature', 'cover_letter');
+    assert.strictEqual(res.matched, true);
+    assert.strictEqual(res.trigger, 'premium_ai_feature');
+    assert.strictEqual(res.intent?.type, 'ai_feature');
 
     // Subsequent calls should fail because intent was already consumed
-    assert.strictEqual(consumePendingCheckoutIntent('ai_feature', 'cover_letter'), false);
+    assert.strictEqual(consumePendingCheckoutIntent('ai_feature', 'cover_letter').matched, false);
+  });
+});
+
+describe('Checkout Return Destination Resolver (F-403, F-406)', () => {
+  it('routes returns with resumeId directly to editor', () => {
+    assert.strictEqual(
+      resolveCheckoutReturnPath('de', { type: 'export', format: 'pdf', resumeId: 'res_999' }),
+      '/de/editor/res_999'
+    );
+    assert.strictEqual(
+      resolveCheckoutReturnPath('en', { type: 'ai_feature', featureKey: 'cover_letter', resumeId: 'res_888' }),
+      '/en/editor/res_888'
+    );
+  });
+
+  it('routes template gallery returns and dashboard intents through dashboard for verification', () => {
+    assert.strictEqual(
+      resolveCheckoutReturnPath('de', { type: 'template', templateId: 'modern' }),
+      '/de/dashboard'
+    );
+    assert.strictEqual(
+      resolveCheckoutReturnPath('en', { type: 'dashboard_create' }),
+      '/en/dashboard'
+    );
+    assert.strictEqual(
+      resolveCheckoutReturnPath('de', { type: 'dashboard_import' }),
+      '/de/dashboard'
+    );
+    assert.strictEqual(
+      resolveCheckoutReturnPath('de', { type: 'dashboard_duplicate', resumeId: 'res_123' }),
+      '/de/dashboard'
+    );
+  });
+});
+
+describe('Truthful Event & Continuation Mapping (F-404)', () => {
+  it('maps import completion truthfully based on trigger (trial_used vs resume_limit)', () => {
+    clearPendingCheckoutIntent();
+
+    // Case 1: Trigger was trial_used
+    setPendingCheckoutIntent({ type: 'dashboard_import' }, 'trial_used');
+    const res1 = consumePendingCheckoutIntent('dashboard_import');
+    assert.strictEqual(res1.matched, true);
+    const action1 = res1.trigger === 'trial_used' ? 'trial_used' : 'resume_limit';
+    assert.strictEqual(action1, 'trial_used');
+
+    // Case 2: Trigger was resume_limit
+    setPendingCheckoutIntent({ type: 'dashboard_import' }, 'resume_limit');
+    const res2 = consumePendingCheckoutIntent('dashboard_import');
+    assert.strictEqual(res2.matched, true);
+    const action2 = res2.trigger === 'trial_used' ? 'trial_used' : 'resume_limit';
+    assert.strictEqual(action2, 'resume_limit');
+  });
+
+  it('maps duplicate completion truthfully based on stored trigger', () => {
+    clearPendingCheckoutIntent();
+
+    setPendingCheckoutIntent({ type: 'dashboard_duplicate', resumeId: 'res_123' }, 'resume_limit');
+    const res = consumePendingCheckoutIntent('dashboard_duplicate');
+    assert.strictEqual(res.matched, true);
+    const action = res.trigger === 'trial_used' ? 'trial_used' : 'resume_limit';
+    assert.strictEqual(action, 'resume_limit');
   });
 });
 

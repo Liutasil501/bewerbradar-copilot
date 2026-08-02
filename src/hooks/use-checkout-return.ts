@@ -12,7 +12,11 @@ import { sanitizePaywallTrigger, type ReturnIntent } from '@/lib/billing/schema'
 import { setPendingCheckoutIntent, consumePendingCheckoutIntent, clearPendingCheckoutIntent } from '@/lib/billing/pending-intent';
 import { useRouter } from '@/i18n/routing';
 
-export function useCheckoutReturn() {
+export interface UseCheckoutReturnOptions {
+  onDuplicateSuccess?: () => void | Promise<void>;
+}
+
+export function useCheckoutReturn(options?: UseCheckoutReturnOptions) {
   const searchParams = useSearchParams();
   const locale = useLocale();
   const router = useRouter();
@@ -76,7 +80,8 @@ export function useCheckoutReturn() {
               const currentResume = useResumeStore.getState().currentResume;
               if (currentResume && returnIntent.templateId) {
                 useResumeStore.getState().setTemplate(returnIntent.templateId);
-                if (consumePendingCheckoutIntent('template')) {
+                const resIntent = consumePendingCheckoutIntent('template');
+                if (resIntent.matched) {
                   trackEvent('paid_action_completed', { locale, action: 'paid_template' });
                 }
               } else if (returnIntent.templateId) {
@@ -98,8 +103,32 @@ export function useCheckoutReturn() {
               openModal('import');
             } else if (actionType === 'dashboard_create') {
               openModal('create-resume');
-            } else if (actionType === 'dashboard_duplicate') {
-              toast.info(tBilling('checkoutSuccess'));
+            } else if (actionType === 'dashboard_duplicate' && returnIntent.resumeId) {
+              try {
+                const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
+                const dupRes = await fetch(`/api/resume/${returnIntent.resumeId}/duplicate`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    ...(fingerprint ? { 'x-fingerprint': fingerprint } : {}),
+                  },
+                });
+                if (dupRes.ok) {
+                  const resIntent = consumePendingCheckoutIntent('dashboard_duplicate');
+                  if (resIntent.matched) {
+                    const action = resIntent.trigger === 'trial_used' ? 'trial_used' : 'resume_limit';
+                    trackEvent('paid_action_completed', { locale, action });
+                  }
+                  if (options?.onDuplicateSuccess) {
+                    await options.onDuplicateSuccess();
+                  }
+                } else {
+                  const errData = await dupRes.json().catch(() => ({}));
+                  toast.error(errData.error || 'Failed to duplicate resume');
+                }
+              } catch (e) {
+                console.error('Failed to execute post-checkout duplicate:', e);
+              }
             }
           }
         } else {
@@ -124,7 +153,7 @@ export function useCheckoutReturn() {
         setIsVerifying(false);
       }
     },
-    [locale, refreshSubscription, openModal, setPreferredExportFormat, router, tBilling]
+    [locale, refreshSubscription, openModal, setPreferredExportFormat, router, tBilling, options]
   );
 
   useEffect(() => {

@@ -9,6 +9,12 @@ interface StoredPendingIntent {
   createdAt: number;
 }
 
+export interface ConsumeIntentResult {
+  matched: boolean;
+  trigger?: PaywallTrigger;
+  intent?: ReturnIntent;
+}
+
 export function setPendingCheckoutIntent(intent: ReturnIntent, trigger: PaywallTrigger): void {
   if (typeof sessionStorage === 'undefined') return;
   try {
@@ -26,37 +32,37 @@ export function setPendingCheckoutIntent(intent: ReturnIntent, trigger: PaywallT
 export function consumePendingCheckoutIntent(
   expectedAction: ReturnIntentType,
   expectedFeatureKey?: string
-): boolean {
-  if (typeof sessionStorage === 'undefined') return false;
+): ConsumeIntentResult {
+  if (typeof sessionStorage === 'undefined') return { matched: false };
   try {
     const raw = sessionStorage.getItem(PENDING_INTENT_KEY);
-    if (!raw) return false;
+    if (!raw) return { matched: false };
 
     const parsed: StoredPendingIntent = JSON.parse(raw);
     const isExpired = Date.now() - parsed.createdAt > INTENT_TTL_MS;
 
     if (isExpired) {
       sessionStorage.removeItem(PENDING_INTENT_KEY);
-      return false;
+      return { matched: false };
     }
 
-    const { intent } = parsed;
+    const { intent, trigger } = parsed;
     const actionMatches = intent.type === expectedAction;
     const featureMatches = !expectedFeatureKey || intent.featureKey === expectedFeatureKey;
 
     if (actionMatches && featureMatches) {
       sessionStorage.removeItem(PENDING_INTENT_KEY);
-      return true;
+      return { matched: true, trigger, intent };
     }
 
-    return false;
+    return { matched: false };
   } catch {
     try {
       sessionStorage.removeItem(PENDING_INTENT_KEY);
     } catch {
       // ignore
     }
-    return false;
+    return { matched: false };
   }
 }
 

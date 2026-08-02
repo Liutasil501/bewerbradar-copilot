@@ -22,20 +22,6 @@ export function getFeatureDraft<T>(featureKey: string): T | null {
   }
 }
 
-export function getAndClearFeatureDraft<T>(featureKey: string): T | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const key = `${DRAFT_PREFIX}${featureKey}`;
-    const raw = sessionStorage.getItem(key);
-    if (!raw) return null;
-
-    sessionStorage.removeItem(key);
-    return JSON.parse(raw) as T;
-  } catch {
-    return null;
-  }
-}
-
 export function clearFeatureDraft(featureKey: string): void {
   if (typeof window === 'undefined') return;
   try {

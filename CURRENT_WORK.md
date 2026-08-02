@@ -131,31 +131,32 @@ Success signal:
 
 ### CW-2026-07-30-PHASE4-VALUE-TO-REVENUE
 
-- Status: `CHANGES REQUESTED`
+- Status: `READY FOR FINAL REVIEW`
 - Goal: Convert activated Free users at a meaningful paid-action boundary
   without losing their work, motivation or trust.
 - Implementation owner: Gemini
 - Reviewer: Codex
-- Current owner: Gemini
-- Next recipient: Gemini for fourth correction
+- Current owner: Codex
+- Next recipient: Codex for final independent review
 - Branch: `beta`
 - Planning commit: `cfaff22`
 - Implementation commit: `be7a5f2`
 - First fixing commit: `cb47ff9`
 - Second fixing commit: `46ef2de`
 - Third fixing commit: `dc876ea`
-- Review commit: `08ae68d`
+- Fourth fixing commit: `5623a26`
+- Review commit: `355c917`
 - Handoff file:
   `docs/agent-handoffs/CW-2026-07-30-PHASE4-VALUE-TO-REVENUE.md`
 - Production impact: Pricing and paywall presentation, entitlement truth,
   Stripe checkout return continuity and revenue-funnel measurement.
-- Review result: `NO-GO`
-  - F-401 (inactive subscriptions / ownership / fail-closed prices): VERIFIED & TESTED AGAINST REAL LOGIC
-  - F-402 (Premium AI unlock presentation / Pro disclaimer / BYOK gating): REOPENED FOR RESUME-LIMIT AI FLOW
-  - F-403 (checkout continuation / template continuation / typed intents / draft lifecycle): REOPENED
-  - F-404 (truthful revenue analytics / server-side marker setting / template completion / invalid action drop): REOPENED
-  - F-405 (strict runtime schemas / sanitized metadata / zero invalid action fallback): FIXED
-  - F-406 (reproducible verification evidence / extracted production verification function / 10/10 tests): VERIFIED
+- Review result: `READY FOR FINAL REVIEW`
+  - F-401 (inactive subscriptions / ownership / fail-closed prices): VERIFIED
+  - F-402 (Premium AI unlock presentation / Pro disclaimer / BYOK gating): FIXED
+  - F-403 (checkout continuation / template continuation / typed intents / draft lifecycle): FIXED
+  - F-404 (truthful revenue analytics / server-side marker setting / template completion / invalid action drop): FIXED
+  - F-405 (strict runtime schemas / sanitized metadata / zero invalid action fallback): VERIFIED
+  - F-406 (reproducible verification evidence / extracted production verification function / 14/14 tests): VERIFIED & EXPANDED
   - F-407 (unauthorized deletion of untracked folders): ACKNOWLEDGED
 - Deployment required: Yes after independent review and explicit authorization.
 - Deployment status: `NOT DEPLOYED`

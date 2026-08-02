@@ -22,7 +22,7 @@ import { templateLabelsMap } from '@/lib/template-labels';
 import { getAIHeaders } from '@/stores/settings-store';
 import { usePaywall } from '@/hooks/use-paywall';
 import { trackEvent } from '@/lib/analytics';
-import { saveFeatureDraft, getAndClearFeatureDraft, clearFeatureDraft } from '@/lib/billing/draft-preservation';
+import { saveFeatureDraft, getFeatureDraft, clearFeatureDraft } from '@/lib/billing/draft-preservation';
 import { consumePendingCheckoutIntent } from '@/lib/billing/pending-intent';
 
 interface GenerateResumeDialogProps {
@@ -54,7 +54,7 @@ export function GenerateResumeDialog({ open, onOpenChange, onCreated }: Generate
 
   useEffect(() => {
     if (open) {
-      const draft = getAndClearFeatureDraft<{
+      const draft = getFeatureDraft<{
         jobTitle?: string;
         skills?: string;
         industry?: string;
@@ -85,7 +85,6 @@ export function GenerateResumeDialog({ open, onOpenChange, onCreated }: Generate
     checkPaywall(
       'premium',
       async () => {
-        clearFeatureDraft('generate_resume');
         if (!jobTitle.trim()) return;
         setState('generating');
         setError('');
@@ -120,11 +119,14 @@ export function GenerateResumeDialog({ open, onOpenChange, onCreated }: Generate
           const data = await res.json();
           setResult(data);
           setState('success');
+          clearFeatureDraft('generate_resume');
           onCreated?.();
 
           // F-404: Emit paid_action_completed ONLY when matching pending checkout intent exists
-          if (consumePendingCheckoutIntent('ai_feature', 'generate_resume')) {
-            trackEvent('paid_action_completed', { locale, action: 'premium_ai_feature' });
+          const resIntent = consumePendingCheckoutIntent('ai_feature', 'generate_resume');
+          if (resIntent.matched) {
+            const action = resIntent.trigger === 'trial_used' ? 'trial_used' : 'premium_ai_feature';
+            trackEvent('paid_action_completed', { locale, action });
           }
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : String(err);

@@ -274,7 +274,8 @@ export default function TemplatesPage() {
       }));
       const resume = await createResume({ template, sections });
       if (resume) {
-        if (consumePendingCheckoutIntent('template')) {
+        const resIntent = consumePendingCheckoutIntent('template');
+        if (resIntent.matched) {
           trackEvent('paid_action_completed', { locale, action: 'paid_template' });
         }
         router.push(`/editor/${resume.id}`);
