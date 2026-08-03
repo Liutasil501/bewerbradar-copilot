@@ -1,15 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Check, Sparkles, Wand2, ArrowRight } from 'lucide-react';
-import { useTranslations, useLocale } from 'next-intl';
-import { useUIStore } from '@/stores/ui-store';
-import { cn } from '@/lib/utils';
+import { useEffect, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
+import { ArrowRight, Check, KeyRound, Sparkles, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { trackEvent } from '@/lib/analytics';
 import type { PaywallTrigger } from '@/lib/billing/schema';
+import { cn } from '@/lib/utils';
+import { useUIStore } from '@/stores/ui-store';
 
 interface PricingModalProps {
   open: boolean;
@@ -19,6 +25,22 @@ interface PricingModalProps {
   analyticsTrigger?: PaywallTrigger;
 }
 
+type BillingCycle = 'monthly' | 'yearly';
+type PaidTier = 'pro' | 'premium';
+
+const PRICES = {
+  pro: {
+    monthly: 9.99,
+    yearlyTotal: 99.96,
+    yearlyMonthlyEquivalent: 8.33,
+  },
+  premium: {
+    monthly: 19.99,
+    yearlyTotal: 199.92,
+    yearlyMonthlyEquivalent: 16.66,
+  },
+} as const;
+
 export function PricingModal({
   open,
   onOpenChange,
@@ -26,17 +48,32 @@ export function PricingModal({
   descriptionOverride,
   analyticsTrigger,
 }: PricingModalProps) {
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
-  const [isLoading, setIsLoading] = useState<string | null>(null);
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
+  const [isLoading, setIsLoading] = useState<PaidTier | null>(null);
   const t = useTranslations('billing');
   const locale = useLocale();
-  const openModal = useUIStore((s) => s.openModal);
-  const paywallContext = useUIStore((s) => s.paywallContext);
+  const openModal = useUIStore((state) => state.openModal);
+  const paywallContext = useUIStore((state) => state.paywallContext);
 
   const effectiveTrigger: PaywallTrigger =
-    paywallContext?.trigger ?? analyticsTrigger ?? (requiredTier === 'premium' ? 'premium_ai_feature' : 'unknown');
+    paywallContext?.trigger ??
+    analyticsTrigger ??
+    (requiredTier === 'premium' ? 'premium_ai_feature' : 'unknown');
 
-  const isPremiumDominant = effectiveTrigger === 'premium_ai_feature' || effectiveTrigger === 'premium_feature' || requiredTier === 'premium';
+  const isPremiumDominant =
+    effectiveTrigger === 'premium_ai_feature' ||
+    effectiveTrigger === 'premium_feature' ||
+    requiredTier === 'premium';
+
+  const dominantTier: PaidTier = isPremiumDominant ? 'premium' : 'pro';
+  const secondaryTier: PaidTier = isPremiumDominant ? 'pro' : 'premium';
+
+  const currencyFormatter = new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
   useEffect(() => {
     if (open) {
@@ -44,7 +81,7 @@ export function PricingModal({
     }
   }, [open, effectiveTrigger, locale]);
 
-  const handleCheckout = async (tier: 'pro' | 'premium') => {
+  const handleCheckout = async (tier: PaidTier) => {
     setIsLoading(tier);
     trackEvent('checkout_started', {
       locale,
@@ -52,10 +89,12 @@ export function PricingModal({
       billing_period: billingCycle,
       trigger: effectiveTrigger,
     });
+
     try {
-      const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
+      const fingerprint =
+        typeof window !== 'undefined' ? localStorage.getItem('br_fingerprint') : null;
       const returnIntent = paywallContext?.returnIntent;
-      const res = await fetch('/api/stripe/checkout', {
+      const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -69,35 +108,21 @@ export function PricingModal({
           locale,
         }),
       });
-      const data = await res.json();
+      const data = await response.json();
+
       if (data.url) {
         window.location.href = data.url;
       } else {
-        toast.error(data.error || 'Checkout failed');
+        toast.error(data.error || t('checkoutError'));
       }
     } catch {
-      toast.error('An error occurred during checkout');
+      toast.error(t('checkoutError'));
     } finally {
       setIsLoading(null);
     }
   };
 
-  const proMonthly = '9.99€';
-  const proYearlyTotal = '99.96€';
-  const proYearlyMonthlyEquiv = '8.33€';
-
-  const premiumMonthly = '19.99€';
-  const premiumYearlyTotal = '199.92€';
-  const premiumYearlyMonthlyEquiv = '16.66€';
-
-  const getModalHeader = () => {
-    if (descriptionOverride) {
-      return {
-        title: requiredTier === 'premium' ? t('titlePremium') : t('titlePro'),
-        description: descriptionOverride,
-      };
-    }
-
+  const getContextHeader = () => {
     switch (effectiveTrigger) {
       case 'export_paid_format':
         return { title: t('titleExport'), description: t('descExport') };
@@ -121,9 +146,8 @@ export function PricingModal({
   };
 
   const getProCtaText = () => {
-    if (isPremiumDominant) {
-      return t('ctaProNoAi');
-    }
+    if (isPremiumDominant) return t('ctaAlternativePro');
+
     switch (effectiveTrigger) {
       case 'export_paid_format':
         return t('ctaExportPro');
@@ -140,37 +164,169 @@ export function PricingModal({
     }
   };
 
-  const getPremiumCtaText = () => {
-    if (isPremiumDominant) {
-      return t('ctaAiPremium');
-    }
-    return t('ctaGenericPremium');
+  const getPremiumCtaText = () =>
+    isPremiumDominant ? t('ctaAiPremium') : t('ctaAlternativePremium');
+
+  const header = getContextHeader();
+  const features: Record<PaidTier, string[]> = {
+    pro: [t('proFeat1'), t('proFeat2'), t('proFeat3'), t('proFeat4')],
+    premium: [
+      t('premiumFeat1'),
+      t('premiumFeat2'),
+      t('premiumFeat3'),
+      t('premiumFeat4'),
+      t('premiumFeat5'),
+    ],
   };
 
-  const headerInfo = getModalHeader();
+  const renderPlan = (tier: PaidTier, isDominant: boolean) => {
+    const price = PRICES[tier];
+    const displayPrice =
+      billingCycle === 'yearly' ? price.yearlyMonthlyEquivalent : price.monthly;
+    const isPremium = tier === 'premium';
+    const cta = isPremium ? getPremiumCtaText() : getProCtaText();
+
+    return (
+      <section
+        key={tier}
+        className={cn(
+          'relative flex min-w-0 flex-col rounded-2xl border p-5 transition-colors sm:p-6',
+          isDominant
+            ? isPremium
+              ? 'border-brand/40 bg-gradient-to-b from-emerald-50/90 to-white shadow-[0_18px_50px_-30px_rgba(5,150,105,0.65)] dark:from-emerald-950/35 dark:to-zinc-900'
+              : 'border-zinc-300 bg-white shadow-[0_18px_50px_-32px_rgba(15,23,42,0.5)] dark:border-zinc-700 dark:bg-zinc-900'
+            : 'border-zinc-200 bg-zinc-50/70 dark:border-zinc-800 dark:bg-zinc-900/45'
+        )}
+      >
+        <p
+          className={cn(
+            'mb-4 text-[11px] font-bold uppercase tracking-[0.14em]',
+            isDominant ? 'text-brand' : 'text-zinc-400 dark:text-zinc-500'
+          )}
+        >
+          {isDominant
+            ? isPremium
+              ? t('recommendedPremium')
+              : t('recommendedPro')
+            : t('alternativePlan')}
+        </p>
+
+        <div>
+          <div className="flex items-center gap-2">
+            <h3
+              className={cn(
+                'text-2xl font-bold tracking-tight',
+                isPremium && isDominant
+                  ? 'text-brand'
+                  : 'text-zinc-950 dark:text-white'
+              )}
+            >
+              {isPremium ? t('premiumTitle') : t('proTitle')}
+            </h3>
+            {isPremium && isDominant && <Sparkles className="h-5 w-5 text-brand" />}
+          </div>
+          <p className="mt-2 min-h-12 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+            {isPremium ? t('premiumDesc') : t('proDesc')}
+          </p>
+        </div>
+
+        <div className="mt-5">
+          <div className="flex flex-wrap items-end gap-x-2 gap-y-1">
+            <span className="text-[34px] font-extrabold leading-none tracking-[-0.04em] text-zinc-950 dark:text-white">
+              {currencyFormatter.format(displayPrice)}
+            </span>
+            <span className="pb-0.5 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+              {t('perMonth')}
+            </span>
+          </div>
+          <p className="mt-2 min-h-5 text-xs text-zinc-500 dark:text-zinc-400">
+            {billingCycle === 'yearly'
+              ? t('yearlyChargedNote', {
+                  amount: currencyFormatter.format(price.yearlyTotal),
+                })
+              : t('monthlyBillingNote')}
+          </p>
+        </div>
+
+        <ul className="my-6 flex-1 space-y-3 text-sm text-zinc-700 dark:text-zinc-300">
+          {features[tier].map((feature, index) => (
+            <li key={feature} className="flex items-start gap-2.5">
+              <span
+                className={cn(
+                  'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full',
+                  isPremium && index > 0
+                    ? 'bg-brand/10 text-brand'
+                    : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                )}
+              >
+                {isPremium && index > 0 ? (
+                  <Wand2 className="h-3.5 w-3.5" />
+                ) : (
+                  <Check className="h-3.5 w-3.5" />
+                )}
+              </span>
+              <span>{feature}</span>
+            </li>
+          ))}
+        </ul>
+
+        <Button
+          type="button"
+          onClick={() => handleCheckout(tier)}
+          disabled={isLoading !== null}
+          className={cn(
+            'min-h-12 w-full cursor-pointer justify-between gap-3 rounded-xl px-4 py-3 text-sm font-semibold whitespace-normal',
+            isDominant
+              ? isPremium
+                ? 'bg-brand text-white shadow-lg shadow-brand/20 hover:bg-brand-hover'
+                : 'bg-zinc-950 text-white shadow-lg shadow-zinc-900/15 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200'
+              : 'bg-zinc-200 text-zinc-900 hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700'
+          )}
+        >
+          <span className="min-w-0 text-left">
+            {isLoading === tier ? t('loading') : cta}
+          </span>
+          <ArrowRight className="h-4 w-4 shrink-0" />
+        </Button>
+
+        {isDominant && (
+          <p className="mt-3 text-center text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+            {effectiveTrigger === 'export_paid_format'
+              ? t('continuityNoteExport')
+              : t('continuityNoteGeneral')}
+          </p>
+        )}
+      </section>
+    );
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl p-0 overflow-hidden bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800">
-        <div className="p-8 pb-4 text-center">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">
-              {headerInfo.title}
-            </DialogTitle>
-            <DialogDescription className="mt-2 text-sm sm:text-base text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-              {headerInfo.description}
-            </DialogDescription>
-          </DialogHeader>
+      <DialogContent className="max-h-[calc(100dvh-1rem)] max-w-[calc(100%-1rem)] overflow-y-auto rounded-2xl border-zinc-200 bg-white p-0 shadow-2xl sm:max-w-[860px] dark:border-zinc-800 dark:bg-zinc-950">
+        <div className="border-b border-zinc-100 px-5 pb-5 pt-7 dark:border-zinc-800 sm:px-8 sm:pb-7 sm:pt-8">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+            <DialogHeader className="max-w-[540px] text-left">
+              <DialogTitle className="text-[28px] font-bold leading-[1.12] tracking-[-0.035em] text-zinc-950 dark:text-white sm:text-[34px]">
+                {header.title}
+              </DialogTitle>
+              <DialogDescription className="mt-3 text-[15px] leading-6 text-zinc-600 dark:text-zinc-400">
+                {descriptionOverride || header.description}
+              </DialogDescription>
+            </DialogHeader>
 
-          {/* Billing Cycle Switcher */}
-          <div className="mt-6 flex justify-center">
-            <div className="relative flex rounded-full bg-zinc-200 dark:bg-zinc-800 p-1">
+            <div
+              className="grid w-full shrink-0 grid-cols-2 rounded-xl bg-zinc-100 p-1 dark:bg-zinc-900 sm:w-[282px]"
+              aria-label={t('billingCycleLabel')}
+            >
               <button
                 type="button"
                 onClick={() => setBillingCycle('monthly')}
+                aria-pressed={billingCycle === 'monthly'}
                 className={cn(
-                  "relative w-32 rounded-full py-2 text-xs font-semibold transition-colors cursor-pointer",
-                  billingCycle === 'monthly' ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-white" : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                  'min-h-11 rounded-lg px-3 text-xs font-semibold transition-colors',
+                  billingCycle === 'monthly'
+                    ? 'bg-white text-zinc-950 shadow-sm dark:bg-zinc-800 dark:text-white'
+                    : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
                 )}
               >
                 {t('monthly')}
@@ -178,157 +334,43 @@ export function PricingModal({
               <button
                 type="button"
                 onClick={() => setBillingCycle('yearly')}
+                aria-pressed={billingCycle === 'yearly'}
                 className={cn(
-                  "relative w-32 rounded-full py-2 text-xs font-semibold transition-colors cursor-pointer",
-                  billingCycle === 'yearly' ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-white" : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                  'min-h-11 rounded-lg px-2 py-1 text-xs font-semibold transition-colors',
+                  billingCycle === 'yearly'
+                    ? 'bg-white text-zinc-950 shadow-sm dark:bg-zinc-800 dark:text-white'
+                    : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
                 )}
               >
-                {t('yearly')}
+                <span className="block">{t('yearly')}</span>
+                <span className="block text-[10px] font-medium text-brand">
+                  {t('save2MonthsShort')}
+                </span>
               </button>
-              {/* Truthful Discount badge */}
-              <div className="absolute -right-6 -top-3.5 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-sm">
-                {t('save2Months')}
-              </div>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-          {/* PRO TIER */}
-          <div className={cn(
-            "flex flex-col p-8 border-t md:border-t-0 md:border-r border-zinc-200 dark:border-zinc-800 transition-all",
-            !isPremiumDominant ? "bg-white dark:bg-zinc-900 ring-2 ring-brand/30 dark:ring-brand/40" : "bg-zinc-50/50 dark:bg-zinc-900/30"
-          )}>
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-zinc-900 dark:text-white">{t('proTitle')}</h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{t('proDesc')}</p>
-              </div>
-              <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-medium text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                {t('positioningPro')}
-              </span>
-            </div>
-
-            <div className="mb-6">
-              <div className="flex items-baseline gap-x-2">
-                <span className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
-                  {billingCycle === 'yearly' ? proYearlyMonthlyEquiv : proMonthly}
-                </span>
-                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{t('perMonth')}</span>
-              </div>
-              <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
-                {billingCycle === 'yearly'
-                  ? t('yearlyChargedNote', { amount: proYearlyTotal })
-                  : t('monthly')}
-              </p>
-            </div>
-
-            <ul className="mb-6 flex-1 space-y-3.5 text-xs text-zinc-600 dark:text-zinc-400">
-              <li className="flex gap-x-2.5"><Check className="h-4 w-4 flex-none text-brand" /> {t('proFeat1')}</li>
-              <li className="flex gap-x-2.5"><Check className="h-4 w-4 flex-none text-brand" /> {t('proFeat2')}</li>
-              <li className="flex gap-x-2.5"><Check className="h-4 w-4 flex-none text-brand" /> {t('proFeat3')}</li>
-              <li className="flex gap-x-2.5"><Check className="h-4 w-4 flex-none text-brand" /> {t('proFeat4')}</li>
-            </ul>
-
-            {/* F-402 Truthful Disclaimer when Pro is viewed during a Premium AI paywall */}
-            {isPremiumDominant && (
-              <div className="mb-4 rounded-lg bg-amber-50 p-2.5 text-[11px] text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-900">
-                {t('proNoAiNotice')}
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Button
-                type="button"
-                className={cn(
-                  "w-full h-11 text-xs font-semibold cursor-pointer gap-2 transition-all",
-                  !isPremiumDominant
-                    ? "bg-brand text-white shadow-md shadow-brand/20 hover:bg-brand-hover"
-                    : "border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700"
-                )}
-                onClick={() => handleCheckout('pro')}
-                disabled={isLoading !== null}
-              >
-                {isLoading === 'pro' ? t('loading') : getProCtaText()}
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Button>
-              <p className="text-center text-[11px] text-zinc-400 dark:text-zinc-500">
-                {effectiveTrigger === 'export_paid_format'
-                  ? t('continuityNoteExport')
-                  : t('continuityNoteGeneral')}
-              </p>
-            </div>
-          </div>
-
-          {/* PREMIUM TIER */}
-          <div className={cn(
-            "relative flex flex-col p-8 border-t md:border-t-0 border-zinc-200 dark:border-zinc-800 transition-all",
-            isPremiumDominant ? "bg-white dark:bg-zinc-900 ring-2 ring-brand/30 dark:ring-brand/40" : "bg-zinc-50/50 dark:bg-zinc-900/30"
-          )}>
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-brand dark:text-brand-light">{t('premiumTitle')}</h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{t('premiumDesc')}</p>
-              </div>
-              <span className="rounded-full bg-brand/10 px-2.5 py-1 text-[11px] font-medium text-brand dark:bg-brand/20 dark:text-brand-light border border-brand/20">
-                <Sparkles className="inline mr-1 h-3 w-3" />
-                {t('positioningPremium')}
-              </span>
-            </div>
-
-            <div className="mb-6">
-              <div className="flex items-baseline gap-x-2">
-                <span className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
-                  {billingCycle === 'yearly' ? premiumYearlyMonthlyEquiv : premiumMonthly}
-                </span>
-                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{t('perMonth')}</span>
-              </div>
-              <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
-                {billingCycle === 'yearly'
-                  ? t('yearlyChargedNote', { amount: premiumYearlyTotal })
-                  : t('monthly')}
-              </p>
-            </div>
-
-            <ul className="mb-8 flex-1 space-y-3.5 text-xs text-zinc-600 dark:text-zinc-400">
-              <li className="flex gap-x-2.5"><Check className="h-4 w-4 flex-none text-brand" /> {t('premiumFeat1')}</li>
-              <li className="flex gap-x-2.5 font-medium text-zinc-900 dark:text-zinc-200"><Wand2 className="h-4 w-4 flex-none text-brand" /> {t('premiumFeat2')}</li>
-              <li className="flex gap-x-2.5 font-medium text-zinc-900 dark:text-zinc-200"><Wand2 className="h-4 w-4 flex-none text-brand" /> {t('premiumFeat3')}</li>
-              <li className="flex gap-x-2.5 font-medium text-zinc-900 dark:text-zinc-200"><Wand2 className="h-4 w-4 flex-none text-brand" /> {t('premiumFeat4')}</li>
-            </ul>
-
-            <div className="space-y-2">
-              <Button
-                type="button"
-                className="w-full h-11 text-xs font-semibold cursor-pointer gap-2 bg-brand hover:bg-brand-hover text-white shadow-md shadow-brand/20"
-                onClick={() => handleCheckout('premium')}
-                disabled={isLoading !== null}
-              >
-                {isLoading === 'premium' ? t('loading') : getPremiumCtaText()}
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Button>
-              <p className="text-center text-[11px] text-zinc-400 dark:text-zinc-500">
-                {t('continuityNoteGeneral')}
-              </p>
-            </div>
-
-            {/* BYOK Secondary Path - ONLY shown when allowBYOK is true */}
-            {paywallContext?.allowBYOK && (
-              <div className="mt-4 text-center pt-3 border-t border-zinc-200 dark:border-zinc-800">
-                <button
-                  type="button"
-                  onClick={() => {
-                    onOpenChange(false);
-                    openModal('settings');
-                  }}
-                  className="text-xs text-zinc-500 underline hover:text-zinc-800 dark:hover:text-zinc-300 transition-colors cursor-pointer"
-                >
-                  {t('byokAlternativeHint')}
-                </button>
-              </div>
-            )}
-          </div>
+        <div className="grid grid-cols-1 gap-4 bg-zinc-50/70 p-4 dark:bg-zinc-950 sm:p-6 md:grid-cols-2">
+          {renderPlan(dominantTier, true)}
+          {renderPlan(secondaryTier, false)}
         </div>
+
+        {paywallContext?.allowBYOK && (
+          <div className="border-t border-zinc-100 bg-white px-5 py-4 text-center dark:border-zinc-800 dark:bg-zinc-950 sm:px-8">
+            <button
+              type="button"
+              onClick={() => {
+                onOpenChange(false);
+                openModal('settings');
+              }}
+              className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-zinc-600 underline decoration-zinc-300 underline-offset-4 transition-colors hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white"
+            >
+              <KeyRound className="h-4 w-4" />
+              {t('byokAlternativeHint')}
+            </button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

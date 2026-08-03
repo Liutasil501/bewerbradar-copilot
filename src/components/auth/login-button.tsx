@@ -1,15 +1,24 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
-import { useTranslations, useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
+import { Link } from '@/i18n/routing';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Mail, CheckCircle2, Sparkles, ShieldCheck, FileText } from 'lucide-react';
+import {
+  ArrowRight,
+  CheckCircle2,
+  FileText,
+  Mail,
+  ShieldCheck,
+  Sparkles,
+  Upload,
+  Wand2,
+} from 'lucide-react';
 import {
   discardImportAuthJourney,
   hasAnalyticsConsent,
@@ -18,6 +27,31 @@ import {
   type AuthIntent,
   type AuthMethod,
 } from '@/lib/analytics';
+
+type LoginContext = 'direct' | 'import' | 'templates' | 'interview';
+
+function GoogleIcon() {
+  return (
+    <svg className="h-[19px] w-[19px] shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
+        fill="#4285F4"
+      />
+      <path
+        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+        fill="#34A853"
+      />
+      <path
+        d="M2.18 14.47A7.47 7.47 0 0 1 1.75 12c0-.86.15-1.69.43-2.47V6.69H2.18A11.96 11.96 0 0 0 0 12c0 1.92.45 3.74 1.25 5.31l2.93-2.84z"
+        fill="#FBBC05"
+      />
+      <path
+        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 6.69l3.57 2.77c.87-2.6 3.3-4.53 6.25-4.53z"
+        fill="#EA4335"
+      />
+    </svg>
+  );
+}
 
 export function LoginButton() {
   const t = useTranslations('auth');
@@ -29,9 +63,41 @@ export function LoginButton() {
   const [isSuccess, setIsSuccess] = useState(false);
   const gateTracked = useRef(false);
 
+  const normalizedCallback = callbackUrl.toLowerCase();
   const isImportIntent =
-    callbackUrl.includes('action=import') ||
+    normalizedCallback.includes('action=import') ||
     (typeof window !== 'undefined' && sessionStorage.getItem('br_import_intent') === '1');
+
+  const loginContext: LoginContext = isImportIntent
+    ? 'import'
+    : normalizedCallback.includes('/templates')
+      ? 'templates'
+      : normalizedCallback.includes('/interview')
+        ? 'interview'
+        : 'direct';
+
+  const contextCopy = {
+    direct: {
+      eyebrow: t('directEyebrow'),
+      title: t('welcomeBack'),
+      description: t('loginDescription'),
+    },
+    import: {
+      eyebrow: t('importIntentEyebrow'),
+      title: t('intentTitle'),
+      description: t('intentSubtitle'),
+    },
+    templates: {
+      eyebrow: t('templateIntentEyebrow'),
+      title: t('templateIntentTitle'),
+      description: t('templateIntentSubtitle'),
+    },
+    interview: {
+      eyebrow: t('interviewIntentEyebrow'),
+      title: t('interviewIntentTitle'),
+      description: t('interviewIntentSubtitle'),
+    },
+  }[loginContext];
 
   useEffect(() => {
     const trackGateView = () => {
@@ -47,9 +113,7 @@ export function LoginButton() {
     return () => window.removeEventListener('br_consent_updated', trackGateView);
   }, [isImportIntent, locale]);
 
-  const getAuthIntent = (): AuthIntent => {
-    return isImportIntent ? 'import' : 'direct';
-  };
+  const getAuthIntent = (): AuthIntent => (isImportIntent ? 'import' : 'direct');
 
   const trackAuthStart = (method: AuthMethod, intent: AuthIntent) => {
     if (intent !== 'import') return;
@@ -57,24 +121,32 @@ export function LoginButton() {
     rememberImportAuthJourney(method, intent);
   };
 
-  const handleMagicLink = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
-    setIsLoading(true);
+  const handleGoogleLogin = () => {
+    const intent = getAuthIntent();
+    trackAuthStart('google', intent);
+    void signIn('google', { callbackUrl }).catch(() => {
+      discardImportAuthJourney();
+    });
+  };
 
+  const handleMagicLink = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!email) return;
+
+    setIsLoading(true);
     const intent = getAuthIntent();
     trackAuthStart('email', intent);
 
     try {
-      const res = await signIn('nodemailer', {
+      const response = await signIn('nodemailer', {
         email,
         callbackUrl,
         redirect: false,
       });
 
-      if (res?.error) {
+      if (response?.error) {
         discardImportAuthJourney();
-        console.error(res.error);
+        console.error(response.error);
         setIsSuccess(false);
       } else {
         setIsSuccess(true);
@@ -88,250 +160,211 @@ export function LoginButton() {
     }
   };
 
-  if (isSuccess) {
-    return (
-      <div className="flex flex-col items-center justify-center space-y-4 rounded-xl border border-green-200 bg-green-50 p-6 text-center dark:border-green-900/30 dark:bg-green-900/20 w-full">
-        <CheckCircle2 className="h-8 w-8 text-green-500" />
-        <div className="space-y-1">
-          <h3 className="font-medium text-green-800 dark:text-green-400">
-            {t('emailSentTitle')}
-          </h3>
-          <p className="text-sm text-green-600 dark:text-green-500">
-            {t('emailSentDescription')}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex w-full flex-col items-center">
-      {/* Logo */}
-      <div className="mb-5">
-        <Image
-          src="/logo-icon.svg"
-          alt="BewerbRadar Copilot"
-          width={48}
-          height={48}
-          className="drop-shadow-sm"
-        />
-      </div>
+    <div className="grid w-full lg:min-h-[660px] lg:grid-cols-[1.08fr_0.92fr]">
+      <aside className="relative hidden overflow-hidden bg-[linear-gradient(145deg,#063d35_0%,#087f68_58%,#14a884_100%)] p-10 text-white lg:flex lg:flex-col lg:justify-between">
+        <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full border border-white/10" />
+        <div className="absolute -bottom-36 -left-20 h-80 w-80 rounded-full bg-white/[0.06]" />
 
-      {isImportIntent ? (
-        <>
-          {/* Risk-reducer Badges */}
-          <div className="mb-4 flex flex-wrap items-center justify-center gap-1.5">
-            <Badge variant="outline" className="border-brand/30 bg-brand/5 text-brand dark:bg-brand/10 dark:text-brand text-[11px] py-0.5">
-              <Sparkles className="mr-1 h-3 w-3" />
-              {t('intentBadgeTrial')}
-            </Badge>
-            <Badge variant="outline" className="border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 text-[11px] py-0.5">
-              <ShieldCheck className="mr-1 h-3 w-3 text-emerald-500" />
-              {t('intentBadgeNoCard')}
-            </Badge>
-            <Badge variant="outline" className="border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 text-[11px] py-0.5">
-              <FileText className="mr-1 h-3 w-3 text-blue-500" />
-              {t('intentBadgeLimits')}
-            </Badge>
-          </div>
+        <Link href="/" className="relative z-10 inline-flex w-fit items-center gap-3">
+          <Image src="/logo-icon.svg" alt="" width={38} height={38} className="rounded-xl ring-1 ring-white/30" />
+          <span className="text-base font-semibold tracking-tight">BewerbRadar Copilot</span>
+        </Link>
 
-          {/* Import-intent Heading & Subtitle */}
-          <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 text-center">
-            {t('intentTitle')}
-          </h1>
-          <p className="mt-1.5 text-xs text-center text-zinc-500 dark:text-zinc-400 max-w-xs leading-relaxed">
-            {t('intentSubtitle')}
+        <div className="relative z-10 my-10 max-w-md">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100">
+            {t('proofEyebrow')}
+          </p>
+          <h2 className="mt-4 text-4xl font-bold leading-[1.08] tracking-[-0.035em]">
+            {t('proofTitle')}
+          </h2>
+          <p className="mt-5 max-w-sm text-[15px] leading-7 text-emerald-50/85">
+            {t('proofDescription')}
           </p>
 
-          {/* 3-Step Progress Indicator */}
-          <div className="my-5 flex items-center justify-center gap-2 text-xs font-medium text-zinc-400 dark:text-zinc-500 bg-zinc-50 dark:bg-zinc-900/60 px-3 py-2 rounded-lg border border-zinc-100 dark:border-zinc-800 w-full">
-            <span className="flex items-center gap-1.5 font-semibold text-brand dark:text-brand-hover">
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand text-[10px] text-white">1</span>
-              {t('step1')}
-            </span>
-            <span>&rarr;</span>
-            <span>{t('step2')}</span>
-            <span>&rarr;</span>
-            <span>{t('step3')}</span>
-          </div>
-
-          <Separator className="mb-5" />
-
-          {/* DOMINANT Primary Action: Google Login */}
-          <div className="flex w-full flex-col space-y-4">
-            <Button
-              type="button"
-              onClick={() => {
-                const intent = getAuthIntent();
-                trackAuthStart('google', intent);
-                void signIn('google', { callbackUrl }).catch(() => {
-                  discardImportAuthJourney();
-                });
-              }}
-              className="h-11 w-full cursor-pointer gap-3 rounded-xl bg-brand text-white font-semibold shadow-md shadow-brand/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-lg dark:bg-brand dark:hover:bg-brand-hover"
-            >
-              <svg className="h-[18px] w-[18px] bg-white rounded-full p-0.5" viewBox="0 0 24 24">
-                <path
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
-                  fill="#4285F4"
-                />
-                <path
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  fill="#34A853"
-                />
-                <path
-                  d="M2.18 14.47A7.47 7.47 0 0 1 1.75 12c0-.86.15-1.69.43-2.47V6.69H2.18A11.96 11.96 0 0 0 0 12c0 1.92.45 3.74 1.25 5.31l2.93-2.84z"
-                  fill="#FBBC05"
-                />
-                <path
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 6.69l3.57 2.77c.87-2.6 3.3-4.53 6.25-4.53z"
-                  fill="#EA4335"
-                />
-              </svg>
-              {t('loginWithGoogle')}
-            </Button>
-
-            <div className="relative my-2">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-zinc-200 dark:border-zinc-700" />
+          <div className="mt-8 space-y-3">
+            {[t('proofPoint1'), t('proofPoint2'), t('proofPoint3')].map((point) => (
+              <div key={point} className="flex items-center gap-3 text-sm font-medium text-white/95">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/15">
+                  <CheckCircle2 className="h-4 w-4" />
+                </span>
+                {point}
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-zinc-400 dark:bg-zinc-950 dark:text-zinc-500">
+            ))}
+          </div>
+        </div>
+
+        <div className="relative z-10 rounded-2xl border border-white/20 bg-white/10 p-4 shadow-2xl shadow-emerald-950/20 backdrop-blur-sm">
+          <div className="rounded-xl bg-white p-4 text-zinc-900 shadow-lg">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-brand">
+                  <FileText className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold">{t('proofCardTitle')}</p>
+                  <p className="text-[10px] text-zinc-500">{t('proofCardSubtitle')}</p>
+                </div>
+              </div>
+              <span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700">
+                {t('proofCardStatus')}
+              </span>
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-2 text-center text-[10px] font-medium text-zinc-600">
+              <div className="rounded-lg bg-zinc-50 px-2 py-3">
+                <Upload className="mx-auto mb-1.5 h-4 w-4 text-zinc-500" />
+                {t('stepImport')}
+              </div>
+              <div className="rounded-lg bg-emerald-50 px-2 py-3 text-emerald-800">
+                <Wand2 className="mx-auto mb-1.5 h-4 w-4" />
+                {t('proofOptimize')}
+              </div>
+              <div className="rounded-lg bg-zinc-50 px-2 py-3">
+                <CheckCircle2 className="mx-auto mb-1.5 h-4 w-4 text-brand" />
+                {t('stepReview')}
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <section className="flex min-h-[620px] flex-col bg-white px-6 py-6 dark:bg-zinc-900 sm:px-10 sm:py-9 lg:min-h-0 lg:px-12 lg:py-10">
+        <Link href="/" className="mb-8 inline-flex w-fit items-center gap-2.5 lg:hidden">
+          <Image src="/logo-icon.svg" alt="" width={34} height={34} priority />
+          <span className="text-sm font-semibold tracking-tight text-zinc-950 dark:text-white">
+            BewerbRadar Copilot
+          </span>
+        </Link>
+
+        <div className="mx-auto flex w-full max-w-[560px] flex-1 flex-col justify-center lg:max-w-none">
+          {isSuccess ? (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-7 text-center dark:border-emerald-900/40 dark:bg-emerald-950/25">
+              <CheckCircle2 className="mx-auto h-10 w-10 text-emerald-600" />
+              <h1 className="mt-4 text-2xl font-semibold tracking-tight text-emerald-950 dark:text-emerald-200">
+                {t('emailSentTitle')}
+              </h1>
+              <p className="mt-2 text-sm leading-6 text-emerald-800/80 dark:text-emerald-300/80">
+                {t('emailSentDescription')}
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                <Sparkles className="h-3.5 w-3.5" />
+                {contextCopy.eyebrow}
+              </div>
+
+              <h1 className="max-w-md text-[30px] font-bold leading-[1.12] tracking-[-0.035em] text-zinc-950 dark:text-white sm:text-[34px]">
+                {contextCopy.title}
+              </h1>
+              <p className="mt-3 max-w-md text-[15px] leading-6 text-zinc-600 dark:text-zinc-400">
+                {contextCopy.description}
+              </p>
+
+              {isImportIntent && (
+                <div className="mt-6 grid grid-cols-3 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950/50">
+                  {[t('stepLogin'), t('stepImport'), t('stepReview')].map((step, index) => (
+                    <div
+                      key={step}
+                      className="flex min-w-0 flex-col items-center gap-1.5 border-r border-zinc-200 px-2 py-3 text-center last:border-r-0 dark:border-zinc-800"
+                    >
+                      <span
+                        className={
+                          index === 0
+                            ? 'flex h-5 w-5 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-white'
+                            : 'flex h-5 w-5 items-center justify-center rounded-full bg-zinc-200 text-[10px] font-bold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400'
+                        }
+                      >
+                        {index + 1}
+                      </span>
+                      <span className={index === 0 ? 'truncate text-xs font-semibold text-brand' : 'truncate text-xs font-medium text-zinc-500'}>
+                        {step}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <Button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="mt-7 h-12 w-full cursor-pointer gap-3 rounded-xl bg-brand px-6 text-sm font-semibold text-white shadow-lg shadow-brand/20 transition-all hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-xl"
+              >
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white">
+                  <GoogleIcon />
+                </span>
+                {t('loginWithGoogle')}
+                <ArrowRight className="ml-auto h-4 w-4" />
+              </Button>
+
+              <div className="relative my-5">
+                <Separator />
+                <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap bg-white px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:bg-zinc-900 dark:text-zinc-500">
                   {t('orWithEmail')}
                 </span>
               </div>
-            </div>
 
-            {/* Secondary Action: Email Magic Link */}
-            <form onSubmit={handleMagicLink} className="flex flex-col space-y-3">
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-zinc-400" />
-                <Input
-                  type="email"
-                  placeholder={t('emailPlaceholder')}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-9 h-10"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-              <Button
-                type="submit"
-                variant="outline"
-                disabled={isLoading || !email}
-                className="h-10 w-full font-medium"
-              >
-                {isLoading ? t('emailSending') : t('loginWithEmailLink')}
-              </Button>
-            </form>
-          </div>
-        </>
-      ) : (
-        <>
-          {/* Direct Login Heading */}
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-            {t('welcomeBack')}
-          </h1>
-          <p className="mt-1.5 text-sm text-zinc-500 dark:text-zinc-400">
-            {t('loginDescription')}
-          </p>
+              <form onSubmit={handleMagicLink} className="space-y-3">
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-3.5 h-4.5 w-4.5 text-zinc-400" />
+                  <Input
+                    type="email"
+                    placeholder={t('emailPlaceholder')}
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    className="h-12 rounded-xl border-zinc-200 bg-white pl-11 text-sm shadow-sm dark:border-zinc-700 dark:bg-zinc-950"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  disabled={isLoading || !email}
+                  className="h-12 w-full rounded-xl text-sm font-semibold"
+                >
+                  {isLoading ? t('emailSending') : t('loginWithEmailLink')}
+                </Button>
+              </form>
 
-          <Separator className="my-6" />
+              {isImportIntent && (
+                <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-zinc-500 dark:text-zinc-400">
+                  <span className="flex items-center gap-1.5">
+                    <ShieldCheck className="h-4 w-4 text-brand" />
+                    {t('intentBadgeNoCard')}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <FileText className="h-4 w-4 text-brand" />
+                    {t('intentBadgeLimits')}
+                  </span>
+                </div>
+              )}
+            </>
+          )}
+        </div>
 
-          {/* Direct Login Actions */}
-          <div className="flex w-full flex-col space-y-4">
-            <form onSubmit={handleMagicLink} className="flex flex-col space-y-3">
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-zinc-400" />
-                <Input
-                  type="email"
-                  placeholder={t('emailPlaceholder')}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-9 h-10"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-              <Button
-                type="submit"
-                disabled={isLoading || !email}
-                className="h-10 w-full"
-              >
-                {isLoading ? t('emailSending') : t('loginWithEmail')}
-              </Button>
-            </form>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-zinc-200 dark:border-zinc-700" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
-                  {t('or')}
-                </span>
-              </div>
-            </div>
-
-            <Button
-              type="button"
-              onClick={() => {
-                const intent = getAuthIntent();
-                trackAuthStart('google', intent);
-                void signIn('google', { callbackUrl }).catch(() => {
-                  discardImportAuthJourney();
-                });
-              }}
-              variant="outline"
-              className="h-11 w-full cursor-pointer gap-3 rounded-xl border-zinc-200 bg-white px-6 text-sm font-medium text-zinc-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-zinc-50 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
-            >
-              <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24">
-                <path
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
-                  fill="#4285F4"
-                />
-                <path
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  fill="#34A853"
-                />
-                <path
-                  d="M2.18 14.47A7.47 7.47 0 0 1 1.75 12c0-.86.15-1.69.43-2.47V6.69H2.18A11.96 11.96 0 0 0 0 12c0 1.92.45 3.74 1.25 5.31l2.93-2.84z"
-                  fill="#FBBC05"
-                />
-                <path
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 6.69l3.57 2.77c.87-2.6 3.3-4.53 6.25-4.53z"
-                  fill="#EA4335"
-                />
-              </svg>
-              {t('loginWithGoogle')}
-            </Button>
-          </div>
-        </>
-      )}
-
-      {/* Terms */}
-      <p className="mt-6 text-center text-[11px] leading-relaxed text-zinc-400 dark:text-zinc-500">
-        {t('agreePrefix')}{' '}
-        <a
-          href="https://bewerbradar.de/agb"
-          target="_blank"
-          rel="noreferrer"
-          className="underline underline-offset-2 hover:text-zinc-600 dark:hover:text-zinc-300"
-        >
-          {t('terms')}
-        </a>{' '}
-        {t('agreeConjunction')}{' '}
-        <a
-          href="https://bewerbradar.de/datenschutz"
-          target="_blank"
-          rel="noreferrer"
-          className="underline underline-offset-2 hover:text-zinc-600 dark:hover:text-zinc-300"
-        >
-          {t('privacy')}
-        </a>
-        {t('agreeSuffix')}
-      </p>
+        <p className="mx-auto mt-8 w-full max-w-[560px] text-center text-xs leading-5 text-zinc-400 dark:text-zinc-500 lg:max-w-none">
+          {t('agreePrefix')}{' '}
+          <a
+            href="https://bewerbradar.de/agb"
+            target="_blank"
+            rel="noreferrer"
+            className="underline underline-offset-2 hover:text-zinc-600 dark:hover:text-zinc-300"
+          >
+            {t('terms')}
+          </a>{' '}
+          {t('agreeConjunction')}{' '}
+          <a
+            href="https://bewerbradar.de/datenschutz"
+            target="_blank"
+            rel="noreferrer"
+            className="underline underline-offset-2 hover:text-zinc-600 dark:hover:text-zinc-300"
+          >
+            {t('privacy')}
+          </a>
+          {t('agreeSuffix')}
+        </p>
+      </section>
     </div>
   );
 }

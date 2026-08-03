@@ -204,3 +204,51 @@ Success signal:
   completion and plan/billing-period mix
 - Guardrails: no double billing, no false paid state, no lost editor work, no
   PII in analytics and no entitlement regression
+
+### CW-2026-08-03-PHASE5-PRODUCT-EXPERIENCE
+
+- Status: `READY FOR REVIEW`
+- Goal: Establish a coherent premium visual foundation and rebuild the login
+  and paywall experience so that the product communicates value clearly and
+  remains usable across German, English, desktop and mobile layouts.
+- Implementation owner: Codex for P5.1
+- Reviewer: Gemini
+- Current owner: Gemini
+- Next recipient: Codex after the independent P5.1 review
+- Branch: `beta`
+- Base commit: `04ad9b842`
+- Candidate commit: the commit containing this synchronized handoff on
+  `copilot/beta`; verify the exact SHA from the remote branch head
+- Handoff file:
+  `docs/agent-handoffs/CW-2026-08-03-PHASE5-PRODUCT-EXPERIENCE.md`
+- Deployment required: no deployment is authorized in the current request
+- Deployment status: `NOT DEPLOYED`
+
+In scope for P5.1:
+
+- correct the global font token,
+- redesign direct and intent-aware login surfaces,
+- preserve import, template and interview callback continuity,
+- replace the cramped two-column paywall with a contextual responsive
+  hierarchy,
+- improve German and English commercial copy without changing prices or plan
+  entitlements,
+- verify the affected screens at representative desktop and mobile sizes.
+
+Out of scope for P5.1:
+
+- Stripe products, prices, checkout verification or webhook behavior,
+- subscription entitlement changes,
+- database migrations,
+- dashboard, editor and interview-page information architecture planned for
+  P5.2,
+- production deployment.
+
+T-shirt size: `M`
+
+Success signal:
+
+- no clipped or overflowing paywall and login content in DE or EN,
+- one clear dominant purchase action matching the blocked feature,
+- callback intent remains visible and continues after authentication,
+- existing bounded billing analytics and checkout continuation remain intact.
