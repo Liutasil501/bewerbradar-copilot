@@ -104,7 +104,33 @@ migrations, Stripe, AI-provider access, import/export, sharing, deployment,
 Docker, analytics and consent.
 
 Do not imply that automated tests passed when only type-checking or a build ran.
-The project currently has no established automated unit or end-to-end suite.
+The focused billing suite and local authenticated QA harness are established,
+but neither is a complete application-wide end-to-end suite.
+
+## User-State Release Gate
+
+Before reviewing a user-facing candidate, list the material affected states and
+the path used to exercise each one. Typical states are signed out, new Free,
+used-Free, Pro, Premium, BYOK and owner/non-owner authorization variants.
+
+Use `docs/QA_HARNESS.md` for local authenticated BewerbRadar states. A reviewer
+must not infer authenticated behavior from public pages, code inspection,
+type-checking or build success.
+
+For every material state, verify:
+
+1. the real entry action,
+2. the visible intermediate state,
+3. the relevant API or server decision,
+4. the promised success or deliberate gate,
+5. narrow-mobile and desktop presentation when UI changed,
+6. the error or recovery path when it is material.
+
+If the necessary identity or environment is missing, report it as soon as the
+review scope is defined. Establish the smallest isolated fixture or test user
+when practical. Otherwise issue only a `CONDITIONAL GO` that names the untested
+journey and its owner. Do not defer this disclosure until after publication or
+deployment.
 
 ## Documentation Maintenance
 
@@ -221,6 +247,8 @@ Before publishing `main`:
 4. verify migrations and environment requirements,
 5. establish a rollback point for risky releases,
 6. run the required proportional checks.
+7. complete the affected user-state matrix or record an explicit
+   `CONDITIONAL GO`.
 
 A push to `main` publishes source; it does not deploy the VPS.
 

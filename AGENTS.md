@@ -244,8 +244,9 @@ deployment and analytics consent. A styling or documentation change does not
 need the full application suite.
 
 Inspect the final diff and report exact checks. Do not imply that automated
-tests passed when only type-checking or a build ran; no established automated
-unit or end-to-end suite currently exists.
+tests passed when only type-checking or a build ran. The focused billing suite
+and local authenticated UI harness cover only their documented paths, not the
+entire application.
 
 Durable behavior changes require matching documentation updates. Keep
 `CURRENT_WORK.md` small, remove completed entries and rely on Git history.
@@ -267,13 +268,47 @@ Every implementation handoff reports:
 
 Never use `VERIFIED LIVE` without production evidence.
 
-## 9. Release Boundary
+## 9. User Perspective and Test Identities
+
+For every user-facing change, identify the affected user state before deciding
+that implementation or review is complete. Examples include:
+
+- signed out,
+- new Free user,
+- Free user after a trial or limit was consumed,
+- Pro,
+- Premium,
+- BYOK,
+- owner versus non-owner where authorization matters.
+
+Do not treat a public page, source inspection, type-check or build as evidence
+for behavior behind login. Trace the actual journey from the user's entry point
+to the promised result, including the relevant server response and error path.
+
+At planning time, determine how each material state will be exercised. Prefer
+isolated fixtures, local test identities, staging users or documented test
+accounts without production PII. If the required state cannot be tested, say
+so immediately and establish the smallest useful harness when it is in scope.
+Do not wait until the release handoff to reveal that the main journey was never
+observed.
+
+For this project, use `docs/QA_HARNESS.md` for local Free, used-Free, Pro,
+Premium and BYOK product testing. Test profiles are shared through project
+documentation and handoffs. Real credentials or secrets never belong there.
+
+A user-facing release cannot receive an unconditional `GO` unless every
+material affected state was either exercised end to end or explicitly excluded
+with a justified `CONDITIONAL GO`. This is a product-quality gate, not optional
+polish.
+
+## 10. Release Boundary
 
 Main publication and VPS deployment are separate actions.
 
 Before publishing `main`, confirm the standing authorization, review the exact
 candidate diff, exclude unrelated commits, check migrations/environment needs
-and complete proportional verification.
+and complete proportional verification. For user-facing work, include the
+affected user-state matrix and the real journey evidence required by section 9.
 
 Before VPS deployment, require explicit authorization in the current request,
 confirm the exact authorized `main` commit and follow `DEPLOYMENT.md`.

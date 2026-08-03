@@ -306,6 +306,28 @@ Then test the changed behavior through the public application. Examples:
 Public-page availability alone does not prove that authenticated APIs, database
 migrations or billing behavior work.
 
+### 7.4 User-state release matrix
+
+Before a user-facing release receives `GO`, list every materially affected
+state and the evidence used for it. For the local BewerbRadar product states,
+use `docs/QA_HARNESS.md` before main publication. After deployment, repeat the
+changed critical path through the authorized production-safe route where
+required.
+
+Minimum states for plan, paywall, import or AI-access changes:
+
+- new Free,
+- used Free,
+- Pro,
+- Premium,
+- BYOK when supported,
+- signed-out entry and callback continuity when authentication changed.
+
+Public HTML, a successful build and an internal health response do not replace
+this matrix. If a required external step such as real OAuth, Stripe or analytics
+receipt cannot be exercised, release only with an explicit `CONDITIONAL GO`
+that names the missing evidence, impact and owner.
+
 ## 8. Deployment Status Language
 
 Use exactly one status in a handoff:

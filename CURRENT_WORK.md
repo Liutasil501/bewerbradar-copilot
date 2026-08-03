@@ -275,6 +275,8 @@ Success signal:
   Free AI import, narrow-mobile dashboard actions, paywall CTA alignment and
   safer deterministic deployment.
 - Review result: pending independent Gemini review.
+- Release gate: Gemini must exercise the shared local test identities and
+  complete the affected user-state matrix before an unconditional `GO`.
 - Deployment required: yes for the user-facing and entitlement corrections,
   only after independent review, main publication and explicit authorization.
 - Deployment status: `NOT DEPLOYED`

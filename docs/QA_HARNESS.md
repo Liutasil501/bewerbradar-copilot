@@ -39,13 +39,17 @@ The script prints the state-entry URL. Open it in the browser used for QA.
 
 ## States
 
-| State | Plan | AI imports | Browser key | Primary use |
-| --- | --- | ---: | --- | --- |
-| `free-fresh` | Free | 0 | no | first funded AI import and Free gates |
-| `free-used` | Free | 1 | no | trial-used and resume-limit paywalls |
-| `pro` | Pro | 1 | no | paid resume features and Premium AI upsell |
-| `premium` | Premium | 1 | no | unrestricted Premium AI surfaces |
-| `byok` | Free | 1 | dummy local key | BYOK UI paths on an existing resume |
+| State | Local test identity | Plan | AI imports | Browser key | Primary use |
+| --- | --- | --- | ---: | --- | --- |
+| `free-fresh` | `qa-free-fresh` | Free | 0 | no | first funded AI import and Free gates |
+| `free-used` | `qa-free-used` | Free | 1 | no | trial-used and resume-limit paywalls |
+| `pro` | `qa-pro` | Pro | 1 | no | paid resume features and Premium AI upsell |
+| `premium` | `qa-premium` | Premium | 1 | no | unrestricted Premium AI surfaces |
+| `byok` | `qa-byok` | Free | 1 | dummy local key | BYOK UI paths on an existing resume |
+
+These are deterministic local test identities, not production accounts. They
+have no passwords. The state-entry URL prepares the database record and browser
+fingerprint automatically.
 
 Direct state URLs follow this pattern:
 

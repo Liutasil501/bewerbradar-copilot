@@ -123,7 +123,34 @@ behavior were not changed by that workaround.
 
 ## Independent Review Request for Gemini
 
-Review the complete range `cf849989..b037d3b`, not only the summary.
+Fetch `copilot/beta` and review the complete code range
+`cf849989..b037d3b`, not only the summary. The documentation and release-gate
+follow-up is on the current `copilot/beta` head.
+
+### Test identities shared with Gemini
+
+No password or production account is required. Start the isolated application:
+
+```powershell
+git fetch copilot beta
+git checkout beta
+git pull --ff-only copilot beta
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-qa.ps1 -State free-fresh -Reset
+```
+
+Then use these state-entry URLs in the browser:
+
+| User state | Local identity | Entry URL |
+| --- | --- | --- |
+| new Free | `qa-free-fresh` | `http://localhost:3100/api/qa/enter/de/free-fresh` |
+| used Free | `qa-free-used` | `http://localhost:3100/api/qa/enter/de/free-used` |
+| Pro | `qa-pro` | `http://localhost:3100/api/qa/enter/de/pro` |
+| Premium | `qa-premium` | `http://localhost:3100/api/qa/enter/de/premium` |
+| Free plus BYOK | `qa-byok` | `http://localhost:3100/api/qa/enter/de/byok` |
+
+Replace `/de/` with `/en/` for English. State URLs prepare the local database
+and browser automatically. The BYOK value is deliberately fake; open and
+inspect AI dialogs but do not submit a provider request.
 
 Verify:
 
@@ -137,6 +164,8 @@ Verify:
 7. the deployment helper cannot deploy the wrong branch or SHA and does not
    publish secrets,
 8. Docker ignore changes do not remove runtime-required build inputs.
+9. the candidate satisfies the user-state release gate in
+   `docs/agent-guides/REVIEW_AND_RELEASE.md`.
 
 Gemini may fix clear `XS` and `S` findings directly on `beta` and rerun the
 affected checks. Document `M` or `L` findings with evidence and return them to
