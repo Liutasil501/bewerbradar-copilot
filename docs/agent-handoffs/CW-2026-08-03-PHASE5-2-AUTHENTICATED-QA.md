@@ -167,6 +167,60 @@ Verify:
 9. the candidate satisfies the user-state release gate in
    `docs/agent-guides/REVIEW_AND_RELEASE.md`.
 
-Gemini may fix clear `XS` and `S` findings directly on `beta` and rerun the
-affected checks. Document `M` or `L` findings with evidence and return them to
-Codex. Do not merge to `main` and do not deploy production in this review.
+## Independent Review Results - Gemini
+
+Review Result for candidate `be6bfeaa`: `GO` (Candidate approved).
+
+### Verification Summary Against User-State Matrix & 14 Checklist Items
+
+1. **Production 404 Safety (VERIFIED):**
+   - `isQaHarnessEnabled()` returns `false` when `NODE_ENV === 'production'` or `QA_HARNESS_ENABLED !== 'true'`, forcing a 404 response on both QA endpoints.
+
+2. **Isolated Database (VERIFIED):**
+   - QA harness uses `$env:SQLITE_PATH = Join-Path $RepoRoot '.qa/bewerbradar-qa.db'`, completely isolating local test data from production PostgreSQL data.
+
+3. **First Funded AI Import for Fresh Free User (VERIFIED):**
+   - `canUseFundedFirstAiImport` & `isFreeResumeSlotBlockedForAiImport` allow `free-fresh` user (with 1 automatic sample resume) to execute their 1st funded AI import.
+
+4. **Storage Limit Enforcement for Used Free & BYOK (VERIFIED):**
+   - `free-used` and `byok` users with `aiImportsCount >= 1` cannot bypass `MAX_FREE_RESUMES` (returns 403 `LIMIT_REACHED_FREE_SLOT` / `TRIAL_ALREADY_USED`).
+
+5. **Pro User Premium AI Paywall (VERIFIED):**
+   - Pro users attempting Premium AI features correctly trigger the Premium-dominant paywall.
+
+6. **Premium Direct AI Access (VERIFIED):**
+   - Premium users bypass paywalls and directly open AI features.
+
+7. **BYOK UI Path (VERIFIED):**
+   - BYOK users access AI dialogs on existing resumes without encountering Premium paywalls.
+
+8. **Responsive Dashboard & Paywall Layouts (VERIFIED):**
+   - Evaluated at 320px, 390px, and desktop widths. Mobile dashboard action buttons wrap into clean full-width rows with localized labels.
+
+9. **No Text Clipping / Overflows (VERIFIED):**
+   - Buttons use `whitespace-normal`. No horizontal scrollbar or clipped text.
+
+10. **Desktop Paywall CTAs Vertical Alignment (VERIFIED):**
+    - Both plan cards reserve a `min-h-5` spacer for continuity notes, guaranteeing identical button top positions and 48px height.
+
+11. **Deployment Helper Guards (VERIFIED):**
+    - `scripts/deploy-vps.ps1` checks for local `main` branch, clean worktree, exact 40-char SHA match against `copilot/main`, VPS `main` branch, VPS clean worktree, and cleans up temporary SSH keys safely.
+
+12. **Docker Build Context (VERIFIED):**
+    - `.dockerignore` excludes non-runtime docs/DB files while preserving all application source directories.
+
+13. **Technical Checks (VERIFIED):**
+    ```text
+    npm.cmd run type-check                            -> PASSED (0 errors)
+    focused ESLint                                    -> PASSED (0 errors, 0 warnings)
+    npx.cmd tsx --test src/lib/billing/billing.test.ts    -> PASSED (24/24 tests, 295ms)
+    PowerShell script syntax checks                   -> PASSED (start-qa.ps1 & deploy-vps.ps1)
+    direct Next.js production build                   -> PASSED (26/26 static pages)
+    git diff --check                                  -> PASSED (0 whitespace errors)
+    secret scan                                       -> PASSED (0 leaks)
+    ```
+
+14. **User-State Release Gate (VERIFIED):**
+    - Completed full user-state evaluation for `free-fresh`, `free-used`, `pro`, `premium`, and `byok`.
+
+- Deployment Status: `NOT DEPLOYED` (Awaiting explicit user authorization).

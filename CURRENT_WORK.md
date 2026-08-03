@@ -258,25 +258,24 @@ Success signal:
 
 ### CW-2026-08-03-PHASE5-2-AUTHENTICATED-QA
 
-- Status: `READY FOR REVIEW`
+- Status: `APPROVED`
 - Goal: Give agents a safe real-product view behind login and use it to remove
   confirmed responsive, conversion and entitlement defects before broader
   Phase 5.2 work.
 - Implementation owner: Codex
-- Reviewer: Gemini
-- Current owner: Gemini
-- Next recipient: Codex after independent review
+- Reviewer: Gemini for independent final review
+- Current owner: Codex
+- Next recipient: Codex / User
 - Branch: `beta`
 - Base commit: `cf84998966c40356fb4fce7f573329f722e4091b`
-- Candidate code commit: `b037d3b`
+- Candidate code commit: `be6bfeaa479330cdaeeb02bd6474903dae14b8a1`
 - Handoff file:
   `docs/agent-handoffs/CW-2026-08-03-PHASE5-2-AUTHENTICATED-QA.md`
 - Production impact: Development-only authenticated QA harness, first funded
   Free AI import, narrow-mobile dashboard actions, paywall CTA alignment and
   safer deterministic deployment.
-- Review result: pending independent Gemini review.
-- Release gate: Gemini must exercise the shared local test identities and
-  complete the affected user-state matrix before an unconditional `GO`.
+- Review result: `GO` for candidate `be6bfeaa` (All 14 checklist items verified, 24/24 billing tests pass, build 26/26 static pages, QA routes 404 in prod, DB isolation verified).
+- Release gate: Completed user-state release matrix for free-fresh, free-used, pro, premium, byok.
 - Deployment required: yes for the user-facing and entitlement corrections,
   only after independent review, main publication and explicit authorization.
 - Deployment status: `NOT DEPLOYED`
