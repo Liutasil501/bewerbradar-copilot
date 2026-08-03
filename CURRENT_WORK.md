@@ -207,22 +207,25 @@ Success signal:
 
 ### CW-2026-08-03-PHASE5-PRODUCT-EXPERIENCE
 
-- Status: `APPROVED`
+- Status: `COMPLETED`
 - Goal: Establish a coherent premium visual foundation and rebuild the login
   and paywall experience so that the product communicates value clearly and
   remains usable across German, English, desktop and mobile layouts.
 - Implementation owner: Codex for P5.1
 - Reviewer: Gemini for independent review
-- Current owner: Codex
-- Next recipient: Codex / User
-- Branch: `beta`
+- Current owner: none
+- Next recipient: Phase 5.2 implementation owner
+- Release branch: `main`
+- Integration branch: `beta`
 - Base commit: `04ad9b842`
 - Candidate commit: `59a298cbc`
 - Handoff file:
   `docs/agent-handoffs/CW-2026-08-03-PHASE5-PRODUCT-EXPERIENCE.md`
 - Review result: `GO` for candidate `59a298cbc` (All 8 focus areas verified, 20/20 billing tests pass, build 25/25 pages static generation)
-- Deployment required: no deployment is authorized in the current request
-- Deployment status: `NOT DEPLOYED`
+- Release commit: the `copilot/main` head containing the synchronized production
+  verification in this file
+- Deployment authorization: explicitly granted by the user on 3 August 2026
+- Deployment status: `VERIFIED LIVE`
 
 In scope for P5.1:
 
