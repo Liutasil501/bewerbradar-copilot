@@ -351,9 +351,12 @@ sequenceDiagram
 Files are converted to memory buffers and are not intentionally persisted.
 Resume content and filenames must not be logged or sent to analytics.
 
-For Free users, the server Gemini key is available on this route while the
-one-resume limit permits creation. `aiImportsCount` records successful use but
-does not currently enforce a one-time import.
+For Free users, the server Gemini key is available exactly while
+`aiImportsCount < 1` and no BYOK key is supplied. That funded first import may
+create beside the one existing Free resume so the local sample or a manually
+created first resume cannot erase the promised trial. After success,
+`aiImportsCount` increments and the normal Free storage limit applies again.
+BYOK never bypasses the storage limit.
 
 ## 9. AI Provider and Feature Architecture
 

@@ -86,6 +86,13 @@ It is an index, not a substitute for reading the relevant implementation.
 - `scripts/`
   Deployment, export CSS and maintenance scripts.
 
+- `scripts/start-qa.ps1`
+  Isolated development-only authenticated UI environment. See
+  `docs/QA_HARNESS.md`.
+
+- `scripts/deploy-vps.ps1`
+  Exact-SHA production deployment helper with branch, health and public checks.
+
 ## 2. Application Routes
 
 ### `src/app/layout.tsx`
@@ -306,6 +313,17 @@ API routes are deliberately skipped by middleware and must secure themselves.
 - `src/app/api/github/repo/route.ts`
   GitHub repository metadata for resume sections.
 
+### Local QA only
+
+- `src/app/api/qa/state/route.ts`
+  Prepares deterministic plan state in the isolated development database.
+
+- `src/app/api/qa/enter/[locale]/[state]/route.ts`
+  Enters the real application with the prepared local fingerprint user.
+
+Both routes are hard-disabled outside the development fingerprint/SQLite QA
+environment and return `404` in production.
+
 ## 4. Components by Feature
 
 ### Landing and conversion
@@ -516,6 +534,16 @@ Repositories:
 
 - `src/lib/stripe/client.ts`
 - `src/lib/stripe/config.ts`
+- `src/lib/billing/import-access.ts`
+  Shared first-funded-import and Free storage-slot decision logic.
+
+### Local QA
+
+- `src/lib/qa/states.ts`
+  Allowed deterministic QA states and the production hard gate.
+
+- `src/lib/qa/prepare-state.ts`
+  Server-only user preparation in the isolated QA database.
 
 ### Resume and export
 
@@ -744,3 +772,18 @@ Inspect:
 9. live VPS commit
 10. container status and logs
 11. public smoke test
+
+### Authenticated UI or responsive product QA
+
+Inspect:
+
+1. `docs/QA_HARNESS.md`
+2. `scripts/start-qa.ps1`
+3. `src/lib/qa/`
+4. `src/app/api/qa/`
+5. the complete user-facing route under test
+6. its client store and API dependencies
+7. Free, used-Free, Pro, Premium and BYOK behavior where relevant
+8. 320 px, 390 px and representative desktop layouts
+9. production hard-disable of QA routes
+10. changed behavior again through the public application after deployment

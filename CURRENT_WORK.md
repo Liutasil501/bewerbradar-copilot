@@ -1,6 +1,6 @@
 # BewerbRadar Copilot – Current Work
 
-Last updated: 2 August 2026
+Last updated: 3 August 2026
 
 This file is the shared operational board for active Gemini, Codex and human
 work.
@@ -255,3 +255,57 @@ Success signal:
 - one clear dominant purchase action matching the blocked feature,
 - callback intent remains visible and continues after authentication,
 - existing bounded billing analytics and checkout continuation remain intact.
+
+### CW-2026-08-03-PHASE5-2-AUTHENTICATED-QA
+
+- Status: `READY FOR REVIEW`
+- Goal: Give agents a safe real-product view behind login and use it to remove
+  confirmed responsive, conversion and entitlement defects before broader
+  Phase 5.2 work.
+- Implementation owner: Codex
+- Reviewer: Gemini
+- Current owner: Gemini
+- Next recipient: Codex after independent review
+- Branch: `beta`
+- Base commit: `cf84998966c40356fb4fce7f573329f722e4091b`
+- Candidate code commit: `b037d3b`
+- Handoff file:
+  `docs/agent-handoffs/CW-2026-08-03-PHASE5-2-AUTHENTICATED-QA.md`
+- Production impact: Development-only authenticated QA harness, first funded
+  Free AI import, narrow-mobile dashboard actions, paywall CTA alignment and
+  safer deterministic deployment.
+- Review result: pending independent Gemini review.
+- Deployment required: yes for the user-facing and entitlement corrections,
+  only after independent review, main publication and explicit authorization.
+- Deployment status: `NOT DEPLOYED`
+
+In scope:
+
+- deterministic local Free, Pro, Premium and BYOK user states,
+- production hard-disable of all QA endpoints,
+- actual first Free AI import despite the automatic sample resume,
+- 320 px dashboard overflow and accessible icon actions,
+- desktop paywall CTA alignment,
+- exact-SHA, fail-fast release helper and build-context improvements,
+- browser, entitlement, type, lint, unit and production-build verification.
+
+Out of scope:
+
+- real Google OAuth callback verification,
+- live Stripe checkout or webhook execution,
+- real AI provider calls from the dummy BYOK state,
+- production deployment,
+- the broader editor, navigation and interview redesign still planned for
+  later Phase 5.2 slices.
+
+T-shirt size: `M`
+
+Success signal:
+
+- a new agent can reach and inspect authenticated product states without
+  production credentials or data,
+- the advertised first AI import reaches the import dialog and server access
+  path,
+- no horizontal overflow at 320 px on the corrected dashboard and paywall,
+- production QA routes remain `404`,
+- releases cannot silently deploy the wrong branch or commit.

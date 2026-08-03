@@ -1,6 +1,6 @@
 # BewerbRadar Copilot – Production Deployment Runbook
 
-Last verified: 29 July 2026
+Last verified: 3 August 2026
 
 This runbook describes the verified production topology, release process,
 verification and rollback rules for BewerbRadar Copilot.
@@ -52,11 +52,16 @@ pnpm run deploy
 
 runs `scripts/deploy-vps.ps1`. The script:
 
-1. connects to the VPS over SSH,
-2. runs `git pull` in `/var/www/jadeai`,
-3. builds the `jadeai` image through the central Compose project,
-4. recreates/starts the `jadeai` service,
-5. prints matching Docker processes.
+1. requires local `main` and a clean worktree,
+2. requires the exact full release SHA to exist on `copilot/main`,
+3. connects to the VPS over SSH with a restricted temporary key copy,
+4. requires the VPS repository to be on `main` without unexpected changes,
+5. fetches and pulls `origin/main` with `--ff-only`,
+6. verifies the exact resulting VPS SHA,
+7. builds and starts the `jadeai` Compose service,
+8. waits for the internal health endpoint,
+9. checks the public endpoint,
+10. prints final branch, SHA, container state and focused logs.
 
 The script does not:
 
@@ -64,14 +69,13 @@ The script does not:
 - select or merge a release branch,
 - run type-check, lint or tests,
 - create a database backup,
-- verify the exact deployed commit,
 - verify migrations,
 - perform a feature smoke test,
 - roll back on failure.
 
-The current script uses remote `set -e` and propagates a non-zero SSH exit code.
-Treat its success output as completed deployment activity, but not as complete
-release verification.
+The helper now proves source identity, basic runtime health and public
+availability. It does not replace a focused smoke test of the changed user
+behavior or any required migration and backup verification.
 
 ## 3. Branch and Authorization Rules
 
@@ -134,8 +138,15 @@ Not every documentation or copy-only change requires the full suite. Stronger
 checks are required for authentication, authorization, billing, database
 migrations, AI access, import/export, sharing, Docker and analytics.
 
-There is currently no established automated unit or end-to-end test suite.
-Report exactly which checks ran; do not call a type-check a full test suite.
+The billing and continuation suite can be run with:
+
+```powershell
+npx tsx --test src/lib/billing/billing.test.ts
+```
+
+The local authenticated UI harness is documented in `docs/QA_HARNESS.md`.
+Report exactly which checks ran; do not call a type-check or a focused suite a
+complete end-to-end test suite.
 
 ### 4.3 Review database impact
 
@@ -164,6 +175,13 @@ Production-relevant groups:
 - Stripe secret, webhook secret and optional price/coupon IDs,
 - optional database selection/path,
 - optional GTM container override.
+
+Local release-helper variables:
+
+- optional `BEWERBRADAR_SSH_KEY`,
+- optional `BEWERBRADAR_VPS_HOST`.
+
+These are local operator inputs. Do not add their values to repository files.
 
 If a new required variable is absent on the VPS, the release is not ready.
 
@@ -195,8 +213,16 @@ been explicitly authorized in the current request:
 pnpm run deploy
 ```
 
-Do not stop at the script's success text. Continue with every applicable
-verification step in section 7.
+The helper derives the release SHA from the clean local `main` HEAD. An exact
+SHA may be supplied directly when required:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-vps.ps1 -ReleaseSha FULL_40_CHARACTER_SHA
+```
+
+The helper already checks SHA, health, the public endpoint, container state and
+focused logs. Continue with the changed feature's applicable smoke test in
+section 7 before declaring the release `VERIFIED LIVE`.
 
 ### Manual equivalent
 

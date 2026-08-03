@@ -268,13 +268,18 @@ Current enforced limits:
 AI resume import:
 
 - PDF, PNG, JPG and WebP up to 10 MB,
-- a Free user always needs an unused resume slot,
 - a Free user with `aiImportsCount < 1` and no BYOK key receives one
   server-funded Gemini import,
+- that one funded import remains available when exactly the ordinary Free slot
+  is already occupied, including by the local fingerprint/demo sample,
+- this bounded exception may leave the user with the existing resume plus the
+  imported resume; all later creation and import actions use the normal Free
+  storage limit,
 - `aiImportsCount` increments only after a successful server-funded trial
   import,
 - deleting the imported resume does not restore the funded trial,
-- a Free user with an unused slot may continue importing with BYOK,
+- BYOK never bypasses the Free storage limit; a Free user needs an unused slot
+  for a BYOK import,
 - BYOK, Pro and Premium imports do not consume the Free trial counter.
 
 ### Pro
