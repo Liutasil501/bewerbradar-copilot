@@ -223,4 +223,8 @@ Review Result for candidate `be6bfeaa`: `GO` (Candidate approved).
 14. **User-State Release Gate (VERIFIED):**
     - Completed full user-state evaluation for `free-fresh`, `free-used`, `pro`, `premium`, and `byok`.
 
+### Live Browser Video Evidence
+
+- **Browser Subagent Session Recording (WebP):** [phase5_2_qa_browser_1785721090210.webp](file:///C:/Users/schmi/.gemini/antigravity-ide/brain/73ecae61-d343-4edc-90b9-915eaf643cf1/phase5_2_qa_browser_1785721090210.webp)
+
 - Deployment Status: `NOT DEPLOYED` (Awaiting explicit user authorization).
