@@ -7,6 +7,10 @@ import { resumeRepository } from '@/lib/db/repositories/resume.repository';
 import { userRepository } from '@/lib/db/repositories/user.repository';
 import type { ParsedResume } from '@/lib/ai/parse-schema';
 import { MAX_FREE_RESUMES } from '@/lib/constants';
+import {
+  canUseFundedFirstAiImport,
+  isFreeResumeSlotBlockedForAiImport,
+} from '@/lib/billing/import-access';
 
 const ACCEPTED_TYPES = [
   'application/pdf',
@@ -44,9 +48,21 @@ export async function POST(request: NextRequest) {
     const isFreePlan = user.subscriptionPlan === 'free' || !user.subscriptionPlan;
     const aiImportsCount = user.aiImportsCount || 0;
     const hasUserApiKey = Boolean(request.headers.get('x-api-key')?.trim());
+    const canUseFirstAiImport = canUseFundedFirstAiImport({
+      subscriptionPlan: user.subscriptionPlan,
+      aiImportsCount,
+      hasUserApiKey,
+    });
 
-    // A user-provided API key does not bypass the Free resume storage limit.
-    if (isFreePlan && existingResumes.length >= MAX_FREE_RESUMES) {
+    // The automatic sample resume does not consume the promised first funded AI import.
+    // BYOK still does not bypass the regular Free resume storage limit.
+    if (isFreeResumeSlotBlockedForAiImport({
+      subscriptionPlan: user.subscriptionPlan,
+      aiImportsCount,
+      hasUserApiKey,
+      existingResumeCount: existingResumes.length,
+      maxFreeResumes: MAX_FREE_RESUMES,
+    })) {
       return NextResponse.json(
         {
           code: 'LIMIT_REACHED_FREE_SLOT',
@@ -68,11 +84,7 @@ export async function POST(request: NextRequest) {
     }
 
     // The server-funded trial is used only when no user API key was supplied.
-    const allowFreeTrial =
-      isFreePlan &&
-      !hasUserApiKey &&
-      aiImportsCount < 1 &&
-      existingResumes.length < MAX_FREE_RESUMES;
+    const allowFreeTrial = canUseFirstAiImport;
 
     const formData = await request.formData();
     const file = formData.get('file') as File | null;

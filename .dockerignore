@@ -6,3 +6,6 @@ data
 *.db
 .env*
 !.env.example
+.qa
+docs
+*.md

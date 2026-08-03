@@ -289,13 +289,19 @@ export function PricingModal({
           <ArrowRight className="h-4 w-4 shrink-0" />
         </Button>
 
-        {isDominant && (
-          <p className="mt-3 text-center text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-            {effectiveTrigger === 'export_paid_format'
-              ? t('continuityNoteExport')
-              : t('continuityNoteGeneral')}
-          </p>
-        )}
+        <div className="mt-3 min-h-5">
+          {isDominant ? (
+            <p className="text-center text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+              {effectiveTrigger === 'export_paid_format'
+                ? t('continuityNoteExport')
+                : t('continuityNoteGeneral')}
+            </p>
+          ) : (
+            <span aria-hidden="true" className="block leading-5">
+              &nbsp;
+            </span>
+          )}
+        </div>
       </section>
     );
   };

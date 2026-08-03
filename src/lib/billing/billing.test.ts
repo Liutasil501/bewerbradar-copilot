@@ -18,6 +18,69 @@ import {
 } from './return-resolver';
 import { consumePaidActionCompletion } from './completion';
 import { STRIPE_CONFIG } from '@/lib/stripe/config';
+import {
+  canUseFundedFirstAiImport,
+  isFreeResumeSlotBlockedForAiImport,
+} from './import-access';
+
+describe('First funded AI import access', () => {
+  it('keeps the promised first AI import available beside the automatic sample resume', () => {
+    const access = {
+      subscriptionPlan: 'free',
+      aiImportsCount: 0,
+      hasUserApiKey: false,
+    };
+
+    assert.strictEqual(canUseFundedFirstAiImport(access), true);
+    assert.strictEqual(
+      isFreeResumeSlotBlockedForAiImport({
+        ...access,
+        existingResumeCount: 1,
+        maxFreeResumes: 1,
+      }),
+      false
+    );
+  });
+
+  it('enforces the Free resume slot after the funded import was used', () => {
+    assert.strictEqual(
+      isFreeResumeSlotBlockedForAiImport({
+        subscriptionPlan: 'free',
+        aiImportsCount: 1,
+        hasUserApiKey: false,
+        existingResumeCount: 1,
+        maxFreeResumes: 1,
+      }),
+      true
+    );
+  });
+
+  it('does not let BYOK bypass the Free resume storage limit', () => {
+    assert.strictEqual(
+      isFreeResumeSlotBlockedForAiImport({
+        subscriptionPlan: 'free',
+        aiImportsCount: 0,
+        hasUserApiKey: true,
+        existingResumeCount: 1,
+        maxFreeResumes: 1,
+      }),
+      true
+    );
+  });
+
+  it('does not use the sample-resume exception for an already over-limit account', () => {
+    assert.strictEqual(
+      isFreeResumeSlotBlockedForAiImport({
+        subscriptionPlan: 'free',
+        aiImportsCount: 0,
+        hasUserApiKey: false,
+        existingResumeCount: 2,
+        maxFreeResumes: 1,
+      }),
+      true
+    );
+  });
+});
 
 // Mock sessionStorage for Node environment test runner
 if (typeof globalThis.sessionStorage === 'undefined') {

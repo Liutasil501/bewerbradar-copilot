@@ -16,7 +16,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/lib/db/seed.ts",
-    "deploy": "powershell -File scripts/deploy-vps.ps1",
+    "deploy": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-vps.ps1",
+    "qa": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-qa.ps1",
     "set-plan": "powershell -File scripts/set-plan.ps1"
   },
   "pnpm": {

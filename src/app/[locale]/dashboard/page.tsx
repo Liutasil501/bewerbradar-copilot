@@ -40,6 +40,7 @@ import { cn } from '@/lib/utils';
 import { useRouter } from '@/i18n/routing';
 import type { Resume } from '@/types/resume';
 import { MAX_FREE_RESUMES } from '@/lib/constants';
+import { canUseFundedFirstAiImport } from '@/lib/billing/import-access';
 
 type SortOption = 'lastEdited' | 'created' | 'nameAsc' | 'nameDesc';
 type ViewMode = 'grid' | 'list';
@@ -99,7 +100,15 @@ export default function DashboardPage() {
   );
   const startTour = useTourStore((s) => s.startTour);
   const tBilling = useTranslations('billing');
-  const { checkPaywall, showPaywall, setShowPaywall, requiredTier, currentPlan, paywallDescription } = usePaywall();
+  const {
+    checkPaywall,
+    showPaywall,
+    setShowPaywall,
+    requiredTier,
+    currentPlan,
+    aiImportsCount,
+    paywallDescription,
+  } = usePaywall();
   const aiApiKey = useSettingsStore((s) => s.aiApiKey);
   useCheckoutReturn({ onDuplicateSuccess: fetchResumes });
 
@@ -122,6 +131,24 @@ export default function DashboardPage() {
   const openImportDialog = (source: ImportDialogSource) => {
     setImportDialogSource(source);
     openModal('import');
+  };
+
+  const handleImportAction = (source: ImportDialogSource) => {
+    const canUseFirstAiImport = canUseFundedFirstAiImport({
+      subscriptionPlan: currentPlan,
+      aiImportsCount,
+      hasUserApiKey: Boolean(aiApiKey),
+    }) && resumes.length <= MAX_FREE_RESUMES;
+
+    if (canUseFirstAiImport) {
+      openImportDialog(source);
+      return;
+    }
+
+    void handleCreateAction(
+      () => openImportDialog(source),
+      { type: 'dashboard_import' }
+    );
   };
 
   // Track auth_completed if arriving from a login flow
@@ -194,7 +221,7 @@ export default function DashboardPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-foreground">{t('title')}</h1>
           {hasResumes && (
@@ -203,10 +230,11 @@ export default function DashboardPage() {
             </p>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start">
           <Button
             variant="outline"
             onClick={() => router.push('/linkedin-photo')}
+            aria-label={t('linkedinPhoto')}
             className="cursor-pointer gap-2"
           >
             <Camera className="h-4 w-4" />
@@ -215,6 +243,7 @@ export default function DashboardPage() {
           <Button
             data-tour="dash-ai-generate"
             variant="outline"
+            aria-label={t('aiGenerate')}
             onClick={() => {
               const isAtResumeLimit = currentPlan === 'free' && resumes.length >= MAX_FREE_RESUMES;
               if (isAtResumeLimit) {
@@ -254,7 +283,8 @@ export default function DashboardPage() {
           </Button>
           <Button
             variant="outline"
-            onClick={() => handleCreateAction(() => openImportDialog('dashboard_action'), { type: 'dashboard_import' })}
+            onClick={() => handleImportAction('dashboard_action')}
+            aria-label={t('importJson')}
             className="cursor-pointer gap-2"
           >
             <Upload className="h-4 w-4" />
@@ -263,6 +293,7 @@ export default function DashboardPage() {
           <Button
             data-tour="dash-create"
             onClick={() => handleCreateAction(() => openModal('create-resume'), { type: 'dashboard_create' })}
+            aria-label={t('createResume')}
             className="cursor-pointer gap-2 bg-brand hover:bg-brand-hover"
           >
             <Plus className="h-4 w-4" />
@@ -360,7 +391,7 @@ export default function DashboardPage() {
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Button
-              onClick={() => handleCreateAction(() => openImportDialog('dashboard_empty'), { type: 'dashboard_import' })}
+              onClick={() => handleImportAction('dashboard_empty')}
               className="cursor-pointer gap-2 bg-brand px-6 hover:bg-brand-hover"
             >
               <Upload className="h-4 w-4" />
