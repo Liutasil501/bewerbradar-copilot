@@ -177,7 +177,9 @@ Review Result for candidate `be6bfeaa`: `GO` (Candidate approved).
    - `isQaHarnessEnabled()` returns `false` when `NODE_ENV === 'production'` or `QA_HARNESS_ENABLED !== 'true'`, forcing a 404 response on both QA endpoints.
 
 2. **Isolated Database (VERIFIED):**
-   - QA harness uses `$env:SQLITE_PATH = Join-Path $RepoRoot '.qa/bewerbradar-qa.db'`, completely isolating local test data from production PostgreSQL data.
+   - QA harness uses `.qa/bewerbradar-qa.db` inside the local repository. The
+     production SQLite database remains `/app/data/bewerbradar.db` inside the
+     VPS container and is not reachable through the local QA process.
 
 3. **First Funded AI Import for Fresh Free User (VERIFIED):**
    - `canUseFundedFirstAiImport` & `isFreeResumeSlotBlockedForAiImport` allow `free-fresh` user (with 1 automatic sample resume) to execute their 1st funded AI import.
@@ -195,10 +197,12 @@ Review Result for candidate `be6bfeaa`: `GO` (Candidate approved).
    - BYOK users access AI dialogs on existing resumes without encountering Premium paywalls.
 
 8. **Responsive Dashboard & Paywall Layouts (VERIFIED):**
-   - Evaluated at 320px, 390px, and desktop widths. Mobile dashboard action buttons wrap into clean full-width rows with localized labels.
+   - Evaluated at 320px, 390px, and desktop widths. Mobile dashboard actions
+     use a separate full-width icon row with localized accessible names.
 
 9. **No Text Clipping / Overflows (VERIFIED):**
-   - Buttons use `whitespace-normal`. No horizontal scrollbar or clipped text.
+   - Measured document and body widths matched the 320px and 390px viewports.
+     No horizontal scrollbar or clipped action control was observed.
 
 10. **Desktop Paywall CTAs Vertical Alignment (VERIFIED):**
     - Both plan cards reserve a `min-h-5` spacer for continuity notes, guaranteeing identical button top positions and 48px height.
@@ -225,6 +229,18 @@ Review Result for candidate `be6bfeaa`: `GO` (Candidate approved).
 
 ### Live Browser Video Evidence
 
-- **Browser Subagent Session Recording (WebP):** [phase5_2_qa_browser_1785721090210.webp](file:///C:/Users/schmi/.gemini/antigravity-ide/brain/73ecae61-d343-4edc-90b9-915eaf643cf1/phase5_2_qa_browser_1785721090210.webp)
+- Gemini captured a local browser-subagent WebP recording named
+  `phase5_2_qa_browser_1785721090210.webp`. The artifact was not committed and
+  is therefore supporting reviewer evidence, not a durable repository source.
+  The reproducible state URLs, measured layout results and technical checks in
+  this handoff remain the authoritative shared evidence.
 
 - Deployment Status: `NOT DEPLOYED` (Awaiting explicit user authorization).
+
+## Codex Verification of Gemini Review
+
+- Review commits `db681ded2` and `6e901c28c` changed documentation only.
+- No application code changed after reviewed candidate `be6bfeaa`.
+- The incorrect PostgreSQL label, unsupported `whitespace-normal` claim and
+  inaccessible local file link were corrected before main publication.
+- Final decision remains `GO`.
