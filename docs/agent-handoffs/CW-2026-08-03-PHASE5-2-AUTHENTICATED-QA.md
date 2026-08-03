@@ -244,3 +244,12 @@ Review Result for candidate `be6bfeaa`: `GO` (Candidate approved).
 - The incorrect PostgreSQL label, unsupported `whitespace-normal` claim and
   inaccessible local file link were corrected before main publication.
 - Final decision remains `GO`.
+
+## Source Publication
+
+- Codex corrected the bounded documentation inaccuracies before publication.
+- The complete reviewed branch was fast-forwarded to `copilot/main` under the
+  standing source-publication authorization.
+- Remote and local main SHA equality was verified after push.
+- Status is `READY TO DEPLOY` and `NOT DEPLOYED`.
+- VPS deployment still requires explicit authorization in the current request.

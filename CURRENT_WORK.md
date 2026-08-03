@@ -258,19 +258,21 @@ Success signal:
 
 ### CW-2026-08-03-PHASE5-2-AUTHENTICATED-QA
 
-- Status: `APPROVED`
+- Status: `READY TO DEPLOY`
 - Goal: Give agents a safe real-product view behind login and use it to remove
   confirmed responsive, conversion and entitlement defects before broader
   Phase 5.2 work.
 - Implementation owner: Codex
 - Reviewer: Gemini for independent final review
-- Current owner: Codex
-- Next recipient: Codex / User
+- Current owner: Codex after explicit deployment authorization
+- Next recipient: Codex after explicit deployment authorization
 - Branch: `beta`
 - Base commit: `cf84998966c40356fb4fce7f573329f722e4091b`
 - Implementation commit: `b037d3bc0`
 - Reviewed candidate head: `be6bfeaa479330cdaeeb02bd6474903dae14b8a1`
 - Gemini review commits: `db681ded2`, `6e901c28c`
+- Main publication: verified on `copilot/main`; the authoritative release SHA
+  is the current remote main head containing this status update.
 - Handoff file:
   `docs/agent-handoffs/CW-2026-08-03-PHASE5-2-AUTHENTICATED-QA.md`
 - Production impact: Development-only authenticated QA harness, first funded
