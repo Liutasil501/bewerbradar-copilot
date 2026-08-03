@@ -140,23 +140,52 @@ Pending:
 
 ## Review
 
-- Result: `PENDING`
+- Result: `GO` (Candidate `59a298cbc` approved)
 
-| ID | Raised by | Severity | Likelihood | Effort | Status | Finding and evidence | Response by | Response or fixing commit |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+### Summary of Independent Review Findings
+
+1. **Login- und Callback-Kontinuität (VERIFIED):**
+   - `callbackUrl` aus SearchParams wird an NextAuth (`signIn('google')` und `signIn('nodemailer')`) weitergereicht.
+   - Kontinuität für Import (`action=import`), Templates (`/templates`) und Interview (`/interview`) bleibt erhalten und wird kontextbezogen im Header/Steps dargestellt.
+
+2. **Stripe Payloads & Analytics Invarianten (VERIFIED):**
+   - Stripe-Payloads (`tier`, `plan`, `trigger`, `returnIntent`, `locale`) an `/api/stripe/checkout` sind 100 % identisch zu Phase 4.
+   - Analytics-Events (`paywall_viewed`, `checkout_started`, `import_auth_gate_viewed`, `auth_started`) sind vollständig integriert.
+
+3. **BYOK-Verhalten (VERIFIED):**
+   - `byokAlternativeHint` verlinkt wie in Phase 4 direkt auf den Settings-Modal für BYOK-Konfiguration.
+
+4. **Responsive Darstellung DE/EN & Layout (VERIFIED):**
+   - Keine visuellen Overflows oder abgeschnittene Button-Texte. `whitespace-normal` schützt lange deutsche Button-Labels.
+
+5. **Kontextabhängige Pro/Premium-Hierarchie (VERIFIED):**
+   - KI-Sperren (`premium_ai_feature`, `premium_feature`) stellen Premium als dominanten Tarif an die erste Stelle.
+   - Standard-Sperren (`resume_limit`, `export_paid_format`, `paid_template`, `public_share`, `trial_used`) stellen Pro als dominanten Tarif an die erste Stelle.
+
+6. **Preise & Entitlements (VERIFIED):**
+   - Pro: €9,99/Monat (€8,33/Monat jährlich). Premium: €19,99/Monat (€16,66/Monat jährlich).
+
+### Automated Verification Results
+
+```text
+npm.cmd run type-check                            -> PASSED (0 errors)
+focused ESLint (layout, login, pricing)            -> PASSED (0 errors, 0 warnings)
+npx.cmd tsx --test src/lib/billing/billing.test.ts    -> PASSED (20/20 tests, 378ms)
+translation JSON files parsing (de.json / en.json) -> PASSED (valid JSON)
+direct Next.js production build                   -> PASSED (25/25 static pages)
+git diff --check 04ad9b842..59a298cbc             -> PASSED (0 whitespace errors)
+```
 
 ## Message Ledger
 
 | Time | From | To | Type | Message or response | Commit |
 | --- | --- | --- | --- | --- | --- |
 | 2026-08-03 | User | Codex | Authorization | Start Phase 5 and let Codex choose the implementation owner. | n/a |
-| 2026-08-03 | Codex | Gemini | Review transfer | P5.1 implementation and primary verification complete. Review the full candidate from base `04ad9b842` to `copilot/beta` independently. | remote branch head |
+| 2026-08-03 | Codex | Gemini | Review transfer | P5.1 implementation and primary verification complete. Review the full candidate from base `04ad9b842` to `copilot/beta` independently. | `59a298cbc` |
+| 2026-08-03 | Gemini | User/Codex | Review completed | Independent review completed with result GO. Candidate `59a298cbc` approved. | `59a298cbc` |
 
 ## Next Action
 
-- Owner: Gemini
-- Action: independently review the full P5.1 candidate from `04ad9b842` to the
-  current `copilot/beta` head
-- Required review focus: authentication callback continuity, checkout and
-  analytics invariants, DE and EN overflow, mobile layout, plan hierarchy and
-  preservation of BYOK behavior
+- Owner: Codex / User
+- Action: Candidate `59a298cbc` is approved (`GO`). Proceed with Phase 5.2 planning or user deployment decision as authorized.
+- Publication/Deployment: `NOT DEPLOYED`. No deployment to main without explicit user authorization.
