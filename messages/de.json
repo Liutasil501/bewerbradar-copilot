@@ -81,12 +81,12 @@
     "interviewIntentEyebrow": "KI-Probe-Interview",
     "interviewIntentTitle": "Bereit für das nächste Gespräch?",
     "interviewIntentSubtitle": "Melden Sie sich an und trainieren Sie realistische Fragen für Ihr Bewerbungsgespräch.",
-    "agreeTerms": "Mit der Anmeldung stimmen Sie unseren Nutzungsbedingungen und Datenschutzrichtlinien zu",
-    "agreePrefix": "Mit der Anmeldung stimmen Sie unseren",
+    "agreeTerms": "Mit der Anmeldung akzeptieren Sie unsere Nutzungsbedingungen und Datenschutzerklärung",
+    "agreePrefix": "Mit der Anmeldung akzeptieren Sie unsere",
     "terms": "Nutzungsbedingungen",
-    "agreeConjunction": "und unserer",
-    "privacy": "Datenschutzrichtlinie",
-    "agreeSuffix": " zu.",
+    "agreeConjunction": "und unsere",
+    "privacy": "Datenschutzerklärung",
+    "agreeSuffix": ".",
     "intentTitle": "Ihr Lebenslauf ist nur einen Schritt entfernt",
     "intentSubtitle": "Melden Sie sich kostenlos an. Danach öffnet sich direkt der KI-Import.",
     "intentBadgeTrial": "Erster KI-Import kostenlos",
@@ -858,17 +858,18 @@
         "changelog": "Changelog"
       },
       "resources": {
-        "title": "Ressourcen",
+        "title": "Direkt starten",
         "blog": "Blog",
-        "resumeTips": "Tipps für den Lebenslauf",
-        "careerGuide": "Karriere-Ratgeber",
-        "examples": "Lebenslauf-Beispiele"
+        "resumeTips": "Lebenslauf importieren",
+        "careerGuide": "Probe-Interview starten",
+        "examples": "Vorlagen ansehen"
       },
       "legal": {
         "title": "Rechtliches",
         "impressum": "Impressum",
         "privacy": "Datenschutzerklärung",
         "terms": "Nutzungsbedingungen",
+        "withdrawal": "Widerrufsbelehrung",
         "cookies": "Cookie-Richtlinie",
         "consentSettings": "Cookie-Einstellungen"
       },

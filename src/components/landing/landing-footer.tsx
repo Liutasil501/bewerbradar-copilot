@@ -18,16 +18,18 @@ export function LandingFooter() {
     {
       titleKey: 'resources.title' as const,
       links: [
-        { key: 'resources.resumeTips' as const, href: '#' },
-        { key: 'resources.examples' as const, href: '#' },
+        { key: 'resources.resumeTips' as const, href: '/dashboard?action=import' },
+        { key: 'resources.examples' as const, href: '/templates' },
+        { key: 'resources.careerGuide' as const, href: '/interview' },
       ],
     },
     {
       titleKey: 'legal.title' as const,
       links: [
-        { key: 'legal.impressum' as const, href: 'https://bewerbradar.de/impressum' },
-        { key: 'legal.privacy' as const, href: 'https://bewerbradar.de/datenschutz' },
-        { key: 'legal.terms' as const, href: 'https://bewerbradar.de/agb' },
+        { key: 'legal.impressum' as const, href: '/impressum' },
+        { key: 'legal.privacy' as const, href: '/datenschutz' },
+        { key: 'legal.terms' as const, href: '/agb' },
+        { key: 'legal.withdrawal' as const, href: '/widerruf' },
         { key: 'legal.consentSettings' as const, href: '#consent', isConsentAction: true },
       ],
     },

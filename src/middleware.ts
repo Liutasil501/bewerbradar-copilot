@@ -9,14 +9,23 @@ const PUBLIC_PATHS = [
   '/',        // Landing page
   '/login',   // Login page
   '/share',   // Public share links
+  '/impressum',
+  '/datenschutz',
+  '/agb',
+  '/widerruf',
 ];
 
 function isPublicPath(pathname: string): boolean {
-  // Strip locale prefix: /zh/dashboard -> /dashboard, /en/ -> /, /de/ -> /
-  const withoutLocale = pathname.replace(/^\/(en|de)/, '') || '/';
-  return PUBLIC_PATHS.some((p) =>
-    p === '/' ? withoutLocale === '/' : withoutLocale.startsWith(p)
-  );
+  // Strip an exact supported locale prefix: /en/dashboard -> /dashboard, /de/ -> /
+  const withoutLocale = pathname.replace(/^\/(en|de)(?=\/|$)/, '') || '/';
+  return PUBLIC_PATHS.some((publicPath) => {
+    if (publicPath === '/') return withoutLocale === '/';
+    if (publicPath === '/share') {
+      return withoutLocale === publicPath || withoutLocale.startsWith(`${publicPath}/`);
+    }
+
+    return withoutLocale === publicPath;
+  });
 }
 
 export default async function middleware(request: NextRequest) {

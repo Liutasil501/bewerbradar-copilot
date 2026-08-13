@@ -163,6 +163,13 @@ Locale-level providers:
 - `src/app/[locale]/linkedin-photo/page.tsx`
   AI professional-photo interface.
 
+- `src/app/[locale]/impressum/page.tsx`
+- `src/app/[locale]/datenschutz/page.tsx`
+- `src/app/[locale]/agb/page.tsx`
+- `src/app/[locale]/widerruf/page.tsx`
+  Public localized legal pages. Shared copy and document metadata live under
+  `src/lib/legal/`; the common renderer lives under `src/components/legal/`.
+
 ### Middleware
 
 - `src/middleware.ts`
@@ -336,6 +343,18 @@ environment and return `404` in production.
 - `src/components/landing/stats-section.tsx`
 - `src/components/landing/cta-section.tsx`
 - `src/components/landing/landing-footer.tsx`
+
+### Legal and trust
+
+- `src/components/legal/legal-document-page.tsx`
+- `src/lib/legal/documents.ts`
+- `src/lib/legal/documents.de.ts`
+- `src/lib/legal/documents.en.ts`
+- `src/lib/legal/types.ts`
+- `src/app/[locale]/impressum/page.tsx`
+- `src/app/[locale]/datenschutz/page.tsx`
+- `src/app/[locale]/agb/page.tsx`
+- `src/app/[locale]/widerruf/page.tsx`
 
 ### Dashboard
 

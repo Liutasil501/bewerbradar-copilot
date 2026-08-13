@@ -82,7 +82,7 @@
     "interviewIntentTitle": "Ready for your next interview?",
     "interviewIntentSubtitle": "Sign in and practice realistic questions for your upcoming interview.",
     "agreeTerms": "By signing in, you agree to our Terms of Service and Privacy Policy",
-    "agreePrefix": "By signing in, you agree to our",
+    "agreePrefix": "By signing in, you accept our",
     "terms": "Terms of Service",
     "agreeConjunction": "and",
     "privacy": "Privacy Policy",
@@ -858,17 +858,18 @@
         "changelog": "Changelog"
       },
       "resources": {
-        "title": "Resources",
+        "title": "Get Started",
         "blog": "Blog",
-        "resumeTips": "Resume Tips",
-        "careerGuide": "Career Guide",
-        "examples": "Resume Examples"
+        "resumeTips": "Import a Resume",
+        "careerGuide": "Start a Mock Interview",
+        "examples": "Browse Templates"
       },
       "legal": {
         "title": "Legal",
         "impressum": "Legal Notice",
         "privacy": "Privacy Policy",
         "terms": "Terms of Service",
+        "withdrawal": "Withdrawal Information",
         "cookies": "Cookie Policy",
         "consentSettings": "Cookie Settings"
       },

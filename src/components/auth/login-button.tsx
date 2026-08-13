@@ -345,23 +345,21 @@ export function LoginButton() {
 
         <p className="mx-auto mt-8 w-full max-w-[560px] text-center text-xs leading-5 text-zinc-400 dark:text-zinc-500 lg:max-w-none">
           {t('agreePrefix')}{' '}
-          <a
-            href="https://bewerbradar.de/agb"
+          <Link
+            href="/agb"
             target="_blank"
-            rel="noreferrer"
             className="underline underline-offset-2 hover:text-zinc-600 dark:hover:text-zinc-300"
           >
             {t('terms')}
-          </a>{' '}
+          </Link>{' '}
           {t('agreeConjunction')}{' '}
-          <a
-            href="https://bewerbradar.de/datenschutz"
+          <Link
+            href="/datenschutz"
             target="_blank"
-            rel="noreferrer"
             className="underline underline-offset-2 hover:text-zinc-600 dark:hover:text-zinc-300"
           >
             {t('privacy')}
-          </a>
+          </Link>
           {t('agreeSuffix')}
         </p>
       </section>

@@ -52,9 +52,12 @@ below only when the active task touches them.
 - Phase 4 contextual paywalls, truthful annual-price communication, verified
   Stripe checkout returns, blocked-action continuation and bounded revenue
   events are live on the VPS from release `54e371b`.
+- Localized legal notice, privacy policy, terms and withdrawal pages are
+  implemented as public routes. Their content is a product-specific working
+  draft and not a substitute for final Austrian legal review.
 - External GA4 tag configuration, Tag Assistant and DebugView validation remain
-  open. Other high-value follow-ups include legal routes, external Studio
-  exposure and the remaining dependency advisories.
+  open. Other high-value follow-ups include checkout disclosure validation,
+  external Studio exposure and the remaining dependency advisories.
 - Resume content is sensitive personal data and must not enter logs or
   analytics.
 
