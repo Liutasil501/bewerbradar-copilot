@@ -61,7 +61,7 @@ staged values are not active in the application yet.
 - Branch: `codex/phase6-stripe-live`
 - Base: `75042d3e8`
 - Initial candidate: `5a826979c`
-- Corrected candidate: `f8f0ed344`
+- Final reviewed candidate: `00f7cdf92`
 - Deployment status: `NOT DEPLOYED`
 
 ## Implementation Summary
@@ -106,6 +106,10 @@ remaining delayed-delete ordering case: an old deleted subscription could
 overwrite a newer active subscription for the same customer. The next delta
 queries current customer subscriptions and preserves a configured active or
 trialing replacement before writing Free.
+
+The final independent delta review returned GO for `00f7cdf92`. The remaining
+gates concern only the production credential choice and the disposable
+no-charge live smoke test.
 
 ## Open External Gate
 

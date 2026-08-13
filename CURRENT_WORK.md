@@ -67,14 +67,15 @@ Use exactly one status per task:
 
 ### CW-2026-08-13-PHASE6-LIVE-STRIPE
 
-- Status: `READY FOR REVIEW`
+- Status: `APPROVED`
 - Goal: Move BewerbRadar Copilot from Stripe test mode to a verified live
   subscription flow with strict price mapping, reliable webhooks and a usable
   self-service billing portal.
 - Implementation owner: Codex
 - Reviewer: independent second agent
 - Current owner: Codex
-- Next recipient: independent reviewer for the corrected candidate
+- Next recipient: Codex after the external live credential and smoke-test gate
+  is explicitly approved
 - Branch: `codex/phase6-stripe-live`
 - Base commit: `75042d3e8`
 - Handoff file:
