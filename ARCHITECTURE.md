@@ -475,12 +475,17 @@ sequenceDiagram
 ```
 
 The local `users` row caches Stripe customer, subscription, price, status,
-period and plan data. Checkout and portal routes contain self-healing lookup
-logic for active or trialing subscriptions.
+period and plan data. Checkout and portal routes validate the cached customer
+against the active Stripe mode and self-heal both positive and negative state.
+Only active or trialing subscriptions with a configured price grant paid
+access; absent, canceled, unpaid, past-due and unknown-price subscriptions
+reset the local plan to Free.
 
 The webhook is the asynchronous source for checkout completion and
 subscription updates/deletions. It must verify the Stripe signature before
-changing local state.
+changing local state. Update events retrieve the current subscription before
+applying it, and subscription periods come from the current subscription-item
+fields of the pinned Stripe API version.
 
 Entitlements are currently distributed across:
 

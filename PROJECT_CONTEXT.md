@@ -362,18 +362,23 @@ Displayed prices:
 - Premium monthly: €19.99
 - Premium annual equivalent: €16.66/month
 
-Price IDs may be overridden by environment variables. Checked-in fallback IDs
-currently exist and must be verified when Stripe products change.
+All four production price IDs are required environment variables. Production
+fails closed when one is missing or when Stripe returns an unknown price ID.
+Hard-coded test-price fallbacks exist only for local development and tests.
 
 Stripe self-healing behavior:
 
-- checkout and portal search Stripe customers by user e-mail,
-- active/trialing subscriptions may repair local customer and subscription
-  fields,
+- checkout and portal validate any stored customer against the current Stripe
+  mode and search matching customers by user e-mail,
+- active/trialing subscriptions repair local customer and subscription fields,
+- missing, canceled, unpaid, past-due or unknown-price subscriptions explicitly
+  remove stale paid access,
 - paid users are redirected to the billing portal instead of creating a second
   subscription.
 
-The webhook synchronizes checkout completion and subscription changes.
+The webhook synchronizes checkout completion and subscription changes. Update
+events retrieve the current subscription state from Stripe before changing
+local entitlements so that delayed events cannot restore older state.
 
 Current checkout continuation behavior:
 
@@ -392,13 +397,14 @@ Required production variables include:
 
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
-
-Optional Stripe variables:
-
 - `STRIPE_PRICE_ID_PRO_MONTHLY`
 - `STRIPE_PRICE_ID_PRO_YEARLY`
 - `STRIPE_PRICE_ID_PREMIUM_MONTHLY`
 - `STRIPE_PRICE_ID_PREMIUM_YEARLY`
+- `STRIPE_PORTAL_CONFIGURATION_ID`
+
+Optional Stripe variables:
+
 - `STRIPE_COUPON_FIRST_MONTH`
 
 ## 10. AI Architecture

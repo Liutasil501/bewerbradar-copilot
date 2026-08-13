@@ -4,11 +4,11 @@ import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import Stripe from 'stripe';
+import { hasCompleteStripePriceConfiguration } from '@/lib/stripe/config';
 import {
-  hasCompleteStripePriceConfiguration,
-  isPaidSubscriptionStatus,
-  resolvePlanFromPriceId,
-} from '@/lib/stripe/config';
+  buildStripeBillingUpdate,
+  resolveSubscriptionPlan,
+} from '@/lib/stripe/subscription-state';
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -45,63 +45,53 @@ export async function POST(req: NextRequest) {
         const session = event.data.object as Stripe.Checkout.Session;
         
         const userId = session.metadata?.userId;
-        const subscriptionId = session.subscription as string;
-        const customerId = session.customer as string;
+        const subscriptionId =
+          typeof session.subscription === 'string' ? session.subscription : null;
+        const customerId = typeof session.customer === 'string' ? session.customer : null;
 
-        if (!userId) {
-          console.error('Checkout session missing userId metadata:', session.id);
-          break;
+        if (!userId || !subscriptionId || !customerId) {
+          console.error('Checkout session missing required billing ownership data:', session.id);
+          return NextResponse.json({ error: 'Checkout ownership data is incomplete' }, { status: 500 });
         }
 
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-        const priceId = subscription.items.data[0]?.price.id;
-        const subPlan = resolvePlanFromPriceId(priceId);
+        const subPlan = resolveSubscriptionPlan(subscription);
 
-        if (!subPlan || !isPaidSubscriptionStatus(subscription.status)) {
+        if (subPlan === 'free') {
           console.error('Checkout completed without an active configured subscription:', session.id);
           return NextResponse.json({ error: 'Subscription is not eligible' }, { status: 500 });
         }
 
         await db
           .update(users)
-          .set({
-            stripeCustomerId: customerId,
-            stripeSubscriptionId: subscriptionId,
-            stripePriceId: priceId,
-            subscriptionStatus: subscription.status,
-            subscriptionPlan: subPlan,
-            stripeCurrentPeriodEnd: new Date(
-              (subscription as unknown as { current_period_end: number }).current_period_end * 1000
-            ),
-          })
+          .set(buildStripeBillingUpdate(customerId, subscription))
           .where(eq(users.id, userId));
 
         break;
       }
       
-      case 'customer.subscription.updated':
-      case 'customer.subscription.deleted': {
-        const subscription = event.data.object as Stripe.Subscription;
-        const customerId = subscription.customer as string;
-        const priceId = subscription.items.data[0]?.price.id;
-        
-        const configuredPlan = resolvePlanFromPriceId(priceId);
-        const subPlan =
-          configuredPlan && isPaidSubscriptionStatus(subscription.status)
-            ? configuredPlan
-            : 'free';
+      case 'customer.subscription.updated': {
+        const eventSubscription = event.data.object as Stripe.Subscription;
+        const subscription = await stripe.subscriptions.retrieve(eventSubscription.id);
+        const customerId =
+          typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
 
         await db
           .update(users)
-          .set({
-            stripeSubscriptionId: subscription.id,
-            stripePriceId: priceId,
-            subscriptionStatus: subscription.status,
-            subscriptionPlan: subPlan,
-            stripeCurrentPeriodEnd: new Date(
-              (subscription as unknown as { current_period_end: number }).current_period_end * 1000
-            ),
-          })
+          .set(buildStripeBillingUpdate(customerId, subscription))
+          .where(eq(users.stripeCustomerId, customerId));
+
+        break;
+      }
+
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object as Stripe.Subscription;
+        const customerId =
+          typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
+
+        await db
+          .update(users)
+          .set(buildStripeBillingUpdate(customerId, subscription))
           .where(eq(users.stripeCustomerId, customerId));
 
         break;

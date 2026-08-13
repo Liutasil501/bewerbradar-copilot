@@ -1,5 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
+import type Stripe from 'stripe';
 import {
   sanitizePaywallTrigger,
   sanitizeReturnIntent,
@@ -22,6 +23,11 @@ import {
   resolvePlanFromPriceId,
   STRIPE_CONFIG,
 } from '@/lib/stripe/config';
+import {
+  buildStripeBillingUpdate,
+  getSubscriptionPeriodEnd,
+  resolveSubscriptionPlan,
+} from '@/lib/stripe/subscription-state';
 import {
   canUseFundedFirstAiImport,
   isFreeResumeSlotBlockedForAiImport,
@@ -482,5 +488,69 @@ describe('Real Production Stripe Verification Logic (F-401, F-406)', () => {
     const res = verifyStripeSubscriptionSession(validUser, validSession, unknownPriceSub);
     assert.strictEqual(res.verified, false);
     assert.strictEqual(res.error, 'Unknown or unconfigured price ID');
+  });
+});
+
+describe('Live Stripe subscription state', () => {
+  const subscription = (
+    status: Stripe.Subscription.Status,
+    priceId = STRIPE_CONFIG.prices.premium.monthly,
+    currentPeriodEnd = 1_800_000_000
+  ) =>
+    ({
+      id: 'sub_live_100',
+      customer: 'cus_live_100',
+      status,
+      items: {
+        data: [
+          {
+            current_period_end: currentPeriodEnd,
+            price: { id: priceId },
+          },
+        ],
+      },
+    }) as unknown as Stripe.Subscription;
+
+  it('reads the current period end from the subscription item used by the current API', () => {
+    assert.deepStrictEqual(
+      getSubscriptionPeriodEnd(subscription('active')),
+      new Date(1_800_000_000 * 1000)
+    );
+  });
+
+  it('maps only active or trialing subscriptions with configured live prices to a paid plan', () => {
+    assert.strictEqual(resolveSubscriptionPlan(subscription('active')), 'premium');
+    assert.strictEqual(resolveSubscriptionPlan(subscription('trialing')), 'premium');
+    assert.strictEqual(resolveSubscriptionPlan(subscription('past_due')), 'free');
+    assert.strictEqual(
+      resolveSubscriptionPlan(subscription('active', 'price_unknown')),
+      'free'
+    );
+  });
+
+  it('explicitly removes stale paid access when Stripe reports a negative state', () => {
+    const update = buildStripeBillingUpdate(
+      'cus_live_100',
+      subscription('canceled')
+    );
+
+    assert.strictEqual(update.subscriptionPlan, 'free');
+    assert.strictEqual(update.subscriptionStatus, 'canceled');
+    assert.strictEqual(update.stripeCustomerId, 'cus_live_100');
+    assert.deepStrictEqual(
+      update.stripeCurrentPeriodEnd,
+      new Date(1_800_000_000 * 1000)
+    );
+  });
+
+  it('clears obsolete test-mode billing identifiers when no live customer exists', () => {
+    assert.deepStrictEqual(buildStripeBillingUpdate(null, null), {
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+      stripePriceId: null,
+      subscriptionStatus: null,
+      subscriptionPlan: 'free',
+      stripeCurrentPeriodEnd: null,
+    });
   });
 });

@@ -60,7 +60,8 @@ staged values are not active in the application yet.
 
 - Branch: `codex/phase6-stripe-live`
 - Base: `75042d3e8`
-- Commit: pending
+- Initial candidate: `5a826979c`
+- Corrected candidate: pending
 - Deployment status: `NOT DEPLOYED`
 
 ## Implementation Summary
@@ -77,12 +78,17 @@ staged values are not active in the application yet.
 - Stripe SDK and Stripe.js packages are updated to support the pinned
   `2026-06-24.dahlia` API version,
 - Compose passes all live price and portal variables into the app container.
+- checkout and portal discard stale test-mode customer IDs during the live-mode
+  transition and synchronize negative subscription state back to Free,
+- webhook update events retrieve the current subscription before applying it,
+- current subscription periods are read from the subscription item for the
+  pinned Stripe API version.
 
 ## Verification So Far
 
-- TypeScript: passed
-- focused ESLint: passed
-- billing tests: 26/26 passed
+- TypeScript: passed after the corrective review changes
+- focused ESLint: passed after the corrective review changes
+- billing tests: 30/30 passed
 - Next.js production build: passed, 26/26 pages generated
 - production missing-price guard: passed
 - strict known/unknown live price mapping: passed
@@ -90,10 +96,19 @@ staged values are not active in the application yet.
 - VPS environment names and permissions: verified
 - VPS Compose configuration: valid
 
-## Open Gate
+## Independent Review
 
-Enable the minimum runtime permissions on the restricted live key and rerun the
-no-charge sequence:
+The first review returned NO-GO for stale test-mode customer IDs, missing
+negative-state repair, outdated subscription period access and webhook event
+ordering. All four findings are corrected in the current worktree and covered
+by focused billing tests. A second independent review is required after the
+corrected candidate commit.
+
+## Open External Gate
+
+Either enable `Customers Write` on the restricted runtime key or explicitly
+approve the full live secret as the persistent server credential. Then approve
+and run the no-charge sequence:
 
 1. create disposable Stripe customer,
 2. create live unpaid Checkout Session,

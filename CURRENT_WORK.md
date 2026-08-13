@@ -67,14 +67,14 @@ Use exactly one status per task:
 
 ### CW-2026-08-13-PHASE6-LIVE-STRIPE
 
-- Status: `IMPLEMENTING`
+- Status: `READY FOR SECOND REVIEW - EXTERNAL LIVE GATE OPEN`
 - Goal: Move BewerbRadar Copilot from Stripe test mode to a verified live
   subscription flow with strict price mapping, reliable webhooks and a usable
   self-service billing portal.
 - Implementation owner: Codex
 - Reviewer: independent second agent
 - Current owner: Codex
-- Next recipient: independent reviewer after the RAK permission gate is closed
+- Next recipient: independent reviewer for the corrected candidate
 - Branch: `codex/phase6-stripe-live`
 - Base commit: `75042d3e8`
 - Handoff file:
@@ -95,11 +95,14 @@ In scope:
 - exact environment handoff and a no-charge live Checkout smoke test,
 - independent billing review and production release evidence.
 
-Current blocker:
+External live gate:
 
 - the supplied restricted live key lacks Stripe `Customers Write`; the app
-  cannot create the first Checkout customer until this permission and any
-  further permissions exposed by the no-charge smoke test are enabled.
+  cannot create the first Checkout customer until that permission is enabled,
+  or the full server key is explicitly approved as the persistent production
+  credential,
+- the no-charge live smoke test still needs explicit approval for creating and
+  immediately deleting disposable live Stripe objects.
 
 Out of scope:
 

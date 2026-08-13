@@ -172,7 +172,10 @@ Production-relevant groups:
 - Hostinger SMTP,
 - application and NextAuth URLs,
 - server Gemini key,
-- Stripe secret, webhook secret and optional price/coupon IDs,
+- Stripe secret and webhook secret,
+- all four required production price IDs and the billing portal configuration
+  ID,
+- optional Stripe coupon ID,
 - optional database selection/path,
 - optional GTM container override.
 

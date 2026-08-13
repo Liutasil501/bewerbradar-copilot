@@ -3,17 +3,16 @@ import { stripe } from '@/lib/stripe/client';
 import {
   getConfiguredPriceId,
   hasCompleteStripePriceConfiguration,
-  isPaidSubscriptionStatus,
-  resolvePlanFromPriceId,
   STRIPE_CONFIG,
 } from '@/lib/stripe/config';
 import { getUserIdFromRequest, resolveUser } from '@/lib/auth/helpers';
 import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import Stripe from 'stripe';
 import { CheckoutInputSchema } from '@/lib/billing/schema';
 import { resolveCheckoutReturnPath } from '@/lib/billing/return-resolver';
+import { discoverStripeBillingState } from '@/lib/stripe/subscription-state';
+import type Stripe from 'stripe';
 
 export async function POST(req: NextRequest) {
   try {
@@ -43,73 +42,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Billing is temporarily unavailable' }, { status: 503 });
     }
 
-    let customerId = user.stripeCustomerId;
-    let activeSub: Stripe.Subscription | null = null;
+    const billingState = await discoverStripeBillingState(user);
+    await db.update(users).set(billingState.update).where(eq(users.id, user.id));
 
-    if (user.email) {
-      const customers = await stripe.customers.list({
-        email: user.email,
-        limit: 10,
-      });
+    let customerId = billingState.customer?.id || null;
+    user.stripeCustomerId = customerId;
+    user.subscriptionPlan = billingState.plan;
 
-      let activeCustomer: Stripe.Customer | null = null;
-      let fallbackCustomer: Stripe.Customer | null = null;
-
-      for (const customer of customers.data) {
-        const subscriptions = await stripe.subscriptions.list({
-          customer: customer.id,
-          limit: 10,
-        });
-
-        const activeOrTrialingSub = subscriptions.data.find((sub) =>
-          isPaidSubscriptionStatus(sub.status)
-        );
-
-        if (activeOrTrialingSub) {
-          activeCustomer = customer as Stripe.Customer;
-          activeSub = activeOrTrialingSub;
-          break;
-        }
-
-        if (!fallbackCustomer || customer.id === user.stripeCustomerId) {
-          fallbackCustomer = customer as Stripe.Customer;
-        }
-      }
-
-      const chosenCustomer = activeCustomer || fallbackCustomer;
-
-      if (chosenCustomer) {
-        customerId = chosenCustomer.id;
-
-        const updateData: Record<string, unknown> = {
-          stripeCustomerId: customerId,
-        };
-
-        if (activeSub) {
-          const subPriceId = activeSub.items.data[0]?.price.id;
-          updateData.stripeSubscriptionId = activeSub.id;
-          updateData.stripePriceId = subPriceId;
-          updateData.subscriptionStatus = activeSub.status;
-          updateData.subscriptionPlan = resolvePlanFromPriceId(subPriceId) || 'free';
-          updateData.stripeCurrentPeriodEnd = new Date(
-            (activeSub as unknown as { current_period_end: number }).current_period_end * 1000
-          );
-        }
-
-        const needsUpdate =
-          user.stripeCustomerId !== customerId ||
-          (activeSub && user.stripeSubscriptionId !== activeSub.id) ||
-          (activeSub && user.subscriptionPlan === 'free');
-
-        if (needsUpdate) {
-          await db.update(users).set(updateData).where(eq(users.id, user.id));
-          user.stripeCustomerId = customerId;
-          if (activeSub) user.subscriptionPlan = updateData.subscriptionPlan as 'free' | 'pro' | 'premium';
-        }
-      }
-    }
-
-    if ((user.subscriptionPlan !== 'free' || activeSub) && customerId) {
+    if (billingState.plan !== 'free' && customerId) {
       const portalSession = await stripe.billingPortal.sessions.create({
         customer: customerId,
         return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/${locale}/dashboard`,

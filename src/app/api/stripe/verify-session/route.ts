@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { verifyStripeSubscriptionSession } from '@/lib/billing/verify';
+import { getSubscriptionPeriodEnd } from '@/lib/stripe/subscription-state';
 
 export async function POST(req: NextRequest) {
   try {
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest) {
         stripePriceId: verification.priceId,
         subscriptionStatus: verification.status,
         subscriptionPlan: verification.plan,
-        stripeCurrentPeriodEnd: new Date((subscription as unknown as { current_period_end: number }).current_period_end * 1000),
+        stripeCurrentPeriodEnd: getSubscriptionPeriodEnd(subscription),
       })
       .where(eq(users.id, user.id));
 
