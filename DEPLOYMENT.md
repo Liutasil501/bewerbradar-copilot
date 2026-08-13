@@ -1,6 +1,6 @@
 # BewerbRadar Copilot – Production Deployment Runbook
 
-Last verified: 3 August 2026
+Last verified: 13 August 2026
 
 This runbook describes the verified production topology, release process,
 verification and rollback rules for BewerbRadar Copilot.

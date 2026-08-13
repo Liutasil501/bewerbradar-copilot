@@ -1,6 +1,6 @@
 # BewerbRadar Copilot – Current Project Context
 
-Last verified: 29 July 2026
+Last verified: 13 August 2026
 
 This file describes the authoritative current product and production state.
 It is not a historical changelog.
@@ -43,7 +43,10 @@ below only when the active task touches them.
 - BYOK keys stay in browser storage but transit the BewerbRadar backend in
   request headers.
 - Server AI provider: Gemini where route and entitlement logic permit it.
-- Stripe synchronizes paid-plan state into the local user record.
+- Live Stripe Billing is active in production from application release
+  `9f059d860`: Pro/Premium monthly and yearly Checkout, signed webhooks and the
+  localized Customer Portal. Production fails closed for unknown prices and
+  non-paid subscription states.
 - GTM, the Phase 2 DE/EN consent choice, consent updates and the bounded funnel
   events are live on the VPS from release `d98de14e`.
 - Phase 4 contextual paywalls, truthful annual-price communication, verified
