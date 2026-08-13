@@ -7,6 +7,7 @@ import Stripe from 'stripe';
 import { hasCompleteStripePriceConfiguration } from '@/lib/stripe/config';
 import {
   buildStripeBillingUpdate,
+  findPaidSubscription,
   resolveSubscriptionPlan,
 } from '@/lib/stripe/subscription-state';
 
@@ -85,9 +86,22 @@ export async function POST(req: NextRequest) {
       }
 
       case 'customer.subscription.deleted': {
-        const subscription = event.data.object as Stripe.Subscription;
+        const deletedSubscription = event.data.object as Stripe.Subscription;
         const customerId =
-          typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
+          typeof deletedSubscription.customer === 'string'
+            ? deletedSubscription.customer
+            : deletedSubscription.customer.id;
+        const currentSubscriptions = await stripe.subscriptions.list({
+          customer: customerId,
+          status: 'all',
+          limit: 100,
+        });
+        const subscription =
+          findPaidSubscription(currentSubscriptions.data) ||
+          currentSubscriptions.data.find(
+            (candidate) => candidate.id !== deletedSubscription.id
+          ) ||
+          deletedSubscription;
 
         await db
           .update(users)

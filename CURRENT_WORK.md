@@ -1,6 +1,6 @@
 # BewerbRadar Copilot – Current Work
 
-Last updated: 3 August 2026
+Last updated: 13 August 2026
 
 This file is the shared operational board for active Gemini, Codex and human
 work.
@@ -67,7 +67,7 @@ Use exactly one status per task:
 
 ### CW-2026-08-13-PHASE6-LIVE-STRIPE
 
-- Status: `READY FOR SECOND REVIEW - EXTERNAL LIVE GATE OPEN`
+- Status: `READY FOR REVIEW`
 - Goal: Move BewerbRadar Copilot from Stripe test mode to a verified live
   subscription flow with strict price mapping, reliable webhooks and a usable
   self-service billing portal.

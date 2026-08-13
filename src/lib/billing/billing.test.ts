@@ -25,6 +25,7 @@ import {
 } from '@/lib/stripe/config';
 import {
   buildStripeBillingUpdate,
+  findPaidSubscription,
   getSubscriptionPeriodEnd,
   resolveSubscriptionPlan,
 } from '@/lib/stripe/subscription-state';
@@ -552,5 +553,23 @@ describe('Live Stripe subscription state', () => {
       subscriptionPlan: 'free',
       stripeCurrentPeriodEnd: null,
     });
+  });
+
+  it('keeps a newer active subscription when an older delete event arrives late', () => {
+    const deletedOldSubscription = subscription('canceled');
+    deletedOldSubscription.id = 'sub_old_deleted';
+    const activeReplacement = subscription('active');
+    activeReplacement.id = 'sub_new_active';
+
+    const current = findPaidSubscription([
+      deletedOldSubscription,
+      activeReplacement,
+    ]);
+
+    assert.strictEqual(current?.id, 'sub_new_active');
+    assert.strictEqual(
+      buildStripeBillingUpdate('cus_live_100', current).subscriptionPlan,
+      'premium'
+    );
   });
 });

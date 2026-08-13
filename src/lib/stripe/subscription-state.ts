@@ -42,6 +42,16 @@ export function resolveSubscriptionPlan(
   return resolvePlanFromPriceId(priceId) || 'free';
 }
 
+export function findPaidSubscription(
+  subscriptions: Stripe.Subscription[]
+): Stripe.Subscription | null {
+  return (
+    subscriptions.find(
+      (subscription) => resolveSubscriptionPlan(subscription) !== 'free'
+    ) || null
+  );
+}
+
 export function buildStripeBillingUpdate(
   customerId: string | null,
   subscription?: Stripe.Subscription | null
@@ -113,9 +123,7 @@ export async function discoverStripeBillingState(
     });
     subscriptionsByCustomer.set(customer.id, subscriptions.data);
 
-    const eligibleSubscription = subscriptions.data.find(
-      (subscription) => resolveSubscriptionPlan(subscription) !== 'free'
-    );
+    const eligibleSubscription = findPaidSubscription(subscriptions.data);
 
     if (!paidSubscription && eligibleSubscription) {
       paidCustomer = customer;

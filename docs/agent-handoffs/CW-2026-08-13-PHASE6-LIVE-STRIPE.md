@@ -61,7 +61,7 @@ staged values are not active in the application yet.
 - Branch: `codex/phase6-stripe-live`
 - Base: `75042d3e8`
 - Initial candidate: `5a826979c`
-- Corrected candidate: pending
+- Corrected candidate: `f8f0ed344`
 - Deployment status: `NOT DEPLOYED`
 
 ## Implementation Summary
@@ -88,7 +88,7 @@ staged values are not active in the application yet.
 
 - TypeScript: passed after the corrective review changes
 - focused ESLint: passed after the corrective review changes
-- billing tests: 30/30 passed
+- billing tests: 31/31 passed
 - Next.js production build: passed, 26/26 pages generated
 - production missing-price guard: passed
 - strict known/unknown live price mapping: passed
@@ -101,8 +101,11 @@ staged values are not active in the application yet.
 The first review returned NO-GO for stale test-mode customer IDs, missing
 negative-state repair, outdated subscription period access and webhook event
 ordering. All four findings are corrected in the current worktree and covered
-by focused billing tests. A second independent review is required after the
-corrected candidate commit.
+by focused billing tests. The second review confirmed those fixes but found one
+remaining delayed-delete ordering case: an old deleted subscription could
+overwrite a newer active subscription for the same customer. The next delta
+queries current customer subscriptions and preserves a configured active or
+trialing replacement before writing Free.
 
 ## Open External Gate
 
