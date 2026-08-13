@@ -67,15 +67,14 @@ Use exactly one status per task:
 
 ### CW-2026-08-13-PHASE6-LIVE-STRIPE
 
-- Status: `APPROVED`
+- Status: `READY TO DEPLOY`
 - Goal: Move BewerbRadar Copilot from Stripe test mode to a verified live
   subscription flow with strict price mapping, reliable webhooks and a usable
   self-service billing portal.
 - Implementation owner: Codex
 - Reviewer: independent second agent
 - Current owner: Codex
-- Next recipient: Codex after the external live credential and smoke-test gate
-  is explicitly approved
+- Next recipient: Codex after explicit production deployment authorization
 - Branch: `codex/phase6-stripe-live`
 - Base commit: `75042d3e8`
 - Handoff file:
@@ -96,14 +95,18 @@ In scope:
 - exact environment handoff and a no-charge live Checkout smoke test,
 - independent billing review and production release evidence.
 
-External live gate:
+External live gate: `VERIFIED`
 
-- the supplied restricted live key lacks Stripe `Customers Write`; the app
-  cannot create the first Checkout customer until that permission is enabled,
-  or the full server key is explicitly approved as the persistent production
-  credential,
-- the no-charge live smoke test still needs explicit approval for creating and
-  immediately deleting disposable live Stripe objects.
+- the explicitly approved full live server key is stored only in the protected
+  VPS environment file with mode `600`,
+- all seven Stripe runtime variables are present,
+- four unpaid live Checkout variants and a Customer Portal session were
+  created successfully,
+- all four Checkout sessions were expired and the disposable customer was
+  deleted,
+- the smoke test created no charge,
+- the running production container still uses the previous test key and has
+  not been restarted or deployed.
 
 Out of scope:
 

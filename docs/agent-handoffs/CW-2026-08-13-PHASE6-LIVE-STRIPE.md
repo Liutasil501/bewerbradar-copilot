@@ -53,8 +53,10 @@ required variable names:
 - `STRIPE_PORTAL_CONFIGURATION_ID`
 
 The environment file is mode `600`, Compose validation passes and backups were
-created before the edit. The running container has not been restarted, so the
-staged values are not active in the application yet.
+created before the edit. The explicitly approved full live server key is now
+stored in that protected environment. The running container has not been
+restarted, so it still uses the previous test key and the staged live values
+are not active in the application yet.
 
 ## Candidate
 
@@ -111,17 +113,24 @@ The final independent delta review returned GO for `00f7cdf92`. The remaining
 gates concern only the production credential choice and the disposable
 no-charge live smoke test.
 
-## Open External Gate
+## Live Smoke Test
 
-Either enable `Customers Write` on the restricted runtime key or explicitly
-approve the full live secret as the persistent server credential. Then approve
-and run the no-charge sequence:
+Verified on 13 August 2026 with the explicitly approved full live server key:
 
-1. create disposable Stripe customer,
-2. create live unpaid Checkout Session,
-3. create customer portal session,
-4. expire Checkout Session,
-5. delete disposable customer.
+1. one disposable live customer created,
+2. four unpaid live Checkout Sessions created for Pro/Premium monthly/yearly,
+3. one live customer portal session created,
+4. all four Checkout Sessions expired,
+5. disposable customer deleted,
+6. zero charges created.
 
-After that, complete the independent code review. Deployment still requires
+Post-test VPS verification:
+
+- environment mode: `600`,
+- server key kind: `sk_live`,
+- required Stripe variables: `7/7`,
+- temporary secret file: absent,
+- running container key kind: `sk_test`.
+
+The candidate is `READY TO DEPLOY`. Production deployment still requires
 explicit authorization in the current request.
