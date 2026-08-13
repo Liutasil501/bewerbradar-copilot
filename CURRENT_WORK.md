@@ -65,24 +65,6 @@ Use exactly one status per task:
 
 ## Active Work
 
-### CW-2026-08-13-LEGAL-PAGES
-
-- Status: `READY FOR REVIEW`
-- Goal: Replace dead or external legal links with localized product-specific
-  legal pages and working conversion links.
-- Implementation owner: Codex
-- Reviewer: pending independent legal-sensitive review
-- Current owner: Codex
-- Branch: `codex/legal-pages`
-- Production impact: Public legal information, login disclosures, footer trust
-  navigation and public-route matching.
-- Deployment status: not deployed
-- Verification: type-check, focused lint, production build, public-route HTTP
-  smoke test and visual browser review passed locally; final verification is
-  repeated after the last bounded corrections.
-- Legal status: Product-specific working draft based on the implemented data
-  flows. It is not represented as lawyer-certified.
-
 ### CW-2026-07-29-PHASE3-IMPORT-ACTIVATION
 
 - Status: `DEPLOYING - NOT YET VERIFIED`
