@@ -65,6 +65,60 @@ Use exactly one status per task:
 
 ## Active Work
 
+### CW-2026-08-13-PHASE6-LIVE-STRIPE
+
+- Status: `IMPLEMENTING`
+- Goal: Move BewerbRadar Copilot from Stripe test mode to a verified live
+  subscription flow with strict price mapping, reliable webhooks and a usable
+  self-service billing portal.
+- Implementation owner: Codex
+- Reviewer: independent second agent
+- Current owner: Codex
+- Next recipient: independent reviewer after the RAK permission gate is closed
+- Branch: `codex/phase6-stripe-live`
+- Base commit: `75042d3e8`
+- Handoff file:
+  `docs/agent-handoffs/CW-2026-08-13-PHASE6-LIVE-STRIPE.md`
+- Production impact: Live Stripe products and prices, production billing
+  credentials, checkout, subscription entitlements, webhooks and portal.
+- Deployment required: yes, but not authorized in the current request.
+- Deployment status: `NOT DEPLOYED`
+
+In scope:
+
+- two live products and four recurring EUR prices matching the existing UI,
+- live webhook and customer portal configuration,
+- least-privilege production Stripe key permissions,
+- fail-closed production price configuration and entitlement mapping,
+- active/trialing-only paid access,
+- localized portal return paths,
+- exact environment handoff and a no-charge live Checkout smoke test,
+- independent billing review and production release evidence.
+
+Current blocker:
+
+- the supplied restricted live key lacks Stripe `Customers Write`; the app
+  cannot create the first Checkout customer until this permission and any
+  further permissions exposed by the no-charge smoke test are enabled.
+
+Out of scope:
+
+- enabling Stripe Tax without a confirmed active tax registration,
+- changing product prices or plan entitlements,
+- coupons or artificial discounts,
+- GA4/GTM validation, which remains the following analytics phase.
+
+T-shirt size: `L`
+
+Success signal:
+
+- a real authenticated Free user reaches a live Stripe Checkout for every
+  Pro/Premium monthly/yearly combination,
+- a completed live subscription unlocks only the matching plan,
+- cancellation and non-paid statuses remove paid access correctly,
+- the customer portal returns to the correct locale,
+- no test IDs, broad secret key or unknown price can grant production access.
+
 ### CW-2026-07-29-PHASE3-IMPORT-ACTIVATION
 
 - Status: `DEPLOYING - NOT YET VERIFIED`

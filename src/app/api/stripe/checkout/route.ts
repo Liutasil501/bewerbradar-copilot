@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe/client';
-import { STRIPE_CONFIG } from '@/lib/stripe/config';
+import {
+  getConfiguredPriceId,
+  hasCompleteStripePriceConfiguration,
+  isPaidSubscriptionStatus,
+  resolvePlanFromPriceId,
+  STRIPE_CONFIG,
+} from '@/lib/stripe/config';
 import { getUserIdFromRequest, resolveUser } from '@/lib/auth/helpers';
 import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
@@ -27,14 +33,15 @@ export async function POST(req: NextRequest) {
 
     const { tier, plan, trigger, returnIntent, locale } = parseResult.data;
 
-    const priceId = STRIPE_CONFIG.prices[tier][plan];
+    if (!hasCompleteStripePriceConfiguration()) {
+      console.error('Stripe Checkout unavailable: price configuration is incomplete');
+      return NextResponse.json({ error: 'Billing is temporarily unavailable' }, { status: 503 });
+    }
 
-    const getPlanFromPriceId = (pId: string): 'free' | 'pro' | 'premium' => {
-      if (!pId) return 'free';
-      if (pId === STRIPE_CONFIG.prices.premium.monthly || pId === STRIPE_CONFIG.prices.premium.yearly) return 'premium';
-      if (pId === STRIPE_CONFIG.prices.pro.monthly || pId === STRIPE_CONFIG.prices.pro.yearly) return 'pro';
-      return 'pro';
-    };
+    const priceId = getConfiguredPriceId(tier, plan);
+    if (!priceId) {
+      return NextResponse.json({ error: 'Billing is temporarily unavailable' }, { status: 503 });
+    }
 
     let customerId = user.stripeCustomerId;
     let activeSub: Stripe.Subscription | null = null;
@@ -54,8 +61,8 @@ export async function POST(req: NextRequest) {
           limit: 10,
         });
 
-        const activeOrTrialingSub = subscriptions.data.find(
-          (sub) => sub.status === 'active' || sub.status === 'trialing'
+        const activeOrTrialingSub = subscriptions.data.find((sub) =>
+          isPaidSubscriptionStatus(sub.status)
         );
 
         if (activeOrTrialingSub) {
@@ -83,7 +90,7 @@ export async function POST(req: NextRequest) {
           updateData.stripeSubscriptionId = activeSub.id;
           updateData.stripePriceId = subPriceId;
           updateData.subscriptionStatus = activeSub.status;
-          updateData.subscriptionPlan = getPlanFromPriceId(subPriceId);
+          updateData.subscriptionPlan = resolvePlanFromPriceId(subPriceId) || 'free';
           updateData.stripeCurrentPeriodEnd = new Date(
             (activeSub as unknown as { current_period_end: number }).current_period_end * 1000
           );
@@ -97,9 +104,7 @@ export async function POST(req: NextRequest) {
         if (needsUpdate) {
           await db.update(users).set(updateData).where(eq(users.id, user.id));
           user.stripeCustomerId = customerId;
-          if (activeSub) {
-            user.subscriptionPlan = updateData.subscriptionPlan as 'pro' | 'premium';
-          }
+          if (activeSub) user.subscriptionPlan = updateData.subscriptionPlan as 'free' | 'pro' | 'premium';
         }
       }
     }
@@ -108,6 +113,9 @@ export async function POST(req: NextRequest) {
       const portalSession = await stripe.billingPortal.sessions.create({
         customer: customerId,
         return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/${locale}/dashboard`,
+        ...(STRIPE_CONFIG.portalConfigurationId && {
+          configuration: STRIPE_CONFIG.portalConfigurationId,
+        }),
       });
       return NextResponse.json({ url: portalSession.url });
     }
@@ -163,6 +171,7 @@ export async function POST(req: NextRequest) {
         trigger,
         returnIntentJson: returnIntentJson || '',
       },
+      integration_identifier: 'bewerbradar_checkout_fqzmpkrt',
     };
 
     if (plan === 'monthly' && STRIPE_CONFIG.coupons.firstMonthDiscount) {

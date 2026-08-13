@@ -1,4 +1,7 @@
-import { STRIPE_CONFIG } from '@/lib/stripe/config';
+import {
+  isPaidSubscriptionStatus,
+  resolvePlanFromPriceId,
+} from '@/lib/stripe/config';
 import { sanitizePaywallTrigger, sanitizeReturnIntent, type ReturnIntent, type PaywallTrigger } from './schema';
 
 export interface StripeSessionForVerify {
@@ -64,23 +67,13 @@ export function verifyStripeSubscriptionSession(
   }
 
   // 3. Active Subscription Status check
-  const activeStatuses = ['active', 'trialing'];
-  if (!activeStatuses.includes(subscription.status)) {
+  if (!isPaidSubscriptionStatus(subscription.status)) {
     return { verified: false, status: subscription.status, error: 'Subscription is not active' };
   }
 
   // 4. Strict Price Mapping Check: Fail closed on unknown prices!
   const priceId = subscription.items.data[0]?.price?.id;
-  let subPlan: 'pro' | 'premium' | null = null;
-
-  if (priceId === STRIPE_CONFIG.prices.pro.monthly || priceId === STRIPE_CONFIG.prices.pro.yearly) {
-    subPlan = 'pro';
-  } else if (
-    priceId === STRIPE_CONFIG.prices.premium.monthly ||
-    priceId === STRIPE_CONFIG.prices.premium.yearly
-  ) {
-    subPlan = 'premium';
-  }
+  const subPlan = resolvePlanFromPriceId(priceId);
 
   if (!subPlan || !priceId) {
     return { verified: false, error: 'Unknown or unconfigured price ID' };

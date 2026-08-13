@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/hooks/use-auth';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { User, LogOut, Settings, CreditCard, Sparkles, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -24,6 +24,7 @@ export function UserMenu() {
   const { user, signOut } = useAuth();
   const t = useTranslations('auth');
   const tSettings = useTranslations('settings');
+  const locale = useLocale();
   const { authEnabled } = useRuntimeConfig();
 
   const hydrate = useSubscriptionStore((s) => s.hydrate);
@@ -47,8 +48,10 @@ export function UserMenu() {
       const res = await fetch('/api/stripe/portal', {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           ...(fingerprint ? { 'x-fingerprint': fingerprint } : {}),
         },
+        body: JSON.stringify({ locale }),
       });
       const data = await res.json();
       if (data.url) {

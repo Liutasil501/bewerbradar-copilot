@@ -17,7 +17,11 @@ import {
   resolveTemplateContinuation,
 } from './return-resolver';
 import { consumePaidActionCompletion } from './completion';
-import { STRIPE_CONFIG } from '@/lib/stripe/config';
+import {
+  isPaidSubscriptionStatus,
+  resolvePlanFromPriceId,
+  STRIPE_CONFIG,
+} from '@/lib/stripe/config';
 import {
   canUseFundedFirstAiImport,
   isFreeResumeSlotBlockedForAiImport,
@@ -79,6 +83,27 @@ describe('First funded AI import access', () => {
       }),
       true
     );
+  });
+});
+
+describe('Stripe entitlement mapping', () => {
+  it('maps only configured prices to paid plans', () => {
+    assert.strictEqual(resolvePlanFromPriceId(STRIPE_CONFIG.prices.pro.monthly), 'pro');
+    assert.strictEqual(
+      resolvePlanFromPriceId(STRIPE_CONFIG.prices.premium.yearly),
+      'premium'
+    );
+    assert.strictEqual(resolvePlanFromPriceId('price_unknown'), null);
+    assert.strictEqual(resolvePlanFromPriceId(null), null);
+  });
+
+  it('grants paid access only to active and trialing subscriptions', () => {
+    assert.strictEqual(isPaidSubscriptionStatus('active'), true);
+    assert.strictEqual(isPaidSubscriptionStatus('trialing'), true);
+    assert.strictEqual(isPaidSubscriptionStatus('past_due'), false);
+    assert.strictEqual(isPaidSubscriptionStatus('unpaid'), false);
+    assert.strictEqual(isPaidSubscriptionStatus('canceled'), false);
+    assert.strictEqual(isPaidSubscriptionStatus('incomplete'), false);
   });
 });
 

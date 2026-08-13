@@ -4,7 +4,12 @@ import { getUserIdFromRequest, resolveUser } from '@/lib/auth/helpers';
 import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { STRIPE_CONFIG } from '@/lib/stripe/config';
+import {
+  hasCompleteStripePriceConfiguration,
+  isPaidSubscriptionStatus,
+  resolvePlanFromPriceId,
+  STRIPE_CONFIG,
+} from '@/lib/stripe/config';
 import Stripe from 'stripe';
 
 export async function POST(req: NextRequest) {
@@ -16,12 +21,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const getPlanFromPriceId = (priceId: string): 'free' | 'pro' | 'premium' => {
-      if (!priceId) return 'free';
-      if (priceId === STRIPE_CONFIG.prices.premium.monthly || priceId === STRIPE_CONFIG.prices.premium.yearly) return 'premium';
-      if (priceId === STRIPE_CONFIG.prices.pro.monthly || priceId === STRIPE_CONFIG.prices.pro.yearly) return 'pro';
-      return 'pro'; // default fallback if paid
-    };
+    if (!hasCompleteStripePriceConfiguration()) {
+      console.error('Stripe Portal unavailable: price configuration is incomplete');
+      return NextResponse.json({ error: 'Billing is temporarily unavailable' }, { status: 503 });
+    }
+
+    const rawBody = await req.json().catch(() => ({}));
+    const locale = rawBody?.locale === 'en' ? 'en' : 'de';
 
     let customerId = user.stripeCustomerId;
 
@@ -43,8 +49,8 @@ export async function POST(req: NextRequest) {
         });
 
         // Find if this customer has any active or trialing subscription
-        const activeOrTrialingSub = subscriptions.data.find(
-          (sub) => sub.status === 'active' || sub.status === 'trialing'
+        const activeOrTrialingSub = subscriptions.data.find((sub) =>
+          isPaidSubscriptionStatus(sub.status)
         );
 
         if (activeOrTrialingSub) {
@@ -72,7 +78,7 @@ export async function POST(req: NextRequest) {
           updateData.stripeSubscriptionId = activeSub.id;
           updateData.stripePriceId = priceId;
           updateData.subscriptionStatus = activeSub.status;
-          updateData.subscriptionPlan = getPlanFromPriceId(priceId);
+          updateData.subscriptionPlan = resolvePlanFromPriceId(priceId) || 'free';
           updateData.stripeCurrentPeriodEnd = new Date(((activeSub as unknown) as { current_period_end: number }).current_period_end * 1000);
         }
 
@@ -109,7 +115,10 @@ export async function POST(req: NextRequest) {
 
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard`,
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/${locale}/dashboard`,
+      ...(STRIPE_CONFIG.portalConfigurationId && {
+        configuration: STRIPE_CONFIG.portalConfigurationId,
+      }),
     });
 
     return NextResponse.json({ url: session.url });

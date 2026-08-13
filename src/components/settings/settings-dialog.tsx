@@ -151,8 +151,10 @@ export function SettingsDialog() {
       const res = await fetch('/api/stripe/portal', {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           ...(fingerprint ? { 'x-fingerprint': fingerprint } : {}),
         },
+        body: JSON.stringify({ locale }),
       });
       const data = await res.json();
       if (data.url) {
