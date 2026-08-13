@@ -162,7 +162,15 @@ Respond with JSON only.`,
     });
   } catch (error) {
     if (error instanceof AIConfigError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
+      return NextResponse.json(
+        { error: error.message },
+        {
+          status: error.status,
+          ...(error.retryAfterSeconds && {
+            headers: { 'Retry-After': String(error.retryAfterSeconds) },
+          }),
+        }
+      );
     }
     console.error('POST /api/ai/generate-resume error: %s', error instanceof Error ? error.name : 'UnknownError');
     return NextResponse.json({ error: 'Failed to generate resume' }, { status: 500 });

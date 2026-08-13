@@ -2,25 +2,31 @@ import { NextRequest } from 'next/server';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { canUseServerFundedAI, type ServerFundedAIFeature } from './access';
+import { consumeServerFundedAIRequest } from './server-funded-rate-limit';
 
 export interface AIConfig {
   provider: string;
   apiKey: string;
   baseURL: string;
   model: string;
-  isPremiumBypass?: boolean;
+  usesServerKey?: boolean;
+}
+
+interface AIConfigOptions {
+  serverFundedFeature?: ServerFundedAIFeature;
 }
 
 export function extractAIConfig(
   request: NextRequest,
-  user?: { subscriptionPlan?: string | null; aiImportsCount?: number | null } | null,
-  options?: { allowFreeTrial?: boolean }
+  user?: { id?: string; subscriptionPlan?: string | null; aiImportsCount?: number | null } | null,
+  options?: AIConfigOptions
 ): AIConfig {
   let provider = request.headers.get('x-provider') || 'openai';
   let apiKey = request.headers.get('x-api-key') || '';
   let baseURL = request.headers.get('x-base-url') || 'https://api.openai.com/v1';
   let model = request.headers.get('x-model') || 'gpt-4o';
-  let isPremiumBypass = false;
+  let usesServerKey = false;
 
   // Auto-detect provider if user API key format doesn't match selected provider header
   if (apiKey) {
@@ -39,21 +45,25 @@ export function extractAIConfig(
     }
   }
 
-  // Premium/Pro Bypass & Free Trial Import: If no user-provided key, and user is pro/premium OR eligible for 1 free trial import
-  const isEligibleForServerKey =
-    user?.subscriptionPlan === 'premium' ||
-    user?.subscriptionPlan === 'pro' ||
-    (options?.allowFreeTrial && (user?.subscriptionPlan === 'free' || !user?.subscriptionPlan) && (user?.aiImportsCount || 0) < 1);
+  const serverFundedFeature = options?.serverFundedFeature || 'advanced_ai';
+  const isEligibleForServerKey = canUseServerFundedAI(user, serverFundedFeature);
 
   if (!apiKey && isEligibleForServerKey) {
     provider = 'gemini';
     apiKey = process.env.GEMINI_API_KEY || '';
     baseURL = ''; // Use default
     model = 'gemini-3.1-flash-lite';
-    isPremiumBypass = true;
+    usesServerKey = true;
+
+    if (apiKey && user?.id) {
+      const rateLimit = consumeServerFundedAIRequest(user.id);
+      if (!rateLimit.allowed) {
+        throw new AIConfigError('rateLimitExceeded', 429, rateLimit.retryAfterSeconds);
+      }
+    }
   }
 
-  return { provider, apiKey, baseURL, model, isPremiumBypass };
+  return { provider, apiKey, baseURL, model, usesServerKey };
 }
 
 export function getModel(config: AIConfig, modelOverride?: string) {
@@ -62,7 +72,7 @@ export function getModel(config: AIConfig, modelOverride?: string) {
   }
   
   // If Premium Bypass is active, ignore client's model override since they don't own the key
-  const modelId = config.isPremiumBypass ? config.model : (modelOverride || config.model);
+  const modelId = config.usesServerKey ? config.model : (modelOverride || config.model);
 
   switch (config.provider) {
     case 'anthropic': {
@@ -91,7 +101,11 @@ export function getJsonProviderOptions(config: AIConfig) {
 }
 
 export class AIConfigError extends Error {
-  constructor(message: string) {
+  constructor(
+    message: string,
+    public readonly status = 401,
+    public readonly retryAfterSeconds?: number
+  ) {
     super(message);
     this.name = 'AIConfigError';
   }

@@ -39,7 +39,9 @@ below only when the active task touches them.
 - `beta` was reconciled with `main` on 28 July 2026; verify ancestry before
   every new integration cycle rather than relying on this snapshot.
 - Free plan: one resume, five templates, JSON/TXT export and no public sharing.
-- Free plan users receive 1 server-funded free trial AI import tracked via `aiImportsCount`. BYOK, Pro, and Premium users perform AI imports without consuming the free trial import counter.
+- Free plan users receive 1 server-funded free trial AI import tracked via
+  `aiImportsCount`. Pro and Premium imports are server funded. BYOK imports use
+  the user's provider key and never consume the trial counter.
 - BYOK keys stay in browser storage but transit the BewerbRadar backend in
   request headers.
 - Server AI provider: Gemini where route and entitlement logic permit it.
@@ -47,8 +49,9 @@ below only when the active task touches them.
   `9f059d860`: Pro/Premium monthly and yearly Checkout, signed webhooks and the
   localized Customer Portal. Production fails closed for unknown prices and
   non-paid subscription states.
-- GTM, the Phase 2 DE/EN consent choice, consent updates and the bounded funnel
-  events are live on the VPS from release `d98de14e`.
+- GTM, the Phase 2 DE/EN consent choice and bounded funnel instrumentation are
+  live on the VPS from release `d98de14e`. GTM version 3 now contains the GA4
+  Google tag for measurement ID `G-6XRD25H13C`.
 - Phase 4 contextual paywalls, truthful annual-price communication, verified
   Stripe checkout returns, blocked-action continuation and bounded revenue
   events are live on the VPS from release `54e371b`.
@@ -56,9 +59,9 @@ below only when the active task touches them.
   as public routes from release `75fcc9d1b`. Their content is a
   product-specific working draft and not a substitute for final Austrian legal
   review.
-- External GA4 tag configuration, Tag Assistant and DebugView validation remain
-  open. Other high-value follow-ups include checkout disclosure validation,
-  external Studio exposure and the remaining dependency advisories.
+- GA4 page views have been observed in Realtime. The Phase 7 candidate changes
+  product events from plain data-layer objects to explicit `gtag` events; their
+  final receipt requires a production smoke test after deployment.
 - Resume content is sensitive personal data and must not enter logs or
   analytics.
 
@@ -297,10 +300,7 @@ Current intended and implemented core benefits:
 - all templates,
 - PDF, DOCX and HTML export,
 - public sharing,
-- server Gemini key eligibility in the shared AI provider layer.
-
-Some AI feature UIs still explicitly request Premium even though the shared
-server provider accepts Pro. This is a known inconsistency.
+- server-funded AI resume imports.
 
 ### Premium
 
@@ -331,23 +331,22 @@ Keys are:
 - not stored in the database,
 - transmitted to the BewerbRadar backend through AI request headers.
 
-## 8. Known Entitlement Inconsistencies
+Valid BYOK unlocks supported advanced AI features for Free and Pro users while
+keeping plan-specific resume, template, export and sharing limits unchanged.
 
-The following remaining differences must be resolved before treating the
-overall plan matrix as final:
+## 8. Canonical AI Entitlements
 
-1. Several Premium AI dialogs enforce Premium only in the UI, while their API
-   routes primarily rely on AI-key availability rather than an explicit
-   Premium plan check.
+The server-funded AI decision is centralized in `src/lib/ai/access.ts`:
 
-2. The shared AI provider allows Pro users to use the server Gemini key, but
-   some client dialogs still block Pro users behind a Premium paywall.
+| State | Resume import | Advanced AI |
+| --- | --- | --- |
+| Free, unused trial | one server-funded import | BYOK only |
+| Free, trial used | BYOK with a free resume slot | BYOK only |
+| Pro | server funded | BYOK only |
+| Premium | server funded | server funded |
 
-3. Interview UI offers a BYOK override, but the interview creation API requires
-   `subscriptionPlan === premium`.
-
-4. Client and server entitlement behavior must be unified before marketing
-   claims are finalized.
+App-funded requests use a light per-user burst guard. It prevents loops and
+simple automation without introducing a hidden daily quota for paid plans.
 
 ## 9. Stripe
 
@@ -361,6 +360,12 @@ Supported paid tiers:
 
 - Pro monthly/yearly
 - Premium monthly/yearly
+
+Checkout displays localized cancellation and withdrawal information. The
+Stripe terms checkbox is enabled only after the public Terms URL is confirmed
+in Stripe Live settings. Automatic tax is disabled by default and requires
+both an explicit enable flag and confirmation that collecting registrations
+and product tax codes are configured.
 
 Displayed prices:
 
@@ -472,7 +477,7 @@ Implementation:
 - event properties use bounded allowlists and exclude resume content, filenames,
   contact information, application identifiers, API keys and free-form errors.
 
-Verified production state on 29 July 2026:
+Verified external state on 13 August 2026:
 
 - GTM container ID is present in live HTML,
 - consent defaults execute before GTM,
@@ -480,15 +485,17 @@ Verified production state on 29 July 2026:
 - necessary-only blocks optional product events,
 - analytics approval grants only analytics storage while advertising remains
   denied,
-- the live landing CTA emits the bounded `import_cta_clicked` event,
+- GTM version 3 is published with a Google tag for `G-6XRD25H13C`,
+- the GA4 property is named `BewerbRadar Copilot`, uses Austria time and EUR,
+- the web stream is named `BewerbRadar Copilot` and points to
+  `https://copilot.bewerbradar.de`,
+- GA4 Realtime received BewerbRadar `page_view` and `user_engagement`,
 - DE and EN public pages and `/api/health` respond successfully,
 - VPS release `d98de14e` runs with zero container restarts after deployment.
 
-External state still required:
-
-- correct GA4 measurement ID and Google Tag inside GTM,
-- Tag Assistant validation,
-- GA4 DebugView validation.
+After the Phase 7 release, verify at least one consented bounded product event
+in GA4 Realtime or DebugView before declaring product-event measurement fully
+closed.
 
 Resume content, filenames, e-mail addresses and other PII must never be sent to
 analytics.
@@ -583,6 +590,12 @@ Optional:
 - `NEXT_PUBLIC_GTM_ID`
 - Stripe price variables
 - Stripe coupon variable
+- `STRIPE_TERMS_OF_SERVICE_CONFIGURED`
+- `STRIPE_AUTOMATIC_TAX_ENABLED`
+- `STRIPE_TAX_CONFIGURATION_CONFIRMED`
+- `AI_SERVER_RATE_LIMIT_WINDOW_MS`
+- `AI_SERVER_RATE_LIMIT_MAX_REQUESTS`
+- `HEALTH_MIN_FREE_DISK_MB`
 - `DB_TYPE`
 - `SQLITE_PATH`
 - `DATABASE_URL`
@@ -630,16 +643,15 @@ Any commits unique to both sides require investigation before merge.
 2. PostgreSQL schema does not fully mirror current SQLite billing fields.
 3. SQLite adapter catches migration failures and may continue startup.
 4. There is no established automated unit or end-to-end test suite.
-5. The health endpoint is live, but production observability remains limited
-   to container state, logs and endpoint checks.
-6. Paywall and BYOK behavior is not fully consistent across every AI feature.
+5. The health endpoint is live. Phase 7 adds a scheduled external probe that
+   opens one GitHub incident issue on failure and closes it after recovery.
 7. Some Chinese error or fallback strings remain in editor code.
 8. `db.bewerbradar.de` may expose Drizzle Studio without the protection used
     by `studio.bewerbradar.de`.
 9. PostgreSQL is publicly bound on port 5432 in the broader stack and requires
     firewall and credential review.
 10. Two historical SQLite database names exist in the production volume.
-11. The user-facing consent mechanism is live, but external GA4 receipt still
-    requires Tag Assistant and DebugView verification.
+11. GA4 page-view receipt is verified; Phase 7 product-event receipt still
+    requires its post-deployment smoke test.
 12. The production dependency audit retains assessed transitive advisories in
     browser/PDF, image and build tooling; upgrades remain follow-up work.

@@ -391,10 +391,16 @@ flowchart TD
     Eligible -- No --> Reject["Return missing-key or entitlement error"]
 ```
 
-Server-key eligibility is shared provider behavior, while some feature UIs and
-APIs add their own plan checks. The current inconsistencies are documented in
-`PROJECT_CONTEXT.md`; marketing must not assume a uniform matrix until they are
-resolved.
+`src/lib/ai/access.ts` is the canonical server-funded decision:
+
+- Free receives exactly one funded resume import,
+- Pro receives funded resume imports,
+- Premium receives funded imports and advanced AI,
+- a user-provided key enables supported advanced AI without consuming the
+  application provider key.
+
+Server-funded calls also pass through a light per-user burst guard. It is a
+cost and loop guardrail, not a hidden daily usage quota.
 
 ### AI resume chat
 
@@ -487,7 +493,7 @@ changing local state. Update events retrieve the current subscription before
 applying it, and subscription periods come from the current subscription-item
 fields of the pinned Stripe API version.
 
-Entitlements are currently distributed across:
+Product entitlements still span:
 
 - translation copy and pricing UI,
 - `use-paywall`,
@@ -498,8 +504,9 @@ Entitlements are currently distributed across:
 - shared AI provider logic,
 - Stripe price-to-plan mapping.
 
-A plan change must trace all of these layers. No single client component is the
-authoritative entitlement boundary.
+A plan change must trace all of these layers. Client components are not trusted
+as entitlement boundaries; `src/lib/ai/access.ts` owns server-funded AI access
+and API routes remain responsible for ownership and plan enforcement.
 
 ## 12. Analytics and Consent
 
@@ -517,7 +524,7 @@ flowchart LR
     Choice["DE/EN consent component"] --> Update["Consent update"]
     Update -.-> GTM
     Choice --> Gate["Analytics event gate"]
-    Gate --> Events["Typed bounded funnel events"]
+    Gate --> Events["Typed bounded gtag events"]
 ```
 
 Relevant implementation:
@@ -533,9 +540,10 @@ Relevant implementation:
 - `src/components/analytics/analytics-actions.tsx` contains small client actions
   for server-rendered landing sections.
 
-The repository does not confirm the external GA4 Google Tag, Tag Assistant
-validation or GA4 DebugView. Repository instrumentation, production observation
-and causal validation remain separate evidence states.
+GTM version 3 contains the GA4 Google tag for `G-6XRD25H13C`, and GA4 Realtime
+has received BewerbRadar page views. Repository instrumentation, production
+observation and causal validation remain separate evidence states; explicit
+product-event receipt must be rechecked after deploying its `gtag` transport.
 
 Analytics events must never include resume content, filenames, contact data,
 e-mail addresses, user identifiers, resume identifiers, API keys, prompts,
@@ -574,6 +582,19 @@ The Dockerfile:
 
 Production release mechanics and verification are defined in `DEPLOYMENT.md`.
 
+Operational safety is intentionally small but layered:
+
+- each deployment creates and integrity-checks a consistent SQLite backup
+  before rebuilding the application,
+- a systemd timer repeats that backup daily and retains 14 days by default,
+- Hostinger full-VPS backups provide the separate infrastructure layer,
+- a scheduled GitHub workflow probes the public health and landing endpoints
+  and maintains one incident issue until recovery.
+
+The public health route checks database initialization and returns `503` when
+SQLite storage falls below the configured free-space threshold, allowing the
+external probe to surface both application failure and imminent disk pressure.
+
 ## 14. Environment Boundaries
 
 Environment variables select runtime integrations; secret values never belong
@@ -586,7 +607,9 @@ Important groups:
 - SMTP credentials,
 - database adapter and path,
 - server Gemini key,
-- Stripe secret, webhook secret, price and optional coupon IDs.
+- Stripe secret, webhook secret, price and optional coupon IDs,
+- Stripe legal and automatic-tax readiness flags,
+- optional server-funded AI burst-guard settings.
 
 Known configuration discrepancy:
 
@@ -601,15 +624,18 @@ example should be aligned in a separate, reviewed configuration change.
 1. SQLite is the production authority; PostgreSQL parity is incomplete.
 2. Migration errors may not stop startup.
 3. There is no established automated unit or end-to-end test suite.
-4. Client and server entitlement logic is not yet fully unified.
+4. Non-AI plan checks still span UI, stores and API routes and must be traced
+   together when the product matrix changes.
 5. Preview and export templates can drift because they are separate renderers.
 6. API protection is route-specific because middleware skips `/api`.
 7. BYOK secrets transit the BewerbRadar backend even though they are stored
    only in the browser.
-8. The repository Compose healthcheck targets a missing `/api/health` route.
-9. Analytics repository instrumentation exists, but external GA4 configuration
-   and production event observation are not yet verified.
-10. The deployment helper is not transactional and does not fail fast.
+8. Production health monitoring is intentionally minimal and relies on the
+   public health route plus a scheduled GitHub workflow.
+9. GA4 page-view receipt is verified; the Phase 7 explicit product-event path
+   still needs post-deployment Realtime or DebugView evidence.
+10. Deployment is fail-fast but remains a rebuild-and-restart flow rather than
+    a transactional blue/green release.
 11. AI chat-session routes do not consistently enforce resume/session
     ownership before repository access.
 12. Some AI error/debug paths log raw model output that may contain resume

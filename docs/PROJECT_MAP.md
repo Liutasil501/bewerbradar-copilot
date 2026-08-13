@@ -506,6 +506,12 @@ Keep this directory reusable and free of BewerbRadar billing or product logic.
 - `src/lib/ai/provider.ts`
   AI header extraction, provider detection and server-key selection.
 
+- `src/lib/ai/access.ts`
+  canonical server-funded AI entitlement matrix.
+
+- `src/lib/ai/server-funded-rate-limit.ts`
+  per-user burst guard for app-funded provider calls.
+
 - `src/lib/ai/prompts.ts`
   resume assistant prompt.
 
@@ -767,7 +773,7 @@ Inspect:
 3. `src/components/consent/cookie-consent-banner.tsx` for DE/EN choice and
    reopening
 4. `src/lib/analytics/index.ts` for the typed event contract, consent gate and
-   bounded data-layer path
+   bounded `gtag` event path
 5. `src/components/analytics/analytics-actions.tsx` and landing CTA components
 6. authentication, dashboard, import, editor and pricing components for exact
    event transitions
@@ -791,6 +797,8 @@ Inspect:
 9. live VPS commit
 10. container status and logs
 11. public smoke test
+12. `scripts/backup-production-sqlite.sh` and `ops/systemd/`
+13. `.github/workflows/production-health.yml`
 
 ### Authenticated UI or responsive product QA
 

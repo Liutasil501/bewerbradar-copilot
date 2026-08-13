@@ -207,7 +207,7 @@ const ALLOWED_PROPERTIES: Record<EventName, readonly string[]> = {
 /**
  * Central client-side tracking function.
  *
- * Checks optional analytics consent before pushing to window.dataLayer.
+ * Checks optional analytics consent before sending a GA4 event through gtag.
  * Enforces strict property allowlists to guarantee zero PII or user content.
  */
 export function trackEvent<K extends EventName>(eventName: K, params: AnalyticsEventMap[K]): void {
@@ -250,13 +250,22 @@ export function trackEvent<K extends EventName>(eventName: K, params: AnalyticsE
       }
     }
 
-    const payload = {
-      event: eventName,
-      ...sanitizedParams,
-    };
+    // The GTM container owns the base Google tag. Product events must use the
+    // gtag command format so the Google tag forwards them to GA4. A plain
+    // dataLayer object alone only wakes matching GTM custom-event triggers.
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', eventName, sanitizedParams);
+      return;
+    }
 
+    // Keep events queued during the short window before the consent bootstrap
+    // has installed gtag. Mirror Google's command queue shape exactly.
     window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push(payload);
+    window.gtag = function gtag() {
+      // eslint-disable-next-line prefer-rest-params
+      window.dataLayer?.push(arguments);
+    };
+    window.gtag('event', eventName, sanitizedParams);
 
     if (process.env.NODE_ENV !== 'production') {
       console.log('[Analytics Event]', eventName, sanitizedParams);

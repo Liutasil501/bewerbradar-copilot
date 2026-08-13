@@ -1,0 +1,11 @@
+[Unit]
+Description=Run BewerbRadar SQLite backup daily
+
+[Timer]
+OnCalendar=*-*-* 02:40:00 UTC
+Persistent=true
+RandomizedDelaySec=10m
+Unit=bewerbradar-db-backup.service
+
+[Install]
+WantedBy=timers.target

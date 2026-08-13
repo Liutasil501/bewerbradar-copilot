@@ -3,6 +3,7 @@ import { resolveUser, getUserIdFromRequest } from '@/lib/auth/helpers';
 import { interviewRepository } from '@/lib/db/repositories/interview.repository';
 import { resumeRepository } from '@/lib/db/repositories/resume.repository';
 import { dbReady } from '@/lib/db';
+import { hasUserProvidedAIKey } from '@/lib/ai/access';
 
 export async function GET(request: NextRequest) {
   await dbReady;
@@ -20,8 +21,11 @@ export async function POST(request: NextRequest) {
   const user = await resolveUser(fingerprint);
   if (!user) return new Response('Unauthorized', { status: 401 });
 
-  if (user.subscriptionPlan !== 'premium') {
-    return NextResponse.json({ error: 'Premium subscription required for interviews' }, { status: 403 });
+  if (user.subscriptionPlan !== 'premium' && !hasUserProvidedAIKey(request.headers)) {
+    return NextResponse.json(
+      { error: 'Premium subscription or personal API key required for interviews' },
+      { status: 403 }
+    );
   }
 
   const body = await request.json();

@@ -84,7 +84,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ...analysisData, historyId });
   } catch (error) {
     if (error instanceof AIConfigError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
+      return NextResponse.json(
+        { error: error.message },
+        {
+          status: error.status,
+          ...(error.retryAfterSeconds && {
+            headers: { 'Retry-After': String(error.retryAfterSeconds) },
+          }),
+        }
+      );
     }
     console.error('POST /api/ai/jd-analysis error: %s', error instanceof Error ? error.name : 'UnknownError');
     return NextResponse.json({ error: 'Failed to analyze job description match' }, { status: 500 });

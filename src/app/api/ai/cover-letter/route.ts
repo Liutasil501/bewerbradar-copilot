@@ -113,7 +113,15 @@ Based on this resume and job description, write a tailored cover letter. Use the
     return NextResponse.json(coverLetterData);
   } catch (error) {
     if (error instanceof AIConfigError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
+      return NextResponse.json(
+        { error: error.message },
+        {
+          status: error.status,
+          ...(error.retryAfterSeconds && {
+            headers: { 'Retry-After': String(error.retryAfterSeconds) },
+          }),
+        }
+      );
     }
     console.error('POST /api/ai/cover-letter error: %s', error instanceof Error ? error.name : 'UnknownError');
     return NextResponse.json({ error: 'Failed to generate cover letter' }, { status: 500 });

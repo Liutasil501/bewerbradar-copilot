@@ -6,6 +6,7 @@ import { interviewRepository } from '@/lib/db/repositories/interview.repository'
 import { interviewReportSchema } from '@/lib/ai/interview-report-schema';
 import { extractJson } from '@/lib/ai/extract-json';
 import { dbReady } from '@/lib/db';
+import type { InterviewerConfig } from '@/types/interview';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   await dbReady;
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const roundsWithMessages = await interviewRepository.findAllMessagesBySessionId(sessionId);
 
     const conversationLog = roundsWithMessages.map(({ round, messages }) => {
-      const config = round.interviewerConfig as any;
+      const config = round.interviewerConfig as InterviewerConfig;
       return {
         interviewerType: round.interviewerType,
         interviewerName: config.name,
@@ -61,7 +62,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       };
     });
 
-    const lang = locale === 'de' ? 'Deutsch' : 'English';
     const reportPrompt = locale === 'de'
       ? `Du bist ein erfahrener Experte für Talentbewertung. Bitte erstelle basierend auf den folgenden Interview-Protokollen eine systematische, strukturierte Bewertung des Kandidaten. Die Ausgabe muss im JSON-Format erfolgen.
 
@@ -179,7 +179,12 @@ DO NOT use alternative names like "comprehensiveScore", "capabilityScores", "dir
     return NextResponse.json(saved);
   } catch (error) {
     if (error instanceof AIConfigError) {
-      return new Response(JSON.stringify({ error: error.message }), { status: 401 });
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: error.status,
+        ...(error.retryAfterSeconds && {
+          headers: { 'Retry-After': String(error.retryAfterSeconds) },
+        }),
+      });
     }
     console.error('POST /api/interview/[id]/report error:', error);
     return new Response('Internal server error', { status: 500 });

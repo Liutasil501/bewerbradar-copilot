@@ -111,7 +111,9 @@ export async function POST(request: NextRequest) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    const aiConfig = extractAIConfig(request, user, { allowFreeTrial });
+    const aiConfig = extractAIConfig(request, user, {
+      serverFundedFeature: 'resume_import',
+    });
     const model = getModel(aiConfig);
 
     // Build messages based on file type
@@ -199,7 +201,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const usedServerFreeTrial = isFreePlan && allowFreeTrial && aiConfig.isPremiumBypass === true;
+    const usedServerFreeTrial = isFreePlan && allowFreeTrial && aiConfig.usesServerKey === true;
     if (usedServerFreeTrial) {
       await userRepository.incrementAiImportsCount(user.id);
     }
@@ -208,8 +210,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(fullResume, { status: 201 });
   } catch (error) {
     if (error instanceof AIConfigError) {
-      console.warn('[parse] AIConfigError: API key missing');
-      return NextResponse.json({ code: 'API_KEY_MISSING', error: 'API key missing' }, { status: 401 });
+      const isRateLimited = error.status === 429;
+      return NextResponse.json(
+        {
+          code: isRateLimited ? 'AI_RATE_LIMITED' : 'API_KEY_MISSING',
+          error: isRateLimited ? 'Too many AI requests' : 'API key missing',
+        },
+        {
+          status: error.status,
+          ...(error.retryAfterSeconds && {
+            headers: { 'Retry-After': String(error.retryAfterSeconds) },
+          }),
+        }
+      );
     }
     const errName = error instanceof Error ? error.name : 'UnknownError';
     const errMessage = error instanceof Error ? error.message : '';

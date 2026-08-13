@@ -6,6 +6,7 @@ import { interviewRepository } from '@/lib/db/repositories/interview.repository'
 import { resumeRepository } from '@/lib/db/repositories/resume.repository';
 import { buildInterviewSystemPrompt } from '@/lib/ai/interview-prompts';
 import { dbReady } from '@/lib/db';
+import type { InterviewerConfig } from '@/types/interview';
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       }
     }
 
-    const interviewerConfig = round.interviewerConfig as any;
+    const interviewerConfig = round.interviewerConfig as InterviewerConfig;
 
     if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
@@ -106,7 +107,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return result.toUIMessageStreamResponse();
   } catch (error) {
     if (error instanceof AIConfigError) {
-      return new Response(JSON.stringify({ error: error.message }), { status: 401 });
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: error.status,
+        ...(error.retryAfterSeconds && {
+          headers: { 'Retry-After': String(error.retryAfterSeconds) },
+        }),
+      });
     }
     console.error('POST /api/interview/[id]/chat error:', error);
     return new Response('Internal server error', { status: 500 });

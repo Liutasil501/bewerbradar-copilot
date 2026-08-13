@@ -266,7 +266,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     if (error instanceof AIConfigError) {
-      return new Response(JSON.stringify({ error: error.message }), { status: 401 });
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: error.status,
+        ...(error.retryAfterSeconds && {
+          headers: { 'Retry-After': String(error.retryAfterSeconds) },
+        }),
+      });
     }
     console.error('POST /api/ai/translate error: %s', error instanceof Error ? error.name : 'UnknownError');
     return new Response(JSON.stringify({ error: 'Failed to translate resume' }), { status: 500 });

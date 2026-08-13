@@ -124,7 +124,12 @@ export async function POST(request: NextRequest) {
     return result.toUIMessageStreamResponse();
   } catch (error) {
     if (error instanceof AIConfigError) {
-      return new Response(JSON.stringify({ error: error.message }), { status: 401 });
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: error.status,
+        ...(error.retryAfterSeconds && {
+          headers: { 'Retry-After': String(error.retryAfterSeconds) },
+        }),
+      });
     }
     console.error('POST /api/ai/chat error: %s', error instanceof Error ? error.name : 'UnknownError');
     return new Response('Internal server error', { status: 500 });

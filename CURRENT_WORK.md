@@ -65,6 +65,54 @@ Use exactly one status per task:
 
 ## Active Work
 
+### CW-2026-08-13-PHASE7-LAUNCH-CLOSURE
+
+- Status: `READY FOR REVIEW`
+- Goal: Close the commercial launch foundation across measurement, Stripe
+  checkout/legal presentation, AI entitlements/cost protection and production
+  backups/alerts.
+- Implementation owner: Codex
+- Reviewer: Gemini
+- Current owner: Gemini
+- Next recipient: Gemini for independent review after the candidate is pushed
+- Branch: `codex/phase7-launch-closure`
+- Base commit: `ba142a4f59a56f49af9cc836fe12b9a2b528c804`
+- Handoff file:
+  `docs/agent-handoffs/CW-2026-08-13-PHASE7-LAUNCH-CLOSURE.md`
+- Deployment status: `NOT DEPLOYED`
+
+In scope:
+
+- verify the complete GTM/GA4 consent and event path,
+- close Stripe Checkout terms, withdrawal presentation and tax-safe runtime
+  configuration without inventing a tax registration,
+- centralize Free, Pro, Premium and BYOK AI access rules plus a realistic
+  server-funded abuse guard,
+- establish recoverable production-data backups and minimal health alerting,
+- update durable product, architecture and deployment documentation.
+
+Out of scope:
+
+- legal or tax advice,
+- creating a tax registration or business registration,
+- changing plan prices,
+- charging a real payment method during verification,
+- production deployment without separate authorization.
+
+T-shirt sizes:
+
+- P7.1 GA4/GTM verification: `S`
+- P7.2 Stripe checkout, terms, tax and withdrawal: `M`
+- P7.3 Entitlements and AI cost logic: `M`
+- P7.4 Backups and minimum production alerts: `M`
+
+Open decision boundary:
+
+- Stripe automatic tax remains disabled until a real collecting registration
+  and the applicable product tax code are confirmed. The code may expose a
+  fail-closed environment switch, but must not imply tax collection without
+  that external state.
+
 ### CW-2026-07-29-PHASE3-IMPORT-ACTIVATION
 
 - Status: `DEPLOYING - NOT YET VERIFIED`

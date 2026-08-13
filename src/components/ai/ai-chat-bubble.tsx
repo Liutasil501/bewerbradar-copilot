@@ -1,11 +1,13 @@
 'use client';
 
 import { useRef, useCallback, useState, useMemo, useEffect } from 'react';
-import { MessageSquare, Minus, AlertTriangle } from 'lucide-react';
+import { MessageSquare, Minus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEditorStore } from '@/stores/editor-store';
 import { useSettingsStore } from '@/stores/settings-store';
 import { AIChatContent } from './ai-chat-panel';
+import { usePaywall } from '@/hooks/use-paywall';
+import { PricingModal } from '@/components/billing/pricing-modal';
 
 const WIN_W_DESKTOP = 440;
 const WIN_H_DESKTOP = 620;
@@ -53,6 +55,15 @@ export function AIChatBubble({ resumeId }: AIChatBubbleProps) {
   const t = useTranslations('ai');
   const { showAiChat, toggleAiChat } = useEditorStore();
   const hasApiKey = useSettingsStore((s) => !!s.aiApiKey);
+  const {
+    checkPaywall,
+    showPaywall,
+    setShowPaywall,
+    requiredTier,
+    paywallDescription,
+    currentPlan,
+    isLoading,
+  } = usePaywall();
 
   // Bubble position (draggable, right/bottom offsets)
   const [bubblePos, setBubblePos] = useState({ x: 24, y: 24 });
@@ -77,7 +88,6 @@ export function AIChatBubble({ resumeId }: AIChatBubbleProps) {
   const autoWindowPos = useMemo(() => {
     if (typeof window === 'undefined') return { left: 100, top: 100 };
     return calcWindowPos(bubblePos.x, bubblePos.y, winSize.w, winSize.h);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bubblePos.x, bubblePos.y, winSize.w, winSize.h]);
 
   const winPos = windowPos ?? autoWindowPos;
@@ -111,9 +121,32 @@ export function AIChatBubble({ resumeId }: AIChatBubbleProps) {
     document.addEventListener('mouseup', onMouseUp);
   }, [bubblePos]);
 
+  const requestChatAccess = useCallback(() => {
+    checkPaywall('premium', toggleAiChat, {
+      allowByok: true,
+      trigger: 'premium_ai_feature',
+      featureKey: 'ai_chat',
+      returnIntent: { type: 'ai_feature', featureKey: 'ai_chat', resumeId },
+    });
+  }, [checkPaywall, resumeId, toggleAiChat]);
+
   const onBubbleClick = useCallback(() => {
-    if (!didDragRef.current) toggleAiChat();
-  }, [toggleAiChat]);
+    if (didDragRef.current) return;
+    if (showAiChat) {
+      toggleAiChat();
+      return;
+    }
+    requestChatAccess();
+  }, [requestChatAccess, showAiChat, toggleAiChat]);
+
+  // Section actions can request the chat through the editor store directly.
+  // Close that backdoor and show the same paywall as the floating button.
+  useEffect(() => {
+    if (!isLoading && showAiChat && currentPlan !== 'premium' && !hasApiKey) {
+      toggleAiChat();
+      requestChatAccess();
+    }
+  }, [currentPlan, hasApiKey, isLoading, requestChatAccess, showAiChat, toggleAiChat]);
 
   // --- Window drag (title bar, uses left/top) ---
   const onWindowMouseDown = useCallback((e: React.MouseEvent) => {
@@ -210,6 +243,14 @@ export function AIChatBubble({ resumeId }: AIChatBubbleProps) {
           <MessageSquare className="h-6 w-6" />
         </button>
       </div>
+
+      <PricingModal
+        open={showPaywall}
+        onOpenChange={setShowPaywall}
+        requiredTier={requiredTier}
+        descriptionOverride={paywallDescription}
+        analyticsTrigger="premium_ai_feature"
+      />
     </>
   );
 }

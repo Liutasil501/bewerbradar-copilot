@@ -44,6 +44,7 @@ export const ALLOWED_FEATURE_KEYS = [
   'translate',
   'generate_resume',
   'interview',
+  'ai_chat',
 ] as const;
 export type FeatureKey = (typeof ALLOWED_FEATURE_KEYS)[number];
 

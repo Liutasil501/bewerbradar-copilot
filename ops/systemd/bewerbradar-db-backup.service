@@ -1,0 +1,15 @@
+[Unit]
+Description=BewerbRadar consistent SQLite backup
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/bewerbradar-db-backup
+
+# Hardening that remains compatible with Docker CLI access.
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

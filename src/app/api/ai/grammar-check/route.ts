@@ -106,7 +106,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ...checkResult, historyId });
   } catch (error) {
     if (error instanceof AIConfigError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
+      return NextResponse.json(
+        { error: error.message },
+        {
+          status: error.status,
+          ...(error.retryAfterSeconds && {
+            headers: { 'Retry-After': String(error.retryAfterSeconds) },
+          }),
+        }
+      );
     }
     console.error('POST /api/ai/grammar-check error: %s', error instanceof Error ? error.name : 'UnknownError');
     return NextResponse.json({ error: 'Failed to check grammar' }, { status: 500 });

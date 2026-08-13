@@ -112,12 +112,16 @@ if [ "$actual_sha" != "__RELEASE_SHA__" ]; then
   exit 21
 fi
 
-echo "===> 2. Building and restarting jadeai"
+echo "===> 2. Creating a verified pre-deployment database backup"
+install -m 0755 /var/www/jadeai/scripts/backup-production-sqlite.sh /usr/local/sbin/bewerbradar-db-backup
+/usr/local/sbin/bewerbradar-db-backup
+
+echo "===> 3. Building and restarting jadeai"
 cd /var/www/bewerbradar
 docker compose build jadeai
 docker compose up -d jadeai
 
-echo "===> 3. Waiting for application health"
+echo "===> 4. Waiting for application health"
 healthy=0
 for attempt in $(seq 1 30); do
   if curl -fsS http://127.0.0.1:3001/api/health >/dev/null; then
@@ -133,15 +137,22 @@ if [ "$healthy" != "1" ]; then
   exit 22
 fi
 
-echo "===> 4. Verifying public endpoint"
+echo "===> 5. Installing the daily backup timer"
+install -m 0644 /var/www/jadeai/ops/systemd/bewerbradar-db-backup.service /etc/systemd/system/bewerbradar-db-backup.service
+install -m 0644 /var/www/jadeai/ops/systemd/bewerbradar-db-backup.timer /etc/systemd/system/bewerbradar-db-backup.timer
+systemctl daemon-reload
+systemctl enable --now bewerbradar-db-backup.timer
+
+echo "===> 6. Verifying public endpoint"
 curl -fsS -o /dev/null "__PUBLIC_URL__"
 
-echo "===> 5. Final state"
+echo "===> 7. Final state"
 cd /var/www/jadeai
 echo "BRANCH=$(git branch --show-current)"
 echo "SHA=$(git rev-parse HEAD)"
 cd /var/www/bewerbradar
 docker compose ps jadeai
+systemctl --no-pager status bewerbradar-db-backup.timer | head -12
 docker logs --since 10m --tail 80 reactive_resume-jadeai-1 2>&1
 echo "DEPLOYMENT_STATUS=VERIFIED_LIVE"
 '@

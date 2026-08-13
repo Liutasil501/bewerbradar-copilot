@@ -176,6 +176,8 @@ Production-relevant groups:
 - all four required production price IDs and the billing portal configuration
   ID,
 - optional Stripe coupon ID,
+- Stripe Terms checkbox and automatic-tax readiness flags,
+- optional server-funded AI burst-guard settings,
 - optional database selection/path,
 - optional GTM container override.
 
@@ -216,7 +218,10 @@ been explicitly authorized in the current request:
 pnpm run deploy
 ```
 
-The helper derives the release SHA from the clean local `main` HEAD. An exact
+The helper derives the release SHA from the clean local `main` HEAD. Before the
+container rebuild it creates a consistent SQLite backup and verifies
+`PRAGMA integrity_check`. It then installs or refreshes the daily systemd
+backup timer. An exact
 SHA may be supplied directly when required:
 
 ```powershell
@@ -224,8 +229,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-vps.ps1 -Rele
 ```
 
 The helper already checks SHA, health, the public endpoint, container state and
-focused logs. Continue with the changed feature's applicable smoke test in
-section 7 before declaring the release `VERIFIED LIVE`.
+focused logs. A failed pre-deployment backup stops the release before the
+container rebuild. Continue with the changed feature's applicable smoke test
+in section 7 before declaring the release `VERIFIED LIVE`.
 
 ### Manual equivalent
 
@@ -316,6 +322,28 @@ state and the evidence used for it. For the local BewerbRadar product states,
 use `docs/QA_HARNESS.md` before main publication. After deployment, repeat the
 changed critical path through the authorized production-safe route where
 required.
+
+### 7.5 Backups and monitoring
+
+Verify the daily backup timer and latest service result:
+
+```bash
+systemctl status bewerbradar-db-backup.timer --no-pager
+systemctl status bewerbradar-db-backup.service --no-pager
+docker exec reactive_resume-jadeai-1 ls -lh /app/data/backups
+```
+
+The backup script uses SQLite's online backup API and validates the produced
+file before reporting success. Default retention is 14 days. Hostinger's VPS
+backup remains the infrastructure-level recovery layer and must be checked
+periodically rather than assumed from the existence of this local copy.
+
+`.github/workflows/production-health.yml` probes `/api/health` and the German
+landing page every 15 minutes. A failed probe opens or updates one GitHub issue;
+the next successful probe closes it. Confirm that scheduled Actions and issue
+writes are enabled for the repository after the workflow reaches `main`.
+The health route also fails when database initialization fails or free SQLite
+storage drops below `HEALTH_MIN_FREE_DISK_MB` (10 GB by default).
 
 Minimum states for plan, paywall, import or AI-access changes:
 

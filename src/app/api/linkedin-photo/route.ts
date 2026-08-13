@@ -6,17 +6,37 @@ const GEMINI_ENDPOINT =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent';
 
 import { resolveUser, getUserIdFromRequest } from '@/lib/auth/helpers';
+import { consumeServerFundedAIRequest } from '@/lib/ai/server-funded-rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
     const fingerprint = getUserIdFromRequest(request);
     const user = await resolveUser(fingerprint);
 
-    let { image, prompt, requirements, aspectRatio, apiKey } = await request.json();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { image, prompt, requirements, aspectRatio, apiKey: suppliedApiKey } =
+      await request.json();
+    let apiKey = suppliedApiKey;
 
     if (!apiKey) {
-      if (user?.subscriptionPlan === 'premium') {
+      if (user.subscriptionPlan === 'premium') {
         apiKey = process.env.GEMINI_API_KEY || '';
+        if (!apiKey) {
+          return NextResponse.json({ error: 'ai_service_unavailable' }, { status: 503 });
+        }
+        const rateLimit = consumeServerFundedAIRequest(user.id);
+        if (!rateLimit.allowed) {
+          return NextResponse.json(
+            { error: 'rate_limit_exceeded' },
+            {
+              status: 429,
+              headers: { 'Retry-After': String(rateLimit.retryAfterSeconds) },
+            }
+          );
+        }
       } else {
         return NextResponse.json(
           { error: 'API Key is required or upgrade to Premium' },
@@ -72,18 +92,18 @@ export async function POST(request: NextRequest) {
     });
 
     if (!res.ok) {
-      const errBody = await res.text();
-      console.error('Gemini API error:', res.status, errBody);
+      await res.text();
+      console.error('Gemini API error status:', res.status);
 
       if (res.status === 400 || res.status === 403) {
         return NextResponse.json(
-          { error: 'invalid_key', detail: errBody },
+          { error: 'invalid_key' },
           { status: 400 }
         );
       }
 
       return NextResponse.json(
-        { error: 'generate_failed', detail: errBody },
+        { error: 'generate_failed' },
         { status: res.status }
       );
     }
@@ -134,9 +154,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ image: resultImage, text: resultText });
   } catch (err) {
-    console.error('LinkedIn photo generation error:', err);
+    console.error(
+      'LinkedIn photo generation error:',
+      err instanceof Error ? err.name : 'UnknownError'
+    );
     return NextResponse.json(
-      { error: 'generate_failed', detail: String(err) },
+      { error: 'generate_failed' },
       { status: 500 }
     );
   }

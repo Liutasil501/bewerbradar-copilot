@@ -37,7 +37,21 @@ export const STRIPE_CONFIG = {
     firstMonthDiscount: process.env.STRIPE_COUPON_FIRST_MONTH || '',
   },
   portalConfigurationId: process.env.STRIPE_PORTAL_CONFIGURATION_ID || '',
+  tax: {
+    automaticTaxRequested: process.env.STRIPE_AUTOMATIC_TAX_ENABLED === 'true',
+    configurationConfirmed: process.env.STRIPE_TAX_CONFIGURATION_CONFIRMED === 'true',
+  },
+  legal: {
+    termsConfigured: process.env.STRIPE_TERMS_OF_SERVICE_CONFIGURED === 'true',
+  },
 };
+
+export function isStripeAutomaticTaxEnabled(): boolean {
+  return (
+    STRIPE_CONFIG.tax.automaticTaxRequested &&
+    STRIPE_CONFIG.tax.configurationConfirmed
+  );
+}
 
 export function getConfiguredPriceId(
   plan: StripePlan,

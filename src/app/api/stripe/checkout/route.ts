@@ -3,6 +3,7 @@ import { stripe } from '@/lib/stripe/client';
 import {
   getConfiguredPriceId,
   hasCompleteStripePriceConfiguration,
+  isStripeAutomaticTaxEnabled,
   STRIPE_CONFIG,
 } from '@/lib/stripe/config';
 import { getUserIdFromRequest, resolveUser } from '@/lib/auth/helpers';
@@ -96,6 +97,7 @@ export async function POST(req: NextRequest) {
     const sessionData: Stripe.Checkout.SessionCreateParams = {
       mode: 'subscription',
       customer: customerId,
+      locale,
       line_items: [
         {
           price: priceId,
@@ -104,6 +106,22 @@ export async function POST(req: NextRequest) {
       ],
       success_url: successUrl,
       cancel_url: cancelUrl,
+      ...(STRIPE_CONFIG.legal.termsConfigured && {
+        consent_collection: {
+          terms_of_service: 'required' as const,
+        },
+      }),
+      custom_text: {
+        submit: {
+          message:
+            locale === 'de'
+              ? `AGB: ${baseUrl}/${locale}/agb | Informationen zu Laufzeit, Kündigung und Widerruf: ${baseUrl}/${locale}/widerruf`
+              : `Terms: ${baseUrl}/${locale}/agb | Information about term, cancellation and withdrawal: ${baseUrl}/${locale}/widerruf`,
+        },
+      },
+      ...(isStripeAutomaticTaxEnabled() && {
+        automatic_tax: { enabled: true },
+      }),
       metadata: {
         userId: user.id,
         tier,
@@ -113,6 +131,16 @@ export async function POST(req: NextRequest) {
       },
       integration_identifier: 'bewerbradar_checkout_fqzmpkrt',
     };
+
+    if (
+      STRIPE_CONFIG.tax.automaticTaxRequested &&
+      !STRIPE_CONFIG.tax.configurationConfirmed
+    ) {
+      console.error(
+        'Stripe automatic tax was requested without confirmed registrations and product tax configuration'
+      );
+      return NextResponse.json({ error: 'Billing is temporarily unavailable' }, { status: 503 });
+    }
 
     if (plan === 'monthly' && STRIPE_CONFIG.coupons.firstMonthDiscount) {
       sessionData.discounts = [{ coupon: STRIPE_CONFIG.coupons.firstMonthDiscount }];
