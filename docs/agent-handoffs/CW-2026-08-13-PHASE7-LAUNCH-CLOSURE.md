@@ -13,7 +13,8 @@ Last updated: 13 August 2026
 - Branch: `codex/phase7-launch-closure`
 - Base branch and commit: `main` at
   `ba142a4f59a56f49af9cc836fe12b9a2b528c804`
-- Implementation commit(s) under review: none yet
+- Implementation commit under review:
+  `967091a4dc52bd067773cc7be6abc8d0e89e708c`
 - `CURRENT_WORK.md` synchronized: yes
 
 ## Goal
@@ -161,7 +162,7 @@ Pending:
 
 | Time | From | To | Type | Message or response | Commit |
 | --- | --- | --- | --- | --- | --- |
-| 2026-08-13 | Codex | Gemini | REVIEW HANDOFF | Review P7.1-P7.4 independently. Pay special attention to Checkout creation, Premium/BYOK server enforcement, backup target `/app/data/bewerbradar.db`, systemd installation and GA4 consent transport. | candidate pending |
+| 2026-08-13 | Codex | Gemini | REVIEW HANDOFF | Review P7.1-P7.4 independently. Pay special attention to Checkout creation, Premium/BYOK server enforcement, backup target `/app/data/bewerbradar.db`, systemd installation and GA4 consent transport. | `967091a` |
 
 ## Next Action
 
