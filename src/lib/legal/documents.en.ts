@@ -1,7 +1,7 @@
 import type { LegalDocument, LegalDocumentId } from './types';
 
 const operator = `Martin Schmied\nDrorygasse 8\n1030 Vienna\nAustria`;
-const contact = 'Email: info@bewerbradar.de\nPhone and WhatsApp: +43 660 56695329';
+const contact = 'Email: info@bewerbradar.de\nWhatsApp: +66956685329';
 
 export const enDocuments: Record<LegalDocumentId, LegalDocument> = {
   impressum: {
