@@ -1,6 +1,7 @@
 import http from 'node:http';
 import assert from 'node:assert';
 import { spawn } from 'node:child_process';
+import path from 'node:path';
 
 const PORT = 3165;
 const BASE_URL = `http://localhost:${PORT}`;
@@ -33,36 +34,37 @@ function fetchHttp(path: string, options: { headers?: Record<string, string>; re
 
 async function run() {
   console.log('[SEO HTTP Verification] Starting next start on port', PORT);
-  const server = spawn('node_modules\\.bin\\next.cmd', ['start', '-p', String(PORT)], {
+  const nextCli = path.join(process.cwd(), 'node_modules', 'next', 'dist', 'bin', 'next');
+  const server = spawn(process.execPath, [nextCli, 'start', '-p', String(PORT)], {
     env: {
       ...process.env,
       AUTH_ENABLED: 'true',
       PORT: String(PORT),
     },
-    shell: true,
+    windowsHide: true,
   });
 
   server.stdout?.on('data', (d) => process.stdout.write(d.toString()));
   server.stderr?.on('data', (d) => process.stderr.write(d.toString()));
 
-  // Wait for server to become ready
-  let ready = false;
-  for (let i = 0; i < 30; i++) {
-    try {
-      const res = await fetchHttp('/api/health');
-      if (res.status === 200) {
-        ready = true;
-        break;
+  try {
+    // Wait for server to become ready
+    let ready = false;
+    for (let i = 0; i < 30; i++) {
+      try {
+        const res = await fetchHttp('/api/health');
+        if (res.status === 200) {
+          ready = true;
+          break;
+        }
+      } catch {
+        await new Promise((r) => setTimeout(r, 1000));
       }
-    } catch {
-      await new Promise((r) => setTimeout(r, 1000));
     }
-  }
 
-  if (!ready) {
-    server.kill();
-    throw new Error('Server failed to start in 30s');
-  }
+    if (!ready) {
+      throw new Error('Server failed to start in 30s');
+    }
 
   console.log('\n[1/10] Testing /opengraph-image and /twitter-image...');
   const ogRes = await fetchHttp('/opengraph-image');
@@ -147,11 +149,19 @@ async function run() {
   console.log('ALL 10/10 LIVE HTTP SEO VERIFICATIONS PASSED!');
   console.log('=============================================\n');
 
-  server.kill();
-  process.exit(0);
+  } finally {
+    if (server.exitCode === null) {
+      server.kill();
+      await Promise.race([
+        new Promise<void>((resolve) => server.once('exit', () => resolve())),
+        new Promise<void>((resolve) => setTimeout(resolve, 2000)),
+      ]);
+      if (server.exitCode === null) server.kill('SIGKILL');
+    }
+  }
 }
 
 run().catch((err) => {
   console.error('FAILED:', err);
-  process.exit(1);
+  process.exitCode = 1;
 });

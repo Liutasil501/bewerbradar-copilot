@@ -252,16 +252,21 @@ export default function TemplatesPage() {
     return () => clearTimeout(timer);
   }, [startTour]);
 
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const { authEnabled } = useRuntimeConfig();
+  const isAuthSessionLoading = authEnabled && sessionStatus === 'loading';
 
   const handleUseTemplate = useCallback(async (template: string) => {
+    if (isAuthSessionLoading) return;
+
     // If authentication is enabled and the user is signed out, preserve intent through login
-    if (authEnabled && !session?.user) {
+    if (authEnabled && sessionStatus === 'unauthenticated') {
       const targetPath = `/${locale}/templates?templateId=${encodeURIComponent(template)}`;
       router.push(`/login?callbackUrl=${encodeURIComponent(targetPath)}`);
       return;
     }
+
+    if (authEnabled && !session?.user) return;
 
     const isPremium = !FREE_TEMPLATES.has(template as Template);
     if (isPremium && currentPlan === 'free') {
@@ -303,16 +308,22 @@ export default function TemplatesPage() {
     } finally {
       setCreatingTemplate(null);
     }
-  }, [authEnabled, session, locale, currentPlan, checkPaywall, tBilling, tm, ts, createResume, router]);
+  }, [authEnabled, sessionStatus, session, isAuthSessionLoading, locale, currentPlan, checkPaywall, tBilling, tm, ts, createResume, router]);
 
   useEffect(() => {
-    if (templateIdParam && TEMPLATES.includes(templateIdParam as Template)) {
-      void handleUseTemplate(templateIdParam);
+    if (!templateIdParam || !TEMPLATES.includes(templateIdParam as Template)) return;
+    if (isAuthSessionLoading) return;
+
+    void handleUseTemplate(templateIdParam);
+
+    // Keep the intent in the URL while redirecting signed-out users. Remove it
+    // only once the current session can actually continue the selected action.
+    if (!authEnabled || sessionStatus === 'authenticated') {
       const url = new URL(window.location.href);
       url.searchParams.delete('templateId');
       window.history.replaceState({}, '', url.pathname + url.search);
     }
-  }, [templateIdParam, handleUseTemplate]);
+  }, [templateIdParam, handleUseTemplate, isAuthSessionLoading, authEnabled, sessionStatus]);
 
   return (
     <div>
@@ -392,7 +403,7 @@ export default function TemplatesPage() {
                   size="sm"
                   className="flex-1 cursor-pointer gap-1.5 bg-brand hover:bg-brand-hover"
                   onClick={() => handleUseTemplate(template)}
-                  disabled={isCreating}
+                  disabled={isCreating || isAuthSessionLoading}
                 >
                   {isCreating ? (
                     <>
@@ -435,7 +446,7 @@ export default function TemplatesPage() {
           <div className="sticky bottom-0 border-t bg-white p-3 dark:bg-background sm:hidden">
             <Button
               className="w-full cursor-pointer bg-brand hover:bg-brand-hover"
-              disabled={creatingTemplate === previewTemplate}
+              disabled={creatingTemplate === previewTemplate || isAuthSessionLoading}
               onClick={() => previewTemplate && handleUseTemplate(previewTemplate)}
             >
               {creatingTemplate === previewTemplate ? (

@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'nodejs';
-export const alt = 'BewerbRadar Copilot - Professional AI Resume Builder & Coach';
+export const alt = 'BewerbRadar Copilot - AI Resume and Cover Letter Builder';
 export const size = {
   width: 1200,
   height: 630,
@@ -52,9 +52,12 @@ export default async function Image() {
 
         {/* Hero Title & Subtitle */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '1000px' }}>
-          <h1
+          <div
             style={{
-              fontSize: '56px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              fontSize: '50px',
               fontWeight: 800,
               lineHeight: 1.15,
               letterSpacing: '-0.03em',
@@ -62,8 +65,11 @@ export default async function Image() {
               margin: 0,
             }}
           >
-            Professionelle Lebensläufe & Anschreiben mit KI
-          </h1>
+            <span style={{ display: 'block' }}>Lebenslauf & Anschreiben mit KI</span>
+            <span style={{ display: 'block', color: '#34d399' }}>
+              Resume & Cover Letter with AI
+            </span>
+          </div>
           <p
             style={{
               fontSize: '24px',
@@ -72,7 +78,7 @@ export default async function Image() {
               margin: 0,
             }}
           >
-            40+ ATS-optimierte Design-Vorlagen - KI-Textoptimierung - PDF & DOCX Export
+            AI-powered - ATS-ready - 40+ Templates - PDF & DOCX
           </p>
         </div>
 
@@ -89,7 +95,7 @@ export default async function Image() {
               color: '#e4e4e7',
             }}
           >
-            ATS-Optimiert
+            ATS-ready
           </div>
           <div
             style={{
@@ -102,7 +108,7 @@ export default async function Image() {
               color: '#e4e4e7',
             }}
           >
-            40+ Vorlagen
+            40+ Templates
           </div>
           <div
             style={{
@@ -115,7 +121,7 @@ export default async function Image() {
               color: '#e4e4e7',
             }}
           >
-            KI-Optimierung
+            AI Writing
           </div>
           <div
             style={{
