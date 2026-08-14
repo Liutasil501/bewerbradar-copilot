@@ -67,17 +67,19 @@ Use exactly one status per task:
 
 ### CW-2026-08-13-PHASE7-LAUNCH-CLOSURE
 
-- Status: `READY FOR REVIEW`
+- Status: `APPROVED`
 - Goal: Close the commercial launch foundation across measurement, Stripe
   checkout/legal presentation, AI entitlements/cost protection and production
   backups/alerts.
 - Implementation owner: Codex
 - Reviewer: Gemini
-- Current owner: Gemini
-- Next recipient: Gemini for independent review after the candidate is pushed
+- Current owner: Codex
+- Next recipient: Codex for main publication
 - Branch: `codex/phase7-launch-closure`
 - Base commit: `ba142a4f59a56f49af9cc836fe12b9a2b528c804`
 - Implementation commit: `967091a4dc52bd067773cc7be6abc8d0e89e708c`
+- Review commit: `22e58d63fd089fd4ed1331c74664f6527b29d139`
+- Review result: `GO` for source publication after independent final review
 - Handoff file:
   `docs/agent-handoffs/CW-2026-08-13-PHASE7-LAUNCH-CLOSURE.md`
 - Deployment status: `NOT DEPLOYED`

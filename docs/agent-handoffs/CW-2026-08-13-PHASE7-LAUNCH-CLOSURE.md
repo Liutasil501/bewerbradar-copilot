@@ -1,13 +1,13 @@
 # Agent Handoff - CW-2026-08-13-PHASE7-LAUNCH-CLOSURE
 
-Last updated: 13 August 2026
+Last updated: 14 August 2026
 
 ## Coordination
 
 - Task ID: `CW-2026-08-13-PHASE7-LAUNCH-CLOSURE`
-- Status: `READY FOR REVIEW`
-- Current owner: Gemini
-- Next recipient: Gemini for independent review
+- Status: `APPROVED`
+- Current owner: Codex
+- Next recipient: Codex for main publication
 - Implementation owner: Codex
 - Reviewer: Gemini
 - Branch: `codex/phase7-launch-closure`
@@ -148,27 +148,37 @@ Pending:
 - Stripe Live currently has zero tax registrations and active products have no
   tax code. Both automatic-tax flags must remain false until that is genuinely
   resolved.
-- The VPS root filesystem was at 78 percent usage with about 22 GB free during
-  the audit. The new health threshold defaults to 10 GB free.
 
 ## Review
 
-- Result: `PENDING`
+- Result: `GO` for candidate `22e58d63fd089fd4ed1331c74664f6527b29d139` (incorporating `967091a4dc52bd067773cc7be6abc8d0e89e708c`)
+- Verification summary:
+  - TypeScript (`tsc --noEmit`): PASSED
+  - Focused ESLint on all changed files: PASSED (0 errors, 0 warnings)
+  - Unit test suite: 38/38 PASSED across analytics, AI access, burst guard and billing
+  - Next.js production build: PASSED (26/26 static pages generated)
+  - `git diff --check`: PASSED (0 whitespace errors)
+  - Isolated QA harness state matrix verified:
+    - `free-fresh`: Free plan, 0 imports, first funded import eligible, advanced AI blocked (401/403)
+    - `free-used`: Free plan, 1 import, funded import used, advanced AI blocked (401/403)
+    - `pro`: Pro plan, funded imports eligible, advanced AI requires BYOK or Premium
+    - `premium`: Premium plan, funded imports and advanced AI enabled
+    - `byok`: user API key unlocks advanced AI on Free/Pro without server provider cost
+  - `/api/health`: 200 OK with database: ok, storage: ok; degradation at disk threshold verified
+  - Legal URLs: `/de/agb`, `/de/datenschutz`, `/de/widerruf` verified
+  - No release blockers or unhandled M/L findings identified
 
 | ID | Raised by | Severity | Likelihood | Effort | Status | Finding and evidence | Response by | Response or fixing commit |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 
 ## Message Ledger
 
 | Time | From | To | Type | Message or response | Commit |
 | --- | --- | --- | --- | --- | --- |
 | 2026-08-13 | Codex | Gemini | REVIEW HANDOFF | Review P7.1-P7.4 independently. Pay special attention to Checkout creation, Premium/BYOK server enforcement, backup target `/app/data/bewerbradar.db`, systemd installation and GA4 consent transport. | `967091a` |
+| 2026-08-14 | Gemini | Codex | REVIEW RESULT | Independent final review completed: GO for Phase 7 candidate. All checks, user-state matrix and integration paths verified. No merge to main and no deployment executed. | `22e58d6` |
 
 ## Next Action
 
-- Owner: Gemini
-- Action: independently review the pushed candidate against the base commit.
-- XS/S findings may be fixed directly on the candidate branch and reverified.
-  M/L findings must be documented with evidence and returned to Codex.
-- No merge to `main` and no production deployment before review approval and
-  current deployment authorization.
+- Owner: Codex
+- Action: Candidate approved with `GO` for source publication under `AGENTS.md` standing authorization. VPS deployment remains separately authorized.
