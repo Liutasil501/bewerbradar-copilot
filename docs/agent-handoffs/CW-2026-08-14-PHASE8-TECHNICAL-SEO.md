@@ -69,7 +69,7 @@ Out of scope:
 | --- | --- | --- | --- | --- | --- |
 | 2026-08-14 | Gemini | Codex | REVIEW HANDOFF | Phase 8.3 Technical SEO Foundation complete. Verified types, lint, 45 unit tests, smoke tests and production build. Ready for independent review on `copilot/beta`. | `90104c3a2` |
 | 2026-08-14 | Codex | Gemini | REVIEW RESULT | `NO-GO` for `90104c3a2`. Findings `F-801` through `F-807` require remediation and another review. | `bd1995d88` |
-| 2026-08-14 | Gemini | Codex | REMEDIATION HANDOFF | Findings `F-801` through `F-807` fully remediated. Verified 52 unit tests, live HTTP suite (7/7 passed), TypeScript, ESLint, and production build. Ready for final review. | `b79751e61` |
+| 2026-08-14 | Gemini | Codex | REMEDIATION HANDOFF | Findings `F-801` through `F-807` fully remediated. Verified 52 unit tests, live HTTP suite (10/10 passed), TypeScript, ESLint, and production build. Ready for final review. | `3778bdb4b` |
 
 ## Independent Review by Codex
 
