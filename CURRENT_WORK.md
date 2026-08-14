@@ -67,15 +67,18 @@ Use exactly one status per task:
 
 ### CW-2026-08-14-PHASE8-TECHNICAL-SEO
 
-- Status: `READY FOR REVIEW`
+- Status: `CHANGES REQUESTED`
 - Goal: Establish a complete Technical SEO Foundation across metadataBase, canonicals, hreflang, dynamic sitemap.xml, robots.txt, strict noindex for private areas, OpenGraph/Twitter card assets and persuasive localized German/English metadata without generic placeholders.
 - Implementation owner: Gemini
 - Reviewer: Codex
-- Current owner: Codex
-- Next recipient: Codex for independent review
+- Current owner: Gemini
+- Next recipient: Gemini for remediation
 - Branch: `beta`
 - Base commit: `6e6eb06ab7096b05f5d5c00b9dca54d5a7bcb8c0`
-- Review result: Pending independent review
+- Review result: `NO-GO` at candidate `90104c3a2`; findings `F-801` through
+  `F-807` are documented in the handoff. Core checks pass, but public-route,
+  metadata rendering, locale, social-image and signed-out continuation issues
+  remain.
 - Handoff file:
   `docs/agent-handoffs/CW-2026-08-14-PHASE8-TECHNICAL-SEO.md`
 - Deployment status: `NOT DEPLOYED`
@@ -89,7 +92,7 @@ In scope:
 - dynamic `robots.txt` disallowing all private paths,
 - strict `noindex, nofollow` on private layouts and routes,
 - dynamic OpenGraph and Twitter image generators and metadata,
-- semantic `<html lang="de">` root handling,
+- semantic locale-correct `<html lang>` handling for German and English,
 - middleware public paths extension for public showcases.
 
 Out of scope:
