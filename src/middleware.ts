@@ -4,13 +4,23 @@ import { routing } from './i18n/routing';
 
 const intlMiddleware = createMiddleware(routing);
 
+// Root asset and metadata routes that must never be redirected to locale prefixes
+const ROOT_METADATA_PATHS = new Set([
+  '/opengraph-image',
+  '/twitter-image',
+  '/icon',
+  '/apple-icon',
+  '/favicon.ico',
+  '/robots.txt',
+  '/sitemap.xml',
+]);
+
 // Public paths that don't require authentication (relative to locale prefix)
 const PUBLIC_PATHS = [
   '/', // Landing page
   '/login', // Login page
   '/share', // Public share links
   '/templates', // Public templates showcase
-  '/interview', // Public interview lobby
   '/impressum',
   '/datenschutz',
   '/agb',
@@ -31,7 +41,18 @@ function isPublicPath(pathname: string): boolean {
 }
 
 export default async function middleware(request: NextRequest) {
-  // Always run i18n middleware first
+  const { pathname } = request.nextUrl;
+
+  // Skip i18n and auth completely for root metadata/asset routes
+  if (
+    ROOT_METADATA_PATHS.has(pathname) ||
+    pathname.startsWith('/opengraph-image') ||
+    pathname.startsWith('/twitter-image')
+  ) {
+    return NextResponse.next();
+  }
+
+  // Always run i18n middleware for app pages
   const response = intlMiddleware(request);
 
   // Only check auth when OAuth is enabled
@@ -39,7 +60,6 @@ export default async function middleware(request: NextRequest) {
   if (!authEnabled) return response;
 
   // Skip auth check for public paths and API routes
-  const { pathname } = request.nextUrl;
   if (pathname.startsWith('/api/')) return response;
   if (isPublicPath(pathname)) return response;
 
@@ -61,5 +81,5 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next|.*\\..*).*)'],
+  matcher: ['/((?!api|_next|opengraph-image|twitter-image|icon|apple-icon|favicon\\.ico|.*\\..*).*)'],
 };

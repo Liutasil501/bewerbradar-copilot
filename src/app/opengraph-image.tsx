@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'nodejs';
-export const alt = 'BewerbRadar Copilot – Professionelle Lebensläufe & Anschreiben mit KI';
+export const alt = 'BewerbRadar Copilot - Professional AI Resume Builder & Coach';
 export const size = {
   width: 1200,
   height: 630,
@@ -72,7 +72,7 @@ export default async function Image() {
               margin: 0,
             }}
           >
-            40+ ATS-optimierte Design-Vorlagen • KI-Textoptimierung • Interaktives Bewerbungs-Training
+            40+ ATS-optimierte Design-Vorlagen - KI-Textoptimierung - PDF & DOCX Export
           </p>
         </div>
 
@@ -89,7 +89,7 @@ export default async function Image() {
               color: '#e4e4e7',
             }}
           >
-            ✓ ATS-Optimiert
+            ATS-Optimiert
           </div>
           <div
             style={{
@@ -102,7 +102,7 @@ export default async function Image() {
               color: '#e4e4e7',
             }}
           >
-            ✓ 40+ Design-Vorlagen
+            40+ Vorlagen
           </div>
           <div
             style={{
@@ -115,7 +115,7 @@ export default async function Image() {
               color: '#e4e4e7',
             }}
           >
-            ✓ KI-Interview Coach
+            KI-Optimierung
           </div>
           <div
             style={{
@@ -128,7 +128,7 @@ export default async function Image() {
               color: '#34d399',
             }}
           >
-            ✓ DSGVO-konform
+            PDF & DOCX Export
           </div>
         </div>
       </div>

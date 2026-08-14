@@ -20,6 +20,8 @@ import { useTourStore, hasCompletedTour } from '@/stores/tour-store';
 import { templateLabelsMap as templateLabelKeys } from '@/lib/template-labels';
 import type { Resume } from '@/types/resume';
 import { usePaywall } from '@/hooks/use-paywall';
+import { useSession } from 'next-auth/react';
+import { useRuntimeConfig } from '@/components/providers/runtime-config-provider';
 import { trackEvent } from '@/lib/analytics';
 import { consumePaidActionCompletion } from '@/lib/billing/completion';
 import { PricingModal } from '@/components/billing/pricing-modal';
@@ -250,7 +252,17 @@ export default function TemplatesPage() {
     return () => clearTimeout(timer);
   }, [startTour]);
 
+  const { data: session } = useSession();
+  const { authEnabled } = useRuntimeConfig();
+
   const handleUseTemplate = useCallback(async (template: string) => {
+    // If authentication is enabled and the user is signed out, preserve intent through login
+    if (authEnabled && !session?.user) {
+      const targetPath = `/${locale}/templates?templateId=${encodeURIComponent(template)}`;
+      router.push(`/login?callbackUrl=${encodeURIComponent(targetPath)}`);
+      return;
+    }
+
     const isPremium = !FREE_TEMPLATES.has(template as Template);
     if (isPremium && currentPlan === 'free') {
       checkPaywall('pro', () => {}, {
@@ -291,7 +303,7 @@ export default function TemplatesPage() {
     } finally {
       setCreatingTemplate(null);
     }
-  }, [currentPlan, checkPaywall, tBilling, tm, ts, createResume, locale, router]);
+  }, [authEnabled, session, locale, currentPlan, checkPaywall, tBilling, tm, ts, createResume, router]);
 
   useEffect(() => {
     if (templateIdParam && TEMPLATES.includes(templateIdParam as Template)) {

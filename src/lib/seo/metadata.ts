@@ -17,6 +17,7 @@ export interface PageMetadataOptions {
   noIndex?: boolean;
   ogImage?: string;
   ogType?: 'website' | 'article';
+  absoluteTitle?: boolean;
 }
 
 export function buildPageMetadata(options: PageMetadataOptions): Metadata {
@@ -29,6 +30,7 @@ export function buildPageMetadata(options: PageMetadataOptions): Metadata {
     noIndex = false,
     ogImage = '/opengraph-image',
     ogType = 'website',
+    absoluteTitle = false,
   } = options;
 
   const validLocale = (locale === 'en' ? 'en' : 'de') as Locale;
@@ -54,6 +56,10 @@ export function buildPageMetadata(options: PageMetadataOptions): Metadata {
     };
   }
 
+  const isFullBrandTitle = absoluteTitle || title.includes(SITE_NAME);
+  const metadataTitle: Metadata['title'] = isFullBrandTitle ? { absolute: title } : title;
+  const ogTitle = isFullBrandTitle ? title : `${title} | ${SITE_NAME}`;
+
   const keywordsArray = Array.isArray(keywords)
     ? keywords
     : typeof keywords === 'string'
@@ -61,7 +67,7 @@ export function buildPageMetadata(options: PageMetadataOptions): Metadata {
       : undefined;
 
   return {
-    title,
+    title: metadataTitle,
     description,
     keywords: keywordsArray,
     metadataBase: new URL(SITE_URL),
@@ -70,7 +76,7 @@ export function buildPageMetadata(options: PageMetadataOptions): Metadata {
       languages: alternates.languages,
     },
     openGraph: {
-      title,
+      title: ogTitle,
       description,
       url: canonicalUrl,
       siteName: SITE_NAME,
@@ -82,13 +88,13 @@ export function buildPageMetadata(options: PageMetadataOptions): Metadata {
           url: fullOgImageUrl,
           width: 1200,
           height: 630,
-          alt: `${SITE_NAME} - ${title}`,
+          alt: ogTitle,
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      title: ogTitle,
       description,
       images: [fullOgImageUrl],
     },
@@ -108,7 +114,7 @@ export function buildPageMetadata(options: PageMetadataOptions): Metadata {
 
 export function buildPrivateMetadata(title = 'BewerbRadar Copilot'): Metadata {
   return {
-    title,
+    title: { absolute: title },
     metadataBase: new URL(SITE_URL),
     robots: {
       index: false,

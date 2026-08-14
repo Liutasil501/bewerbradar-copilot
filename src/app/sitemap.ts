@@ -12,11 +12,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       ? 1.0
       : route === '/templates'
         ? 0.9
-        : route === '/interview'
-          ? 0.8
-          : 0.4;
+        : 0.4;
     const changeFrequency: MetadataRoute.Sitemap[number]['changeFrequency'] =
-      isRoot || route === '/templates' || route === '/interview'
+      isRoot || route === '/templates'
         ? 'weekly'
         : 'monthly';
 

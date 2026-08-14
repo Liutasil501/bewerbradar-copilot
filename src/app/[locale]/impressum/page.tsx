@@ -11,7 +11,7 @@ export async function generateMetadata({
   const { locale } = await params;
   const document = getLegalDocument(locale, 'impressum');
   return buildPageMetadata({
-    title: `${document.title} | BewerbRadar Copilot`,
+    title: document.title,
     description: document.description,
     locale,
     path: '/impressum',

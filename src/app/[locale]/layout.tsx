@@ -1,3 +1,5 @@
+import { Inter } from 'next/font/google';
+import Script from 'next/script';
 import { NextIntlClientProvider } from 'next-intl';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
@@ -7,8 +9,10 @@ import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/components/layout/theme-provider';
 import { RuntimeConfigProvider } from '@/components/providers/runtime-config-provider';
 import { BrandProvider } from '@/components/layout/brand-provider';
-
 import { CookieConsentBanner } from '@/components/consent/cookie-consent-banner';
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const gtmId = process.env.NEXT_PUBLIC_GTM_ID || 'GTM-55XL7PR4';
 
 export default async function LocaleLayout({
   children,
@@ -27,25 +31,94 @@ export default async function LocaleLayout({
   const messages = (await import(`../../../messages/${locale}.json`)).default;
 
   return (
-    <SessionProvider>
-      <RuntimeConfigProvider authEnabled={authEnabled}>
-      <NextIntlClientProvider locale={locale} messages={messages}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <BrandProvider>
-            <TooltipProvider>
-              {children}
-              <CookieConsentBanner />
-              <Toaster />
-            </TooltipProvider>
-          </BrandProvider>
-        </ThemeProvider>
-      </NextIntlClientProvider>
-    </RuntimeConfigProvider>
-    </SessionProvider>
+    <html lang={locale} suppressHydrationWarning>
+      <head>
+        <Script
+          id="google-consent-default"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){window.dataLayer.push(arguments);}
+              gtag('consent', 'default', {
+                analytics_storage: 'denied',
+                ad_storage: 'denied',
+                ad_user_data: 'denied',
+                ad_personalization: 'denied',
+                wait_for_update: 500
+              });
+              try {
+                var stored = localStorage.getItem('br_cookie_consent');
+                if (stored) {
+                  var parsed = JSON.parse(stored);
+                  if (
+                    parsed &&
+                    parsed.analytics === true &&
+                    parsed.version === 1 &&
+                    typeof parsed.timestamp === 'number'
+                  ) {
+                    gtag('consent', 'update', {
+                      analytics_storage: 'granted',
+                      ad_storage: 'denied',
+                      ad_user_data: 'denied',
+                      ad_personalization: 'denied'
+                    });
+                  }
+                }
+              } catch(e) {}
+            `,
+          }}
+        />
+        <Script
+          id="google-tag-manager"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+              })(window,document,'script','dataLayer','${gtmId}');
+            `,
+          }}
+        />
+      </head>
+      <body className={`${inter.variable} font-sans antialiased`}>
+        <noscript>
+          <iframe
+            src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+            height="0"
+            width="0"
+            style={{ display: 'none', visibility: 'hidden' }}
+            title="Google Tag Manager"
+          />
+        </noscript>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var b=localStorage.getItem('bewerbradar-brand');if(b==='boss'){b='mint';localStorage.setItem('bewerbradar-brand','mint');}else if(b==='jade'){b='blue';localStorage.setItem('bewerbradar-brand','blue');}if(b==='blue'||b==='pink'){document.documentElement.setAttribute('data-brand',b);}}catch(e){}})();`,
+          }}
+        />
+        <SessionProvider>
+          <RuntimeConfigProvider authEnabled={authEnabled}>
+            <NextIntlClientProvider locale={locale} messages={messages}>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="light"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <BrandProvider>
+                  <TooltipProvider>
+                    {children}
+                    <CookieConsentBanner />
+                    <Toaster />
+                  </TooltipProvider>
+                </BrandProvider>
+              </ThemeProvider>
+            </NextIntlClientProvider>
+          </RuntimeConfigProvider>
+        </SessionProvider>
+      </body>
+    </html>
   );
 }

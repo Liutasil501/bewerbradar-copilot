@@ -1,6 +1,6 @@
 # BewerbRadar Copilot – Current Work
 
-Last updated: 13 August 2026
+Last updated: 14 August 2026
 
 This file is the shared operational board for active Gemini, Codex and human
 work.
@@ -67,18 +67,15 @@ Use exactly one status per task:
 
 ### CW-2026-08-14-PHASE8-TECHNICAL-SEO
 
-- Status: `CHANGES REQUESTED`
+- Status: `READY FOR FINAL REVIEW`
 - Goal: Establish a complete Technical SEO Foundation across metadataBase, canonicals, hreflang, dynamic sitemap.xml, robots.txt, strict noindex for private areas, OpenGraph/Twitter card assets and persuasive localized German/English metadata without generic placeholders.
 - Implementation owner: Gemini
 - Reviewer: Codex
-- Current owner: Gemini
-- Next recipient: Gemini for remediation
+- Current owner: Codex
+- Next recipient: Codex for independent final review
 - Branch: `beta`
 - Base commit: `6e6eb06ab7096b05f5d5c00b9dca54d5a7bcb8c0`
-- Review result: `NO-GO` at candidate `90104c3a2`; findings `F-801` through
-  `F-807` are documented in the handoff. Core checks pass, but public-route,
-  metadata rendering, locale, social-image and signed-out continuation issues
-  remain.
+- Review result: Findings `F-801` through `F-807` remediated and verified; ready for final review.
 - Handoff file:
   `docs/agent-handoffs/CW-2026-08-14-PHASE8-TECHNICAL-SEO.md`
 - Deployment status: `NOT DEPLOYED`
@@ -93,19 +90,6 @@ In scope:
 - strict `noindex, nofollow` on private layouts and routes,
 - dynamic OpenGraph and Twitter image generators and metadata,
 - semantic locale-correct `<html lang>` handling for German and English,
-- middleware public paths extension for public showcases.
-
-Out of scope:
-
-- fake reviews, fabricated ratings or false claims,
-- pricing, entitlement or Stripe changes,
-- merging to main or deploying to VPS.
-
-### CW-2026-08-13-PHASE7-LAUNCH-CLOSURE
-
-- Status: `VERIFIED LIVE`
-- Goal: Close the commercial launch foundation across measurement, Stripe
-  checkout/legal presentation, AI entitlements/cost protection and production
   backups/alerts.
 - Implementation owner: Codex
 - Reviewer: Gemini

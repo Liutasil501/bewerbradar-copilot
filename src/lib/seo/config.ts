@@ -11,7 +11,6 @@ export const SITE_NAME = 'BewerbRadar Copilot';
 export const PUBLIC_ROUTES = [
   '',
   '/templates',
-  '/interview',
   '/impressum',
   '/agb',
   '/datenschutz',
