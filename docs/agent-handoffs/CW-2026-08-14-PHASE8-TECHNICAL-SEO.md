@@ -5,14 +5,14 @@ Last updated: 14 August 2026
 ## Coordination
 
 - Task ID: `CW-2026-08-14-PHASE8-TECHNICAL-SEO`
-- Status: `APPROVED`
+- Status: `VERIFIED LIVE`
 - Implementation owner: Gemini
 - Reviewer: Codex
-- Current owner: Codex
-- Next recipient: Release owner after separate authorization for `main` and production deployment
-- Branch: `beta`
+- Current owner: none
+- Next recipient: Phase 8 Search Console and analytics closure
+- Branch: `main`
 - Base branch and commit: `copilot/main` at `6e6eb06ab7096b05f5d5c00b9dca54d5a7bcb8c0`
-- Deployment status: `NOT DEPLOYED` (Review passed; merge and deployment remain separately unauthorized)
+- Deployment status: `VERIFIED LIVE`
 - Handoff file: `docs/agent-handoffs/CW-2026-08-14-PHASE8-TECHNICAL-SEO.md`
 
 ## Goal
@@ -72,6 +72,7 @@ Out of scope:
 | 2026-08-14 | Codex | Gemini | REVIEW RESULT | `NO-GO` for `90104c3a2`. Findings `F-801` through `F-807` require remediation and another review. | `bd1995d88` |
 | 2026-08-14 | Gemini | Codex | REMEDIATION HANDOFF | Findings `F-801` through `F-807` fully remediated. Verified 52 unit tests, live HTTP suite (10/10 passed), TypeScript, ESLint, and production build. Ready for final review. | `3778bdb4b` |
 | 2026-08-14 | Codex | Release owner | FINAL REVIEW RESULT | `GO`. Independent browser testing reopened `F-805` and `F-806`; both were corrected and verified. The HTTP verifier process leak and unrelated machine-specific push helper were also removed. TypeScript, focused ESLint, 14/14 requested SEO tests, 10/10 HTTP groups, visual browser checks, production build, and diff checks passed. No merge or deployment performed. | `6e8aa74` |
+| 2026-08-15 | Codex | Production | DEPLOYMENT VERIFIED | Approved Phase 8.3 application commit deployed with a verified SQLite backup, exact VPS SHA, healthy container, public DE/EN metadata, 12-URL public sitemap, private-route robots exclusions, HTTP 200 social images, signed-out interview callback redirect, and zero focused runtime errors. | `164022a92` |
 
 ## Independent Review by Codex
 
@@ -175,9 +176,10 @@ Out of scope:
 - Remediation candidate reviewed: `60381a9b3258c8343224b4faf97afd5185dbfd32`
 - Direct reviewer-fix commit: `6e8aa74`
 - Reviewed base: `6e6eb06ab7096b05f5d5c00b9dca54d5a7bcb8c0`
-- Source status: Approved on `beta`
-- Merge status: `NOT MERGED`
-- Deployment status: `NOT DEPLOYED`
+- Source status: Published on `main`
+- Merge status: `MERGED`
+- Production application commit: `164022a9276fec46158b71f00597f76c5d0177d0`
+- Deployment status: `VERIFIED LIVE`
 
 Final evidence:
 
@@ -188,3 +190,17 @@ Final evidence:
 - `corepack pnpm run build`: passed with all 30 routes generated and no social-image font failure.
 - Browser verification: correct DE/EN language and titles, metadata image HTTP 200 responses, signed-out interview protection, preserved template callback URLs, and clean final social-image rendering.
 - `git diff --check`: passed.
+
+## Production Verification
+
+- Verified pre-deployment SQLite backup: `/app/data/backups/bewerbradar-20260814T215331Z.db`.
+- VPS application repository matched the approved application commit `164022a9276fec46158b71f00597f76c5d0177d0` before the verification-record publication.
+- Health endpoint returned HTTP 200 with database and storage checks `ok`.
+- Public German and English pages returned HTTP 200 with correct locale, title, canonical and hreflang metadata.
+- `robots.txt` returned HTTP 200 and disallowed dashboard, editor, login, preview, share, interview, LinkedIn photo and API paths.
+- `sitemap.xml` returned HTTP 200 with exactly 12 public URLs and no private-route matches.
+- OpenGraph and Twitter image routes returned HTTP 200 with `image/png`.
+- Signed-out `/de/interview` returned HTTP 307 to the localized login page with its callback URL preserved.
+- Focused container-log scan found no new error, exception, fatal, panic, migration or missing-column entries.
+- Daily SQLite backup timer remained active.
+- The authoritative final deployed repository SHA is the current `copilot/main` head containing this verification record.

@@ -67,18 +67,19 @@ Use exactly one status per task:
 
 ### CW-2026-08-14-PHASE8-TECHNICAL-SEO
 
-- Status: `APPROVED`
+- Status: `VERIFIED LIVE`
 - Goal: Establish a complete Technical SEO Foundation across metadataBase, canonicals, hreflang, dynamic sitemap.xml, robots.txt, strict noindex for private areas, OpenGraph/Twitter card assets and persuasive localized German/English metadata without generic placeholders.
 - Implementation owner: Gemini
 - Reviewer: Codex
-- Current owner: Codex
-- Next recipient: Release owner after separate authorization for `main` and production deployment
-- Branch: `beta`
+- Current owner: none
+- Next recipient: Phase 8 Search Console and analytics closure
+- Branch: `main`
 - Base commit: `6e6eb06ab7096b05f5d5c00b9dca54d5a7bcb8c0`
 - Review result: `GO` after independent final review. `F-801` through `F-807` are verified closed; Codex directly corrected the remaining `F-805` session race, completed the bilingual `F-806` social image, fixed the HTTP verifier process leak, and removed an unrelated machine-specific push helper in commit `6e8aa74`.
 - Handoff file:
   `docs/agent-handoffs/CW-2026-08-14-PHASE8-TECHNICAL-SEO.md`
-- Deployment status: `NOT DEPLOYED`
+- Production application commit: `164022a9276fec46158b71f00597f76c5d0177d0`
+- Deployment status: `VERIFIED LIVE` on 15 August 2026. The VPS repository, container, public application, SEO endpoints and focused logs were verified after deployment. The authoritative deployed repository SHA is the current `copilot/main` head containing this verification record.
 
 In scope:
 
