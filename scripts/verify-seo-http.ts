@@ -2,7 +2,7 @@ import http from 'node:http';
 import assert from 'node:assert';
 import { spawn } from 'node:child_process';
 
-const PORT = 3155;
+const PORT = 3165;
 const BASE_URL = `http://localhost:${PORT}`;
 
 function fetchHttp(path: string, options: { headers?: Record<string, string>; redirect?: boolean } = {}): Promise<{ status: number; headers: http.IncomingHttpHeaders; body: string }> {
@@ -64,7 +64,7 @@ async function run() {
     throw new Error('Server failed to start in 30s');
   }
 
-  console.log('\n[1/7] Testing /opengraph-image and /twitter-image...');
+  console.log('\n[1/10] Testing /opengraph-image and /twitter-image...');
   const ogRes = await fetchHttp('/opengraph-image');
   assert.strictEqual(ogRes.status, 200, `Expected 200 for /opengraph-image, got ${ogRes.status}`);
   assert.ok(ogRes.headers['content-type']?.includes('image/png'), `Expected image/png, got ${ogRes.headers['content-type']}`);
@@ -75,7 +75,7 @@ async function run() {
   assert.ok(twRes.headers['content-type']?.includes('image/png'), `Expected image/png, got ${twRes.headers['content-type']}`);
   console.log('✓ /twitter-image returned HTTP 200 image/png');
 
-  console.log('\n[2/7] Testing /robots.txt...');
+  console.log('\n[2/10] Testing /robots.txt...');
   const robotsRes = await fetchHttp('/robots.txt');
   assert.strictEqual(robotsRes.status, 200);
   assert.ok(robotsRes.body.includes('Disallow: /de/interview'), 'robots.txt must disallow /de/interview');
@@ -84,7 +84,7 @@ async function run() {
   assert.ok(robotsRes.body.includes('sitemap.xml'), 'robots.txt must declare sitemap.xml');
   console.log('✓ /robots.txt verified with correct disallows and sitemap');
 
-  console.log('\n[3/7] Testing /sitemap.xml...');
+  console.log('\n[3/10] Testing /sitemap.xml...');
   const sitemapRes = await fetchHttp('/sitemap.xml');
   assert.strictEqual(sitemapRes.status, 200);
   assert.ok(sitemapRes.body.includes('/de/templates'), 'sitemap.xml must include /de/templates');
@@ -93,7 +93,7 @@ async function run() {
   assert.ok(!sitemapRes.body.includes('/dashboard'), 'sitemap.xml must NOT include /dashboard');
   console.log('✓ /sitemap.xml verified with only public indexable routes');
 
-  console.log('\n[4/7] Testing /de rendered HTML (<html lang="de"> and single brand title)...');
+  console.log('\n[4/10] Testing /de rendered HTML (<html lang="de"> and single brand title)...');
   const deRes = await fetchHttp('/de');
   assert.strictEqual(deRes.status, 200);
   assert.ok(deRes.body.includes('<html lang="de"'), `Expected <html lang="de">, body snippet: ${deRes.body.slice(0, 200)}`);
@@ -101,30 +101,51 @@ async function run() {
   assert.strictEqual((deRes.body.match(/BewerbRadar Copilot/g) || []).length > 0, true);
   console.log('✓ /de rendered <html lang="de"> and correct title');
 
-  console.log('\n[5/7] Testing /en rendered HTML (<html lang="en"> and English title)...');
+  console.log('\n[5/10] Testing /en rendered HTML (<html lang="en"> and English title)...');
   const enRes = await fetchHttp('/en');
   assert.strictEqual(enRes.status, 200);
   assert.ok(enRes.body.includes('<html lang="en"'), `Expected <html lang="en">, body snippet: ${enRes.body.slice(0, 200)}`);
   assert.ok(enRes.body.includes('<title>BewerbRadar Copilot - Professional AI Resume'), 'Expected English title on /en');
   console.log('✓ /en rendered <html lang="en"> and correct English title');
 
-  console.log('\n[6/7] Testing /de/templates title (single brand suffix)...');
+  console.log('\n[6/10] Testing /de/templates title (single brand suffix)...');
   const tplRes = await fetchHttp('/de/templates');
   assert.strictEqual(tplRes.status, 200);
   assert.ok(tplRes.body.includes('<title>40+ Professionelle Lebenslauf-Vorlagen &amp; Muster | BewerbRadar Copilot</title>') || tplRes.body.includes('<title>40+ Professionelle Lebenslauf-Vorlagen & Muster | BewerbRadar Copilot</title>'), 'Expected un-duplicated brand suffix on templates page');
   assert.ok(!tplRes.body.includes('BewerbRadar Copilot | BewerbRadar Copilot'), 'No duplicate brand suffix');
   console.log('✓ /de/templates rendered clean title without duplicate brand name');
 
-  console.log('\n[7/7] Testing signed-out auth protection on /de/interview...');
+  console.log('\n[7/10] Testing /de/agb, /de/datenschutz, /de/impressum, /de/widerruf...');
+  const legalPages = ['agb', 'datenschutz', 'impressum', 'widerruf'];
+  for (const p of legalPages) {
+    const res = await fetchHttp(`/de/${p}`);
+    assert.strictEqual(res.status, 200, `Expected 200 for /de/${p}`);
+    assert.ok(res.body.includes('<html lang="de"'), `Expected <html lang="de"> for /de/${p}`);
+    assert.ok(!res.body.includes('BewerbRadar Copilot | BewerbRadar Copilot'), `No duplicate brand in /de/${p}`);
+  }
+  console.log('✓ All 4 legal pages rendered clean titles and correct lang="de"');
+
+  console.log('\n[8/10] Testing private login page robots noindex...');
+  const loginRes = await fetchHttp('/de/login');
+  assert.strictEqual(loginRes.status, 200);
+  assert.ok(loginRes.body.includes('noindex') && loginRes.body.includes('nofollow'), 'Login page must contain noindex and nofollow');
+  console.log('✓ /de/login rendered strict noindex, nofollow');
+
+  console.log('\n[9/10] Testing signed-out auth protection on /de/interview...');
   const interviewRes = await fetchHttp('/de/interview');
-  // With AUTH_ENABLED=true, signed-out user on /de/interview gets 307 redirect to /de/login?callbackUrl=...
   assert.strictEqual(interviewRes.status, 307, `Expected 307 redirect to login for signed-out /de/interview, got ${interviewRes.status}`);
   assert.ok(interviewRes.headers.location?.includes('/login'), 'Redirect destination must be login');
   console.log('✓ /de/interview correctly redirected signed-out visitor to login');
 
-  console.log('\n=========================================');
-  console.log('ALL 7/7 LIVE HTTP SEO VERIFICATIONS PASSED!');
-  console.log('=========================================\n');
+  console.log('\n[10/10] Testing signed-out auth protection on /de/dashboard...');
+  const dashRes = await fetchHttp('/de/dashboard');
+  assert.strictEqual(dashRes.status, 307, `Expected 307 redirect for signed-out /de/dashboard, got ${dashRes.status}`);
+  assert.ok(dashRes.headers.location?.includes('/login'), 'Redirect destination must be login');
+  console.log('✓ /de/dashboard correctly redirected signed-out visitor to login');
+
+  console.log('\n=============================================');
+  console.log('ALL 10/10 LIVE HTTP SEO VERIFICATIONS PASSED!');
+  console.log('=============================================\n');
 
   server.kill();
   process.exit(0);
