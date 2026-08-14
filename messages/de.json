@@ -1138,5 +1138,41 @@
     "upgrade": "Upgrade auf",
     "loading": "Wird bearbeitet...",
     "popular": "Maximale KI-Unterstützung"
+  },
+  "seo": {
+    "siteName": "BewerbRadar Copilot",
+    "defaultTitle": "BewerbRadar Copilot – Professionelle Lebensläufe & Anschreiben mit KI",
+    "defaultDescription": "Erstellen Sie überzeugende, ATS-optimierte Lebensläufe und maßgeschneiderte Anschreiben in Minuten. Mit 40+ Vorlagen, KI-Optimierung und individuellem Bewerbungstraining.",
+    "home": {
+      "title": "BewerbRadar Copilot – Professionelle Lebensläufe & Anschreiben mit KI",
+      "description": "Erstellen Sie überzeugende, ATS-optimierte Lebensläufe und maßgeschneiderte Anschreiben in Minuten. Mit 40+ Vorlagen, KI-Optimierung und individuellem Bewerbungstraining.",
+      "keywords": "Lebenslauf erstellen, KI Lebenslauf Generator, Anschreiben schreiben, ATS Lebenslauf Vorlagen, Bewerbungsschreiben KI, Vorstellungsgespräch üben, Lebenslauf Vorlagen"
+    },
+    "templates": {
+      "title": "40+ Professionelle Lebenslauf-Vorlagen & Muster | BewerbRadar Copilot",
+      "description": "Entdecken Sie über 40 moderne, klassische und ATS-optimierte Lebenslauf-Vorlagen. Passen Sie Farben, Layouts und Abschnitte sofort an und exportieren Sie direkt in PDF oder DOCX.",
+      "keywords": "Lebenslauf Vorlagen, Lebenslauf Muster, ATS Vorlagen, Lebenslauf Design, CV Vorlagen Download, professioneller Lebenslauf"
+    },
+    "interview": {
+      "title": "KI-Probe-Interview & Bewerbungstraining | BewerbRadar Copilot",
+      "description": "Trainieren Sie realistische Bewerbungsgespräche mit interaktiven KI-Interviewern. Erhalten Sie sofortiges Feedback, Bewertung und konkrete Pläne zur Gesprächsverbesserung.",
+      "keywords": "Bewerbungsgespräch üben, Probe-Interview KI, Vorstellungsgespräch Training, Interview Fragen Antworten, KI Job Coach"
+    },
+    "impressum": {
+      "title": "Impressum | BewerbRadar Copilot",
+      "description": "Gesetzliche Anbieterkennzeichnung und Kontaktdaten von BewerbRadar Copilot."
+    },
+    "agb": {
+      "title": "Allgemeine Geschäftsbedingungen (AGB) | BewerbRadar Copilot",
+      "description": "Allgemeine Geschäftsbedingungen und Nutzungsbedingungen von BewerbRadar Copilot."
+    },
+    "datenschutz": {
+      "title": "Datenschutzerklärung | BewerbRadar Copilot",
+      "description": "Informationen zur Verarbeitung personenbezogener Daten und Ihren Rechten bei BewerbRadar Copilot."
+    },
+    "widerruf": {
+      "title": "Widerrufsbelehrung | BewerbRadar Copilot",
+      "description": "Informationen zum gesetzlichen Widerrufsrecht für Verbraucher bei BewerbRadar Copilot."
+    }
   }
 }

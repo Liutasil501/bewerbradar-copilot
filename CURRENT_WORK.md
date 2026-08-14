@@ -65,24 +65,57 @@ Use exactly one status per task:
 
 ## Active Work
 
+### CW-2026-08-14-PHASE8-TECHNICAL-SEO
+
+- Status: `READY FOR REVIEW`
+- Goal: Establish a complete Technical SEO Foundation across metadataBase, canonicals, hreflang, dynamic sitemap.xml, robots.txt, strict noindex for private areas, OpenGraph/Twitter card assets and persuasive localized German/English metadata without generic placeholders.
+- Implementation owner: Gemini
+- Reviewer: Codex
+- Current owner: Codex
+- Next recipient: Codex for independent review
+- Branch: `beta`
+- Base commit: `6e6eb06ab7096b05f5d5c00b9dca54d5a7bcb8c0`
+- Review result: Pending independent review
+- Handoff file:
+  `docs/agent-handoffs/CW-2026-08-14-PHASE8-TECHNICAL-SEO.md`
+- Deployment status: `NOT DEPLOYED`
+
+In scope:
+
+- localized German and English metadata without generic placeholders,
+- explicit `metadataBase` (`https://copilot.bewerbradar.de`),
+- self-referencing canonicals and bidirectional hreflang for `de`, `en`, and `x-default`,
+- dynamic `sitemap.xml` with only verified public indexable pages,
+- dynamic `robots.txt` disallowing all private paths,
+- strict `noindex, nofollow` on private layouts and routes,
+- dynamic OpenGraph and Twitter image generators and metadata,
+- semantic `<html lang="de">` root handling,
+- middleware public paths extension for public showcases.
+
+Out of scope:
+
+- fake reviews, fabricated ratings or false claims,
+- pricing, entitlement or Stripe changes,
+- merging to main or deploying to VPS.
+
 ### CW-2026-08-13-PHASE7-LAUNCH-CLOSURE
 
-- Status: `APPROVED`
+- Status: `VERIFIED LIVE`
 - Goal: Close the commercial launch foundation across measurement, Stripe
   checkout/legal presentation, AI entitlements/cost protection and production
   backups/alerts.
 - Implementation owner: Codex
 - Reviewer: Gemini
 - Current owner: Codex
-- Next recipient: Codex for main publication
-- Branch: `codex/phase7-launch-closure`
+- Next recipient: Codex
+- Branch: `main`
 - Base commit: `ba142a4f59a56f49af9cc836fe12b9a2b528c804`
 - Implementation commit: `967091a4dc52bd067773cc7be6abc8d0e89e708c`
 - Review commit: `22e58d63fd089fd4ed1331c74664f6527b29d139`
 - Review result: `GO` for source publication after independent final review
 - Handoff file:
   `docs/agent-handoffs/CW-2026-08-13-PHASE7-LAUNCH-CLOSURE.md`
-- Deployment status: `NOT DEPLOYED`
+- Deployment status: `VERIFIED LIVE` (Deployed on 14 August 2026 from `main` commit `6e6eb06ab`)
 
 In scope:
 

@@ -1,3 +1,8 @@
+import type { Metadata } from 'next';
+import { buildPrivateMetadata } from '@/lib/seo/metadata';
+
+export const metadata: Metadata = buildPrivateMetadata('Editor | BewerbRadar Copilot');
+
 export default function EditorLayout({
   children,
 }: {

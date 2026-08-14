@@ -1,0 +1,8 @@
+import ogImage, { alt as ogAlt, contentType as ogContentType, size as ogSize } from './opengraph-image';
+
+export const runtime = 'nodejs';
+export const alt = ogAlt;
+export const size = ogSize;
+export const contentType = ogContentType;
+
+export default ogImage;

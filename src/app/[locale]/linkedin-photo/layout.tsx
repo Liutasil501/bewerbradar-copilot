@@ -1,5 +1,9 @@
+import type { Metadata } from 'next';
 import { Header } from '@/components/layout/header';
 import { SettingsDialog } from '@/components/settings/settings-dialog';
+import { buildPrivateMetadata } from '@/lib/seo/metadata';
+
+export const metadata: Metadata = buildPrivateMetadata('LinkedIn Foto Generator | BewerbRadar Copilot');
 
 export default function LinkedInPhotoLayout({
   children,

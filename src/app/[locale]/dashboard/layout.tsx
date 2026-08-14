@@ -1,4 +1,8 @@
+import type { Metadata } from 'next';
 import { Header } from '@/components/layout/header';
+import { buildPrivateMetadata } from '@/lib/seo/metadata';
+
+export const metadata: Metadata = buildPrivateMetadata('Dashboard | BewerbRadar Copilot');
 
 export default function DashboardLayout({
   children,

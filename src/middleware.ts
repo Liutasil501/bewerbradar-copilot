@@ -6,9 +6,11 @@ const intlMiddleware = createMiddleware(routing);
 
 // Public paths that don't require authentication (relative to locale prefix)
 const PUBLIC_PATHS = [
-  '/',        // Landing page
-  '/login',   // Login page
-  '/share',   // Public share links
+  '/', // Landing page
+  '/login', // Login page
+  '/share', // Public share links
+  '/templates', // Public templates showcase
+  '/interview', // Public interview lobby
   '/impressum',
   '/datenschutz',
   '/agb',

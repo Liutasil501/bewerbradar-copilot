@@ -1,3 +1,8 @@
+import type { Metadata } from 'next';
+import { buildPrivateMetadata } from '@/lib/seo/metadata';
+
+export const metadata: Metadata = buildPrivateMetadata('Anmelden | BewerbRadar Copilot');
+
 export default function AuthLayout({
   children,
 }: {

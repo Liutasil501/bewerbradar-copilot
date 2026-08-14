@@ -1138,5 +1138,41 @@
     "upgrade": "Upgrade to",
     "loading": "Processing...",
     "popular": "Maximum AI Power"
+  },
+  "seo": {
+    "siteName": "BewerbRadar Copilot",
+    "defaultTitle": "BewerbRadar Copilot – Professional AI Resume & Cover Letter Builder",
+    "defaultDescription": "Create tailored, ATS-ready resumes and job-matching cover letters in minutes. Featuring 40+ professional templates, AI refinement, and interactive interview coaching.",
+    "home": {
+      "title": "BewerbRadar Copilot – Professional AI Resume & Cover Letter Builder",
+      "description": "Create tailored, ATS-ready resumes and job-matching cover letters in minutes. Featuring 40+ templates, AI refinement, and interactive interview coaching.",
+      "keywords": "AI resume builder, resume maker, ATS resume templates, cover letter generator, job interview practice, CV builder online, resume examples"
+    },
+    "templates": {
+      "title": "40+ Professional Resume Templates & Designs | BewerbRadar Copilot",
+      "description": "Explore 40+ modern, classic, and ATS-optimized resume templates. Customize layout, colors, and typography, and export directly to PDF or DOCX.",
+      "keywords": "resume templates, CV templates, ATS friendly templates, professional resume designs, resume examples, modern CV"
+    },
+    "interview": {
+      "title": "AI Mock Interview & Job Preparation Coach | BewerbRadar Copilot",
+      "description": "Practice realistic job interviews with interactive AI interviewers. Get instant scoring, comprehensive feedback, and actionable improvement plans.",
+      "keywords": "mock interview AI, job interview practice, interview preparation, AI career coach, interview questions feedback, career prep"
+    },
+    "impressum": {
+      "title": "Legal Notice (Impressum) | BewerbRadar Copilot",
+      "description": "Legal provider identification and contact information for BewerbRadar Copilot."
+    },
+    "agb": {
+      "title": "Terms of Service (AGB) | BewerbRadar Copilot",
+      "description": "General terms of service and usage conditions for BewerbRadar Copilot."
+    },
+    "datenschutz": {
+      "title": "Privacy Policy | BewerbRadar Copilot",
+      "description": "Information about data processing, privacy, and your rights on BewerbRadar Copilot."
+    },
+    "widerruf": {
+      "title": "Right of Withdrawal | BewerbRadar Copilot",
+      "description": "Information on the statutory right of withdrawal for consumers on BewerbRadar Copilot."
+    }
   }
 }

@@ -1,11 +1,21 @@
 import type { Metadata } from 'next';
 import { LegalDocumentPage } from '@/components/legal/legal-document-page';
 import { getLegalDocument } from '@/lib/legal/documents';
+import { buildPageMetadata } from '@/lib/seo/metadata';
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
   const { locale } = await params;
   const document = getLegalDocument(locale, 'impressum');
-  return { title: `${document.title} | BewerbRadar Copilot`, description: document.description };
+  return buildPageMetadata({
+    title: `${document.title} | BewerbRadar Copilot`,
+    description: document.description,
+    locale,
+    path: '/impressum',
+  });
 }
 
 export default async function ImpressumPage({ params }: { params: Promise<{ locale: string }> }) {
