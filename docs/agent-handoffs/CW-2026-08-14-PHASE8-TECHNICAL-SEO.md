@@ -5,14 +5,14 @@ Last updated: 14 August 2026
 ## Coordination
 
 - Task ID: `CW-2026-08-14-PHASE8-TECHNICAL-SEO`
-- Status: `READY FOR FINAL REVIEW`
+- Status: `APPROVED`
 - Implementation owner: Gemini
 - Reviewer: Codex
 - Current owner: Codex
-- Next recipient: Codex for independent final review
+- Next recipient: Release owner after separate authorization for `main` and production deployment
 - Branch: `beta`
 - Base branch and commit: `copilot/main` at `6e6eb06ab7096b05f5d5c00b9dca54d5a7bcb8c0`
-- Deployment status: `NOT DEPLOYED` (Awaiting review and separate authorization)
+- Deployment status: `NOT DEPLOYED` (Review passed; merge and deployment remain separately unauthorized)
 - Handoff file: `docs/agent-handoffs/CW-2026-08-14-PHASE8-TECHNICAL-SEO.md`
 
 ## Goal
@@ -51,7 +51,8 @@ Out of scope:
 - **TypeScript (`npm.cmd run type-check`)**: Passed with 0 errors.
 - **Focused ESLint**: Passed across all changed files with 0 warnings and 0 errors.
 - **Unit & Helper Test Suites**: 52/52 tests passed across billing, AI access, burst guard, analytics, SEO helpers, metadata smoke tests, and E2E integrity assertions.
-- **Live HTTP Smoke Test Suite (`scripts/verify-seo-http.ts`)**: 7/7 live HTTP assertions passed against production server:
+- **Independent requested SEO test suites**: 14/14 tests passed across SEO helpers, metadata smoke tests, and E2E integrity assertions.
+- **Live HTTP Smoke Test Suite (`scripts/verify-seo-http.ts`)**: 10/10 live HTTP groups passed against the local production build, and the verifier released port 3165 after completion:
   1. `GET /opengraph-image` -> HTTP 200 `image/png` (no redirect loop or 404).
   2. `GET /twitter-image` -> HTTP 200 `image/png`.
   3. `GET /robots.txt` -> HTTP 200 `text/plain` with disallows on `/de/interview`, `/en/interview`, `/dashboard`, `/editor`, etc., and sitemap link.
@@ -70,6 +71,7 @@ Out of scope:
 | 2026-08-14 | Gemini | Codex | REVIEW HANDOFF | Phase 8.3 Technical SEO Foundation complete. Verified types, lint, 45 unit tests, smoke tests and production build. Ready for independent review on `copilot/beta`. | `90104c3a2` |
 | 2026-08-14 | Codex | Gemini | REVIEW RESULT | `NO-GO` for `90104c3a2`. Findings `F-801` through `F-807` require remediation and another review. | `bd1995d88` |
 | 2026-08-14 | Gemini | Codex | REMEDIATION HANDOFF | Findings `F-801` through `F-807` fully remediated. Verified 52 unit tests, live HTTP suite (10/10 passed), TypeScript, ESLint, and production build. Ready for final review. | `3778bdb4b` |
+| 2026-08-14 | Codex | Release owner | FINAL REVIEW RESULT | `GO`. Independent browser testing reopened `F-805` and `F-806`; both were corrected and verified. The HTTP verifier process leak and unrelated machine-specific push helper were also removed. TypeScript, focused ESLint, 14/14 requested SEO tests, 10/10 HTTP groups, visual browser checks, production build, and diff checks passed. No merge or deployment performed. | `6e8aa74` |
 
 ## Independent Review by Codex
 
@@ -128,17 +130,19 @@ Out of scope:
 - Classification: Important
 - Status: `RESOLVED`
 - Remediation Response:
-  - Updated `src/app/[locale]/templates/page.tsx` with `useSession` and `useRuntimeConfig`.
-  - In `handleUseTemplate(template)`: if `authEnabled && !session?.user`, the user is routed to `/login?callbackUrl=/${locale}/templates?templateId=${encodeURIComponent(template)}`.
-  - After login, NextAuth redirects back to `/templates?templateId=...`, where `useEffect` automatically invokes `handleUseTemplate` for the authenticated session, seamlessly creating the resume (free) or opening the paywall (locked).
+  - Gemini added `useSession`, `useRuntimeConfig`, callback preservation, and automatic continuation in `src/app/[locale]/templates/page.tsx`.
+  - Independent browser testing found that the first remediation still consumed `templateId` while NextAuth was in `loading`, so a direct post-login return could lose the selected template.
+  - Codex made continuation session-state-aware: no action or query cleanup occurs during `loading`; signed-out visitors retain the intent through the login redirect; authenticated visitors continue the selected action before the parameter is removed.
+  - Verified in a real browser that both direct `?templateId=creative` entry and a normal template-button click redirect to login with the complete encoded callback URL.
 
 #### F-806 - Social image contains an unsupported compliance guarantee and is German-only
 
 - Classification: Important
 - Status: `RESOLVED`
 - Remediation Response:
-  - Removed `DSGVO-konform` badge and replaced it with verified product capability: `PDF & DOCX Export`.
-  - Updated hero subtitle and badges in `src/app/opengraph-image.tsx` to highlight genuine ATS optimization, 40+ templates, and AI text optimization without exaggerated legal guarantees.
+  - Gemini removed the unsupported `DSGVO-konform` guarantee and replaced it with the verified `PDF & DOCX Export` capability.
+  - Independent review found that the shared root asset was still German-only although it is referenced by both DE and EN metadata.
+  - Codex changed the asset to a bilingual DE/EN headline with language-neutral capability badges and visually verified the final rendered PNG for alignment, contrast, and absence of text overlap.
 
 #### F-807 - Social image rendering emits font failures and new copy violates the ASCII-hyphen convention
 
@@ -146,5 +150,41 @@ Out of scope:
 - Status: `RESOLVED`
 - Remediation Response:
   - Replaced Unicode `✓` checkmark glyph in `src/app/opengraph-image.tsx` with clean CSS badge pills, eliminating dynamic font fetch failures (Status 400).
-  - Replaced all typographic dashes (`–` and `—`) across `messages/de.json`, `messages/en.json`, `src/lib/seo/metadata.ts`, `src/app/layout.tsx`, and handoff docs with standard ASCII hyphens (`-`).
+  - Replaced all typographic dash characters (`U+2013` and `U+2014`) across `messages/de.json`, `messages/en.json`, `src/lib/seo/metadata.ts`, `src/app/layout.tsx`, and handoff docs with standard ASCII hyphens (`-`).
   - Added automated test in `src/lib/seo/e2e-smoke.test.ts` verifying no en-dashes or em-dashes exist in SEO metadata.
+
+### Additional Final Review Corrections
+
+#### F-808 - HTTP verification leaves a Next.js child process running
+
+- Classification: Improvement
+- Status: `RESOLVED`
+- Evidence: The original `shell: true` process was still listening on port 3165 after a successful test run.
+- Resolution: The verifier now starts the Next CLI directly with `process.execPath`, performs cleanup in `finally`, waits for child exit, and uses a bounded kill fallback. A repeated 10/10 run left no listener on port 3165.
+
+#### F-809 - Candidate contains a machine-specific push helper unrelated to Technical SEO
+
+- Classification: Improvement
+- Status: `RESOLVED`
+- Evidence: `scripts/push-beta.ps1` hardcoded a temporary local SSH-key path and was introduced only to work around one workstation's Git transport issue.
+- Resolution: Removed the helper from the candidate. Repository code no longer depends on a developer-specific key location.
+
+## Final Independent Review by Codex
+
+- Result: `GO`
+- Remediation candidate reviewed: `60381a9b3258c8343224b4faf97afd5185dbfd32`
+- Direct reviewer-fix commit: `6e8aa74`
+- Reviewed base: `6e6eb06ab7096b05f5d5c00b9dca54d5a7bcb8c0`
+- Source status: Approved on `beta`
+- Merge status: `NOT MERGED`
+- Deployment status: `NOT DEPLOYED`
+
+Final evidence:
+
+- `npm.cmd run type-check`: passed with 0 errors.
+- Focused ESLint for the final modified source files: passed with 0 warnings and 0 errors.
+- Requested SEO suites: passed 14/14 tests.
+- `npx tsx scripts/verify-seo-http.ts`: passed all 10/10 groups and released its server port.
+- `corepack pnpm run build`: passed with all 30 routes generated and no social-image font failure.
+- Browser verification: correct DE/EN language and titles, metadata image HTTP 200 responses, signed-out interview protection, preserved template callback URLs, and clean final social-image rendering.
+- `git diff --check`: passed.
