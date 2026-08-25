@@ -525,25 +525,28 @@ flowchart LR
     Update -.-> GTM
     Choice --> Gate["Analytics event gate"]
     Gate --> Events["Typed bounded gtag events"]
+    Events --> Target["Explicit GA4 destination"]
 ```
 
 Relevant implementation:
 
-- `src/app/layout.tsx` owns denied defaults, saved-choice restoration and GTM
-  loading,
+- `src/app/[locale]/layout.tsx` owns denied defaults, saved-choice restoration
+  and GTM loading,
 - `src/lib/analytics/consent.ts` owns versioned consent persistence and Consent
   Mode updates,
 - `src/components/consent/cookie-consent-banner.tsx` owns the German and English
   choice UI,
 - `src/lib/analytics/index.ts` owns the typed event contract, consent gate,
-  property allowlists and the single product-event data-layer path,
+  property allowlists and explicit routing to the configured public GA4
+  measurement ID,
 - `src/components/analytics/analytics-actions.tsx` contains small client actions
   for server-rendered landing sections.
 
-GTM version 3 contains the GA4 Google tag for `G-6XRD25H13C`, and GA4 Realtime
-has received BewerbRadar page views. Repository instrumentation, production
-observation and causal validation remain separate evidence states; explicit
-product-event receipt must be rechecked after deploying its `gtag` transport.
+GTM version 3 contains the GA4 Google tag for `G-6XRD25H13C`. Product events
+also set `send_to` explicitly so they do not depend on an implicit destination
+created by the external GTM configuration. Repository instrumentation,
+production observation and causal validation remain separate evidence states;
+explicit product-event receipt must be rechecked after every transport change.
 
 Analytics events must never include resume content, filenames, contact data,
 e-mail addresses, user identifiers, resume identifiers, API keys, prompts,

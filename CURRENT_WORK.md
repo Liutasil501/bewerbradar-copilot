@@ -65,6 +65,38 @@ Use exactly one status per task:
 
 ## Active Work
 
+### CW-2026-08-25-GA4-EVENT-TRANSPORT
+
+- Status: `READY FOR REVIEW`
+- Goal: Restore consented BewerbRadar product-event delivery to the correct GA4
+  property without weakening consent or privacy filtering.
+- Implementation owner: Codex
+- Reviewer: independent Codex subagent
+- Current owner: reviewer
+- Next recipient: Codex after independent review
+- Branch: `fix/ga4-event-transport`
+- Base commit: `86c495f79`
+- Implementation commit: `2a6c7975fd8efb4fe12de78d1c34cfb692adaae0`
+- Handoff file:
+  `docs/agent-handoffs/CW-2026-08-25-GA4-EVENT-TRANSPORT.md`
+- Deployment status: `NOT DEPLOYED`
+
+In scope:
+
+- route bounded product events explicitly to `G-6XRD25H13C`,
+- preserve the existing consent gate and property allowlists,
+- cover the fallback data-layer queue, denied, absent and outdated consent,
+  explicit routing and property stripping with focused tests,
+- independently review the exact candidate,
+- deploy only after approval and verify real event receipt.
+
+Out of scope:
+
+- changing event names or commercial funnel semantics,
+- weakening Consent Mode or advertising restrictions,
+- adding GTM event tags that could duplicate delivery,
+- sending synthetic activation or purchase events to production.
+
 ### CW-2026-08-14-PHASE8-TECHNICAL-SEO
 
 - Status: `VERIFIED LIVE`

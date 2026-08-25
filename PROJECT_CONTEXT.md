@@ -457,7 +457,7 @@ Google Tag Manager container:
 
 Implementation:
 
-- loaded globally through `src/app/layout.tsx`,
+- loaded globally through `src/app/[locale]/layout.tsx`,
 - Consent Mode v2 defaults are set before GTM,
 - initial defaults:
   - `analytics_storage: denied`
@@ -472,6 +472,8 @@ Implementation:
 - advertising-related consent remains denied,
 - `src/lib/analytics/index.ts` is the central typed product-event path,
 - product events are emitted only after analytics consent,
+- product events use the public GA4 measurement ID as an explicit `send_to`
+  destination instead of relying on implicit GTM routing,
 - the initial activation funnel covers landing CTA, authentication, PDF/image
   import, first imported resume view, paywall view and checkout start,
 - event properties use bounded allowlists and exclude resume content, filenames,
@@ -588,6 +590,7 @@ Optional:
 - `APP_NAME`
 - `DEFAULT_LOCALE`
 - `NEXT_PUBLIC_GTM_ID`
+- `NEXT_PUBLIC_GA_MEASUREMENT_ID`
 - Stripe price variables
 - Stripe coupon variable
 - `STRIPE_TERMS_OF_SERVICE_CONFIGURED`
