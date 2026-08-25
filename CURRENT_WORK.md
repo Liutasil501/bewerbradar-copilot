@@ -67,20 +67,25 @@ Use exactly one status per task:
 
 ### CW-2026-08-25-GA4-EVENT-TRANSPORT
 
-- Status: `READY TO DEPLOY`
+- Status: `VERIFIED LIVE`
 - Goal: Restore consented BewerbRadar product-event delivery to the correct GA4
   property without weakening consent or privacy filtering.
 - Implementation owner: Codex
 - Reviewer: independent Codex subagent
 - Current owner: Codex
-- Next recipient: Codex for source publication, deployment and live verification
+- Next recipient: none
 - Branch: `fix/ga4-event-transport`
 - Base commit: `86c495f79`
 - Implementation commit: `2a6c7975fd8efb4fe12de78d1c34cfb692adaae0`
 - Review result: `GO` for candidate `a848dc3f7`
+- Production release: `d3d7da0add13697fbdb0d59a584945d624945387`
 - Handoff file:
   `docs/agent-handoffs/CW-2026-08-25-GA4-EVENT-TRANSPORT.md`
-- Deployment status: `NOT DEPLOYED`
+- Deployment status: `VERIFIED LIVE`
+- Live evidence: GA4 Realtime received exactly one `import_cta_clicked`, one
+  `paywall_viewed` and one `checkout_started` from the real production flow.
+  Checkout stopped on Stripe without payment and the user returned to the
+  dashboard with the existing single resume unchanged.
 
 In scope:
 

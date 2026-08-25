@@ -5,15 +5,17 @@ Last updated: 25 August 2026
 ## Coordination
 
 - Task ID: `CW-2026-08-25-GA4-EVENT-TRANSPORT`
-- Status: `READY TO DEPLOY`
+- Status: `VERIFIED LIVE`
 - Current owner: Codex
-- Next recipient: Codex
+- Next recipient: none
 - Implementation owner: Codex
 - Reviewer: independent Codex subagent
 - Branch: `fix/ga4-event-transport`
 - Base branch and commit: `main` at `86c495f79`
 - Implementation commit under review:
   `2a6c7975fd8efb4fe12de78d1c34cfb692adaae0`
+- Production release:
+  `d3d7da0add13697fbdb0d59a584945d624945387`
 - `CURRENT_WORK.md` synchronized: yes
 
 ## Goal
@@ -80,11 +82,17 @@ The build emitted existing local SQLite migration and duplicate demo-seed log
 noise while collecting pages. It completed successfully and this change does
 not touch the database.
 
-Pending:
+Production verification:
 
-- source publication,
-- production deployment,
-- consented live receipt of real bounded events in GA4.
+- source publication: exact release SHA present on `copilot/main`,
+- pre-deployment SQLite backup: created and integrity-verified,
+- VPS branch and SHA: `main` at the exact production release,
+- container: rebuilt, running and healthy,
+- public endpoint: passed,
+- GA4 Realtime: exactly one `import_cta_clicked`, one `paywall_viewed` and one
+  `checkout_started` received from the real production flow,
+- Stripe Checkout: opened but no payment was submitted,
+- post-test state: returned to dashboard with the existing single resume.
 
 ## Database and Environment
 
@@ -117,9 +125,11 @@ Pending:
 | --- | --- | --- | --- | --- | --- |
 | 2026-08-25 | Codex | Independent reviewer | REVIEW REQUEST | Review the exact candidate for consent, privacy, routing and duplicate-delivery risk. | `2a6c797` |
 | 2026-08-25 | Independent reviewer | Codex | REVIEW | `GO`: consent remains fail-closed, allowlists remain intact, destination cannot be overridden, tests and build passed. | `a848dc3` |
+| 2026-08-25 | Codex | Production | RELEASE | Published and deployed the approved candidate, then verified one real event for each tested funnel step in GA4 Realtime. | `d3d7da0` |
 
 ## Next Action
 
-- Owner: Codex
-- Action: publish the approved candidate, deploy and verify real event receipt.
-- Required before transfer: exact main ancestry, deployment checks and live consent matrix.
+- Owner: none
+- Action: none. The scoped transport defect is closed.
+- Follow-up: do not add parallel GTM event tags for these event names without a
+  duplicate-delivery review.

@@ -59,9 +59,10 @@ below only when the active task touches them.
   as public routes from release `75fcc9d1b`. Their content is a
   product-specific working draft and not a substitute for final Austrian legal
   review.
-- GA4 page views have been observed in Realtime. The Phase 7 candidate changes
-  product events from plain data-layer objects to explicit `gtag` events; their
-  final receipt requires a production smoke test after deployment.
+- GA4 page views and bounded product events are verified in Realtime. Release
+  `d3d7da0add13697fbdb0d59a584945d624945387` routes product events explicitly
+  to `G-6XRD25H13C`; the production flow delivered exactly one
+  `import_cta_clicked`, one `paywall_viewed` and one `checkout_started`.
 - Resume content is sensitive personal data and must not enter logs or
   analytics.
 
@@ -479,7 +480,7 @@ Implementation:
 - event properties use bounded allowlists and exclude resume content, filenames,
   contact information, application identifiers, API keys and free-form errors.
 
-Verified external state on 13 August 2026:
+Verified external state on 25 August 2026:
 
 - GTM container ID is present in live HTML,
 - consent defaults execute before GTM,
@@ -491,13 +492,11 @@ Verified external state on 13 August 2026:
 - the GA4 property is named `BewerbRadar Copilot`, uses Austria time and EUR,
 - the web stream is named `BewerbRadar Copilot` and points to
   `https://copilot.bewerbradar.de`,
-- GA4 Realtime received BewerbRadar `page_view` and `user_engagement`,
+- GA4 Realtime received BewerbRadar `page_view`, `user_engagement`,
+  `import_cta_clicked`, `paywall_viewed` and `checkout_started`,
 - DE and EN public pages and `/api/health` respond successfully,
-- VPS release `d98de14e` runs with zero container restarts after deployment.
-
-After the Phase 7 release, verify at least one consented bounded product event
-in GA4 Realtime or DebugView before declaring product-event measurement fully
-closed.
+- VPS release `d3d7da0add13697fbdb0d59a584945d624945387` passed exact-SHA,
+  backup, container-health, public-endpoint and focused live-event checks.
 
 Resume content, filenames, e-mail addresses and other PII must never be sent to
 analytics.
@@ -654,7 +653,8 @@ Any commits unique to both sides require investigation before merge.
 9. PostgreSQL is publicly bound on port 5432 in the broader stack and requires
     firewall and credential review.
 10. Two historical SQLite database names exist in the production volume.
-11. GA4 page-view receipt is verified; Phase 7 product-event receipt still
-    requires its post-deployment smoke test.
+11. GA4 page-view and bounded product-event receipt are verified. Avoid adding
+    parallel GTM event tags for the same event names because that would risk
+    duplicate delivery.
 12. The production dependency audit retains assessed transitive advisories in
     browser/PDF, image and build tooling; upgrades remain follow-up work.
