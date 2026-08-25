@@ -2,15 +2,23 @@ import assert from 'node:assert/strict';
 import { afterEach, describe, it } from 'node:test';
 import { trackEvent } from './index';
 
-function installBrowser(consent: boolean) {
+type ConsentFixture = boolean | 'absent' | 'outdated';
+
+function installBrowser(consent: ConsentFixture) {
   const calls: unknown[][] = [];
   const browserWindow = {
     dataLayer: [] as unknown[],
     gtag: (...args: unknown[]) => calls.push(args),
   };
   const storage = {
-    getItem: () =>
-      JSON.stringify({ analytics: consent, version: 1, timestamp: Date.now() }),
+    getItem: () => {
+      if (consent === 'absent') return null;
+      return JSON.stringify({
+        analytics: consent === true,
+        version: consent === 'outdated' ? 0 : 1,
+        timestamp: Date.now(),
+      });
+    },
     setItem: () => undefined,
     removeItem: () => undefined,
     clear: () => undefined,
@@ -42,7 +50,27 @@ describe('GA4 product-event transport', () => {
     trackEvent('import_cta_clicked', { locale: 'de', placement: 'hero' });
 
     assert.deepEqual(calls, [
-      ['event', 'import_cta_clicked', { locale: 'de', placement: 'hero' }],
+      [
+        'event',
+        'import_cta_clicked',
+        { locale: 'de', placement: 'hero', send_to: 'G-6XRD25H13C' },
+      ],
+    ]);
+  });
+
+  it('queues the event with an explicit destination before gtag is installed', () => {
+    installBrowser(true);
+    Reflect.deleteProperty(window, 'gtag');
+
+    trackEvent('paywall_viewed', { locale: 'de', trigger: 'resume_limit' });
+
+    assert.equal(typeof window.gtag, 'function');
+    assert.equal(window.dataLayer?.length, 1);
+    const command = window.dataLayer?.[0] as IArguments;
+    assert.deepEqual(Array.from(command), [
+      'event',
+      'paywall_viewed',
+      { locale: 'de', trigger: 'resume_limit', send_to: 'G-6XRD25H13C' },
     ]);
   });
 
@@ -52,5 +80,33 @@ describe('GA4 product-event transport', () => {
     trackEvent('import_cta_clicked', { locale: 'de', placement: 'hero' });
 
     assert.deepEqual(calls, []);
+  });
+
+  it('emits nothing when analytics consent is absent or outdated', () => {
+    for (const consent of ['absent', 'outdated'] as const) {
+      const calls = installBrowser(consent);
+
+      trackEvent('import_cta_clicked', { locale: 'de', placement: 'hero' });
+
+      assert.deepEqual(calls, []);
+    }
+  });
+
+  it('strips properties outside the event allowlist', () => {
+    const calls = installBrowser(true);
+
+    trackEvent('paywall_viewed', {
+      locale: 'de',
+      trigger: 'resume_limit',
+      email: 'must-not-leave-browser@example.invalid',
+    } as Parameters<typeof trackEvent<'paywall_viewed'>>[1]);
+
+    assert.deepEqual(calls, [
+      [
+        'event',
+        'paywall_viewed',
+        { locale: 'de', trigger: 'resume_limit', send_to: 'G-6XRD25H13C' },
+      ],
+    ]);
   });
 });

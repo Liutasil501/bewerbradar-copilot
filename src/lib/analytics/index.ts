@@ -3,6 +3,9 @@
 import { hasAnalyticsConsent } from './consent';
 import { sanitizePaywallTrigger } from '@/lib/billing/schema';
 
+const GA_MEASUREMENT_ID =
+  process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-6XRD25H13C';
+
 export type AccessMode = 'free_trial' | 'byok' | 'paid' | 'unknown';
 export type FileKind = 'pdf' | 'image';
 export type DurationBucket = '<3s' | '3-10s' | '>10s';
@@ -250,9 +253,11 @@ export function trackEvent<K extends EventName>(eventName: K, params: AnalyticsE
       }
     }
 
-    // The GTM container owns the base Google tag. Product events must use the
-    // gtag command format so the Google tag forwards them to GA4. A plain
-    // dataLayer object alone only wakes matching GTM custom-event triggers.
+    // The GTM container owns the base Google tag. Route every product event
+    // explicitly because a Google tag loaded through GTM does not guarantee
+    // that direct gtag event commands inherit a default destination.
+    sanitizedParams.send_to = GA_MEASUREMENT_ID;
+
     if (typeof window.gtag === 'function') {
       window.gtag('event', eventName, sanitizedParams);
       return;
