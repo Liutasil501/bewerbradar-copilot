@@ -34,8 +34,9 @@ flowchart LR
 ```
 
 The application is deployed as one Docker service. SQLite is stored in a
-persistent Docker volume. PostgreSQL, Redis and SeaweedFS exist in the wider
-server stack but are not part of the Copilot's active application-data path.
+persistent Docker volume. Legacy PostgreSQL, Redis and SeaweedFS containers and
+volumes exist in the wider server stack but are stopped and are not part of the
+Copilot's active application-data path.
 
 ## 2. Technology Stack
 

@@ -530,14 +530,18 @@ same visible Basic Authentication block.
 This is not an approved public interface. Verify DNS and either secure or
 remove the route.
 
-Broader running services include:
+Legacy Reactive Resume services exist on the VPS but were stopped on 27 August
+2026 after their separation from the current application was verified:
 
 - PostgreSQL
 - Redis
 - SeaweedFS
 
-The Copilot does not currently use PostgreSQL, Redis or SeaweedFS for its main
-application data.
+Their containers and data volumes remain retained for a reversible observation
+period. The Copilot does not use these services for its application data and
+remained healthy after the stop. Do not restart or permanently delete the
+legacy stack without checking the current VPS state and the retained-data
+decision.
 
 ## 13. Docker Runtime
 
